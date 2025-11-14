@@ -1,0 +1,20 @@
+{
+    "short_name": "rol04-app",
+    "name": "rol04-knowledge-tests-and-learning",
+    "icons": [
+        {
+            "src": "icon/favicon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon/favicon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}

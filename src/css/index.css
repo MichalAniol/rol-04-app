@@ -1,0 +1,19 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--background_color);
+    /* font-family: var(--light_font); */
+    font-family: Consolas;
+    font-size: var(--tab_bar_font_size);
+    line-height: var(--tab_bar_height);
+    color: var(--prime_color);
+    user-select: none;
+}
+
+.whole {
+    margin: 10px;
+    width: calc(100vw - 20px);
+    height: calc(100vh - 20px);
+    display: flex;
+    flex-direction: row;
+}

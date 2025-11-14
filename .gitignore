@@ -1,0 +1,8 @@
+node_modules
+prod/*
+!prod/favicon.ico
+.env
+.env.dev
+.env.prod
+
+*.pem
