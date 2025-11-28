@@ -1,0 +1,59 @@
+.tab-box {
+    padding: 30px 20px;
+}
+
+#tabs {
+    overflow: hidden;
+    filter: blur(0px);
+    transition: filter 0.3s;
+}
+
+#carousel-box {
+    position: absolute;
+    left: 0px;
+    overflow: hidden;
+}
+
+#carousel {
+    position: relative;
+    left: 0px;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: row;
+}
+
+.tab {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.menu {
+    position: absolute;
+}
+
+#menu-mobile {
+    bottom: 0;
+}
+
+#menu-web {
+    width: 200px;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    background-color: var(--third_from_end_color);
+    padding: 10px 20px;
+}
+
+.menu-web-item {
+    /* border:1px solid #5a7515; */
+    border-radius: 8px;
+    width: 160px;
+    height: 40px;
+    margin-bottom: 10px;
+    line-height: 40px;
+    text-align: center;
+    background-color: var(--penultimate_color);
+    ;
+    cursor: pointer;
+}

@@ -1,6 +1,6 @@
 // from https://github.com/jakearchibald/idb-keyval/blob/main/src/index.ts
 
-const idb = (storeName: string) => {
+const idb = (storeName: string) => (function(){
     const promisifyRequest = <T = undefined>(
         request: IDBRequest<T> | IDBTransaction,
     ): Promise<T> =>
@@ -187,18 +187,4 @@ const idb = (storeName: string) => {
     //         return promisifyRequest(store.transaction);
     //     });
     // }
-
-    return {
-        get,
-        set,
-        // setMany,
-        // getMany,
-        del,
-        // delMany,
-        keys,
-        // values,
-        update,
-        // getAllData,
-        // clear,
-    };
-};
+}())

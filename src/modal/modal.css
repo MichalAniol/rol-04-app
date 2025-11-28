@@ -1,0 +1,53 @@
+#modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    transition: 1s;
+}
+
+#modal-back {
+    position: relative;
+    width: 0;
+    height: 0;
+    background-color: var(--last_color);
+    opacity: .5;
+}
+
+.modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0px 65px var(--third_color);
+    /* rozmyty cień */
+}
+
+.input-file {
+    display: none;
+    /* ukrywa prawdziwy input */
+}
+
+.file-label {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--mine_color);
+    color: var(--last_color);
+    cursor: pointer;
+    font-size: var(--font_size);
+    transition: 0.3s;
+    text-align: center;
+    user-select: none;
+}
+
+.file-label:hover {
+    background: var(--mine_3_color);
+}
+
+#modal-error,
+#modal-user {
+    display: none;
+}

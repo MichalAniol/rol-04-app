@@ -1,0 +1,42 @@
+.sheet {
+    margin: 10px 20px;
+}
+
+.answers-box>*:not(:last-child) {
+    border-bottom: 1px solid var(--fourth_from_end_color);
+    background-color: var(--penultimate_color);
+}
+
+.answers-box>*:nth-child(2n) {
+    background-color: var(--third_from_end_color);
+}
+
+.question {
+    margin-bottom: 22px;
+    text-align: center;
+}
+
+.answer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 15px;
+    min-height: 20px;
+}
+
+.mark {
+    position: relative;
+    width: 50px;
+    min-width: 50px;
+}
+
+.learning-confirm {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin: 20px 0 40px 0;
+}
+
+#learning-confirm-btn {
+}

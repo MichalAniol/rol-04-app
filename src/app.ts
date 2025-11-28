@@ -9,8 +9,32 @@
 
     getStorage().then(async (store) => {
         core.store = store
-        const testDb = idb('test')
-        core.idbTest = testDb
+
+        // const testDb = idb('test')
+        // core.idbTest = testDb
+
+        document.addEventListener("DOMContentLoaded", () => {
+            controllers.initKeys()
+            settings.init()
+            starter.init()
+            learning.init()
+            tab.init()
+            modal.init()
+
+            const resize = utils.resize()
+            resize.add(tab.resize)
+            resize.add(modal.resize)
+            resize.run()
+
+            // setTimeout(starter.run, 300)
+
+            // tests.errorModal()
+
+            // setTimeout(tab.getGoTo(2), 100)
+        })
+
+
+
 
         setConsole()
 
@@ -24,8 +48,6 @@
 
 
 
-
-        initAndGetData()
     })
 
 }())

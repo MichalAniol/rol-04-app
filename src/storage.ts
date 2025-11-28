@@ -6,18 +6,19 @@ type CheckedKeyT = keyof typeof checked
 type CheckedValuesT = typeof checked[CheckedKeyT]
 
 type NamesValueTypeT = {
-    test: string,
+    theme: string,
 }
 
+const storageNames = {
+    theme: 'theme',
+} as const
+type DataNamesKeysT = keyof typeof storageNames
+type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
+
 const getStorage = async () => {
-    const names = {
-        test: 'test',
-    } as const
-    type DataNamesKeysT = keyof typeof names
-    type DataNamesValuesT = typeof names[DataNamesKeysT]
 
     const defaultData = {
-        test: 'test-test',
+        theme: '',
     } as const
 
     const isValidJSONStringify = (str: string | string[]) => {
@@ -37,9 +38,9 @@ const getStorage = async () => {
         }
     }
 
-    const isValidJSONParse = (str: string | string[]) => {
+    const isValidJSONParse = (str: string) => {
         try {
-            JSON.stringify(str)
+            JSON.parse(str)
             return true
         } catch {
             return false
@@ -58,7 +59,7 @@ const getStorage = async () => {
     }
 
     const initData = () => {
-        const list = Object.keys(names)
+        const list = Object.keys(storageNames)
         list.forEach((k: string) => {
             const data = get(k as DataNamesValuesT)
             if (!data && defaultData[k as keyof NamesValueTypeT]) set(k as DataNamesValuesT, defaultData[k as keyof NamesValueTypeT])
@@ -67,7 +68,6 @@ const getStorage = async () => {
     initData()
 
     return {
-        names,
         set,
         get,
     }

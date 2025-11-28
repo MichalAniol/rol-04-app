@@ -1,13 +1,18 @@
-const dom = (function () {
-    const byId = (id: string): HTMLElement | HTMLTextAreaElement | null => {
+namespace dom {
+    export const root = document.documentElement
+
+    export const byId = (id: string): HTMLElement | HTMLTextAreaElement | null => {
         return document.getElementById(id) as HTMLElement | HTMLTextAreaElement | null;
     }
-    const byQuery = (query: string) => document.querySelector(query)
-    const byQueryAll = (query: string) => document.querySelectorAll(query)
-    const byQ = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, query: string) => elem.querySelector(query)
-    const byQAll = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, query: string) => elem.querySelectorAll(query)
+    export const byQuery = (query: string) => document.querySelector(query)
+    export const byQueryAll = (query: string) => document.querySelectorAll(query)
+    export const byQ = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, query: string) => elem.querySelector(query)
+    export const byQAll = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, query: string) => elem.querySelectorAll(query)
 
-    type RecursiveHTMLElement<T> = {
+    export const getPx = (num: number) => `${num}px`
+    export const inner = (elem: HTMLElement, txt: string) => elem.innerHTML = txt
+
+    export type RecursiveHTMLElement<T> = {
         [K in keyof T]:
         T[K] extends string
         ? HTMLElement | HTMLTextAreaElement | null
@@ -18,7 +23,7 @@ const dom = (function () {
         : never;
     }
 
-    const getAllById = <T extends Record<string, any>>(obj: T): RecursiveHTMLElement<T> => {
+    export const getAllById = <T extends Record<string, any>>(obj: T): RecursiveHTMLElement<T> => {
         const results = {} as RecursiveHTMLElement<T>;
 
         Object.keys(obj).forEach((key) => {
@@ -36,7 +41,7 @@ const dom = (function () {
         return results;
     }
 
-    const prepare = (node: Element | HTMLElement | HTMLImageElement | string, options?: {
+    export const prepare = (node: Element | HTMLElement | HTMLImageElement | string, options?: {
         delete?: boolean,
         id?: string,
         classes?: string[],
@@ -73,74 +78,51 @@ const dom = (function () {
         }
     }
 
-    type ModifiableCSSProperties = {
+    export type ModifiableCSSProperties = {
         [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends ((...args: any[]) => any) ? never : K]: string;
     }
 
-    const setStyle = (element: HTMLElement, style: keyof ModifiableCSSProperties, value: string) => element.style[style as any] = value
+    export const setStyle = (element: HTMLElement, style: keyof ModifiableCSSProperties, value: string) => element.style[style as any] = value
 
-    type StyleT = [element: HTMLElement, attribute: keyof ModifiableCSSProperties, value: string]
-    type StylesT = StyleT[]
-    const setAllStyles = (styles: StylesT) => styles.forEach((s: StyleT) => setStyle(s[0], s[1], s[2]))
+    export type StyleT = [element: HTMLElement, attribute: keyof ModifiableCSSProperties, value: string]
+    export type StylesT = StyleT[]
+    export const setAllStyles = (styles: StylesT) => styles.forEach((s: StyleT) => setStyle(s[0], s[1], s[2]))
 
-    type AttributeNamesT = 'x' | 'y' | 'width' | 'height' | 'fill' | 'stroke' | 'stroke-width' | 'viewBox'
-    const setAttribute = (element: Element | HTMLElement | SVGRectElement, attribute: AttributeNamesT, value: string) => element.setAttribute(attribute as any, value)
+    export type AttributeNamesT = 'x' | 'y' | 'width' | 'height' | 'fill' | 'stroke' | 'stroke-width' | 'viewBox'
+    export const setAttribute = (element: Element | HTMLElement | SVGRectElement, attribute: AttributeNamesT, value: string) => element.setAttribute(attribute as any, value)
 
-    type AttributeT = [element: Element | HTMLElement | SVGRectElement, attribute: AttributeNamesT, value: string]
-    type AttributesT = AttributeT[]
-    const setAllAttributes = (attributes: AttributesT) => attributes.forEach((a: AttributeT) => a[0].setAttribute(a[1], a[2]))
+    export type AttributeT = [element: Element | HTMLElement | SVGRectElement, attribute: AttributeNamesT, value: string]
+    export type AttributesT = AttributeT[]
+    export const setAllAttributes = (attributes: AttributesT) => attributes.forEach((a: AttributeT) => a[0].setAttribute(a[1], a[2]))
 
-    const disable = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement) => elem.setAttribute('disabled', '')
-    const enable = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement) => elem.removeAttribute('disabled')
+    export const disable = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement) => elem.setAttribute('disabled', '')
+    export const enable = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement) => elem.removeAttribute('disabled')
 
-    const check = (elem: HTMLInputElement) => elem.checked = true
-    const uncheck = (elem: HTMLInputElement) => elem.checked = false
+    export const check = (elem: HTMLInputElement) => elem.checked = true
+    export const uncheck = (elem: HTMLInputElement) => elem.checked = false
 
-    const display = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
+    export const display = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
         elem.style.display = attribute
-    const setColor = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, color: string) =>
+    export const setColor = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, color: string) =>
         elem.style.color = color
-    const removeClass = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
+    export const removeClass = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
         elem.classList.remove(attribute)
-    const addClass = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
+    export const addClass = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, attribute: string) =>
         elem.classList.add(attribute)
 
-    const colors = {
+    export const colors = {
         line: 'var(--line_color)',
         prime: 'var(--prime_color)',
         off1: 'var(--off_prime_color)',
         off2: 'var(--off_second_color)',
     } as const
 
-    type EventNamesT = 'click' | 'input' | 'did-finish-load' | 'console-message' | 'change'
-    const add = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.addEventListener(name, fn)
+    export type EventNamesT = 'click' | 'input' | 'did-finish-load' | 'console-message' | 'keydown' | 'touchstart' | 'touchmove' | 'touchend' | 'DOMContentLoaded' | 'change'
+    export const add = (elem: Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.addEventListener(name, fn)
 
-    const xmlns = 'http://www.w3.org/2000/svg'
-    type NsNamesT = 'rect'
-    const newNS = (name: NsNamesT) => document.createElementNS(xmlns, 'rect')
+    export const remove = (elem: Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.removeEventListener(name, fn)
 
-    return {
-        byId,
-        byQuery,
-        byQueryAll,
-        byQ,
-        byQAll,
-        getAllById,
-        prepare,
-        setStyle,
-        setAllStyles,
-        setAttribute,
-        setAllAttributes,
-        disable,
-        enable,
-        check,
-        uncheck,
-        display,
-        setColor,
-        removeClass,
-        addClass,
-        colors,
-        add,
-        newNS,
-    }
-}())
+    export const xmlns = 'http://www.w3.org/2000/svg'
+    export type NsNamesT = 'rect'
+    export const newNS = (name: NsNamesT) => document.createElementNS(xmlns, 'rect')
+}

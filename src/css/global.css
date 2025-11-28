@@ -1,277 +1,308 @@
 @font-face {
-    font-family: 'Montserrat-Thin';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 100;
-    src: url(./fonts/Montserrat-Thin.eot);
-    src: url(./fonts/Montserrat-Thin.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Thin.svg#Montserrat-Thin) format('svg'),
-        url(./fonts/Montserrat-Thin.woff) format('woff'),
-        url(./fonts/Montserrat-Thin.woff2) format('woff2');
+    src: url(./fonts/Inter-100-Thin.eot);
+    src: url(./fonts/Inter-100-Thin.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-100-Thin.otf) format('otf'),
+        url(./fonts/Inter-100-Thin.ttf) format('truetype'),
+        url(./fonts/Inter-100-Thin.woff) format('woff'),
+        url(./fonts/Inter-100-Thin.woff2) format('woff2'),
+        url(./fonts/Inter-100-Thin.svg#Inter-100-Thin) format('svg');
 }
 
 @font-face {
-    font-family: 'Montserrat-ThinItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 100;
-    src: url(./fonts/Montserrat-ThinItalic.eot);
-    src: url(./fonts/Montserrat-ThinItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-ThinItalic.svg#Montserrat-ThinItalic) format('svg'),
-        url(./fonts/Montserrat-ThinItalic.woff) format('woff'),
-        url(./fonts/Montserrat-ThinItalic.woff2) format('woff2');
+    src: url(./fonts/Inter-100-ThinItalic.eot);
+    src: url(./fonts/Inter-100-ThinItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-100-ThinItalic.otf) format('otf'),
+        url(./fonts/Inter-100-ThinItalic.svg#Inter-100-ThinItalic) format('svg'),
+        url(./fonts/Inter-100-ThinItalic.woff2) format('woff2'),
+        url(./fonts/Inter-100-ThinItalic.woff) format('woff'),
+        url(./fonts/Inter-100-ThinItalic.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-ExtraLight';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 200;
-    src: url(./fonts/Montserrat-ExtraLight.eot);
-    src: url(./fonts/Montserrat-ExtraLight.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-ExtraLight.svg#Montserrat-ExtraLight) format('svg'),
-        url(./fonts/Montserrat-ExtraLight.woff) format('woff'),
-        url(./fonts/Montserrat-ExtraLight.woff2) format('woff2');
+    src: url(./fonts/Inter-200-ExtraLight.eot);
+    src: url(./fonts/Inter-200-ExtraLight.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-200-ExtraLight.otf) format('otf'),
+        url(./fonts/Inter-200-ExtraLight.svg#Inter-200-ExtraLight) format('svg'),
+        url(./fonts/Inter-200-ExtraLight.woff2) format('woff2'),
+        url(./fonts/Inter-200-ExtraLight.woff) format('woff'),
+        url(./fonts/Inter-200-ExtraLight.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-ExtraLightItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 200;
-    src: url(./fonts/Montserrat-ExtraLightItalic.eot);
-    src: url(./fonts/Montserrat-ExtraLightItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-ExtraLightItalic.woff2) format('woff2'),
-        url(./fonts/Montserrat-ExtraLightItalic.woff) format('woff'),
-        url(./fonts/Montserrat-ExtraLightItalic.svg#Montserrat-ExtraLightItalic) format('svg');
+    src: url(./fonts/Inter-200-ExtraLightItalic.eot);
+    src: url(./fonts/Inter-200-ExtraLightItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-200-ExtraLightItalic.otf) format('otf'),
+        url(./fonts/Inter-200-ExtraLightItalic.svg#Inter-200-ExtraLightItalic) format('svg'),
+        url(./fonts/Inter-200-ExtraLightItalic.woff2) format('woff2'),
+        url(./fonts/Inter-200-ExtraLightItalic.woff) format('woff'),
+        url(./fonts/Inter-200-ExtraLightItalic.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-Light';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 300;
-    src: url(./fonts/Montserrat-Light.eot);
-    src: url(./fonts/Montserrat-Light.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Light.svg#Montserrat-Light) format('svg'),
-        url(./fonts/Montserrat-Light.woff) format('woff'),
-        url(./fonts/Montserrat-Light.woff2) format('woff2');
+    src: url(./fonts/Inter-300-Light.eot);
+    src: url(./fonts/Inter-300-Light.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-300-Light.otf) format('otf'),
+        url(./fonts/Inter-300-Light.svg#Inter-300-Light) format('svg'),
+        url(./fonts/Inter-300-Light.woff2) format('woff2'),
+        url(./fonts/Inter-300-Light.woff) format('woff'),
+        url(./fonts/Inter-300-Light.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-LightItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 300;
-    src: url(./fonts/Montserrat-LightItalic.eot);
-    src: url(./fonts/Montserrat-LightItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-LightItalic.svg#Montserrat-LightItalic) format('svg'),
-        url(./fonts/Montserrat-LightItalic.woff) format('woff'),
-        url(./fonts/Montserrat-LightItalic.woff2) format('woff2');
+    src: url(./fonts/Inter-300-LightItalic.eot);
+    src: url(./fonts/Inter-300-LightItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-300-LightItalic.otf) format('otf'),
+        url(./fonts/Inter-300-LightItalic.svg#Inter-300-LightItalic) format('svg'),
+        url(./fonts/Inter-300-LightItalic.ttf) format('truetype'),
+        url(./fonts/Inter-300-LightItalic.woff) format('woff'),
+        url(./fonts/Inter-300-LightItalic.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-Regular';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
-    src: url(./fonts/Montserrat-Regular.eot);
-    src: url(./fonts/Montserrat-Regular.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Regular.svg#Montserrat-Regular) format('svg'),
-        url(./fonts/Montserrat-Regular.woff) format('woff'),
-        url(./fonts/Montserrat-Regular.woff2) format('woff2');
+    src: url(./fonts/Inter-400-Regular.eot);
+    src: url(./fonts/Inter-400-Regular.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-400-Regular.svg#Inter-400-Regular) format('svg'),
+        url(./fonts/Inter-400-Regular.otf) format('otf'),
+        url(./fonts/Inter-400-Regular.woff2) format('woff2'),
+        url(./fonts/Inter-400-Regular.woff) format('woff'),
+        url(./fonts/Inter-400-Regular.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-RegularItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 400;
-    src: url(./fonts/Montserrat-Italic.eot);
-    src: url(./fonts/Montserrat-Italic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Italic.svg#Montserrat-Italic) format('svg'),
-        url(./fonts/Montserrat-Italic.woff) format('woff'),
-        url(./fonts/Montserrat-Italic.woff2) format('woff2');
+    src: url(./fonts/Inter-400-RegularItalic.eot);
+    src: url(./fonts/Inter-400-RegularItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-400-RegularItalic.otf) format('otf'),
+        url(./fonts/Inter-400-RegularItalic.svg#Inter-400-RegularItalic) format('svg'),
+        url(./fonts/Inter-400-RegularItalic.woff2) format('woff2'),
+        url(./fonts/Inter-400-RegularItalic.woff) format('woff'),
+        url(./fonts/Inter-400-RegularItalic.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-Medium';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
-    src: url(./fonts/Montserrat-Medium.eot);
-    src: url(./fonts/Montserrat-Medium.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Medium.svg#Montserrat-Medium) format('svg'),
-        url(./fonts/Montserrat-Medium.woff) format('woff'),
-        url(./fonts/Montserrat-Medium.woff2) format('woff2');
+    src: url(./fonts/Inter-500-Medium.eot);
+    src: url(./fonts/Inter-500-Medium.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-500-Medium.otf) format('otf'),
+        url(./fonts/Inter-500-Medium.svg#Inter-500-Medium) format('svg'),
+        url(./fonts/Inter-500-Medium.woff2) format('woff2'),
+        url(./fonts/Inter-500-Medium.woff) format('woff'),
+        url(./fonts/Inter-500-Medium.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-MediumItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 500;
-    src: url(./fonts/Montserrat-MediumItalic.eot);
-    src: url(./fonts/Montserrat-MediumItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-MediumItalic.svg#Montserrat-MediumItalic) format('svg'),
-        url(./fonts/Montserrat-MediumItalic.woff) format('woff'),
-        url(./fonts/Montserrat-MediumItalic.woff2) format('woff2');
+    src: url(./fonts/Inter-500-MediumItalic.eot);
+    src: url(./fonts/Inter-500-MediumItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-500-MediumItalic.otf) format('otf'),
+        url(./fonts/Inter-500-MediumItalic.svg#Inter-500-MediumItalic) format('svg'),
+        url(./fonts/Inter-500-MediumItalic.woff) format('woff'),
+        url(./fonts/Inter-500-MediumItalic.ttf) format('truetype'),
+        url(./fonts/Inter-500-MediumItalic.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-SemiBold';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
-    src: url(./fonts/Montserrat-SemiBold.eot);
-    src: url(./fonts/Montserrat-SemiBold.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-SemiBold.svg#Montserrat-SemiBold) format('svg'),
-        url(./fonts/Montserrat-SemiBold.woff) format('woff'),
-        url(./fonts/Montserrat-SemiBold.woff2) format('woff2');
+    src: url(./fonts/Inter-600-SemiBold.eot);
+    src: url(./fonts/Inter-600-SemiBold.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-600-SemiBold.svg#Inter-600-SemiBold) format('svg'),
+        url(./fonts/Inter-600-SemiBold.otf) format('otf'),
+        url(./fonts/Inter-600-SemiBold.ttf) format('truetype'),
+        url(./fonts/Inter-600-SemiBold.woff) format('woff'),
+        url(./fonts/Inter-600-SemiBold.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-SemiBoldItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 600;
-    src: url(./fonts/Montserrat-SemiBoldItalic.eot);
-    src: url(./fonts/Montserrat-SemiBoldItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-SemiBoldItalic.svg#Montserrat-SemiBoldItalic) format('svg'),
-        url(./fonts/Montserrat-SemiBoldItalic.woff2) format('woff2'),
-        url(./fonts/Montserrat-SemiBoldItalic.woff) format('woff');
+    src: url(./fonts/Inter-600-SemiBoldItalic.eot);
+    src: url(./fonts/Inter-600-SemiBoldItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-600-SemiBoldItalic.otf) format('otf'),
+        url(./fonts/Inter-600-SemiBoldItalic.svg#Inter-600-SemiBoldItalic) format('svg'),
+        url(./fonts/Inter-600-SemiBoldItalic.ttf) format('truetype'),
+        url(./fonts/Inter-600-SemiBoldItalic.woff) format('woff'),
+        url(./fonts/Inter-600-SemiBoldItalic.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-Bold';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
-    src: url(./fonts/Montserrat-Bold.eot);
-    src: url(./fonts/Montserrat-Bold.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Bold.svg#Montserrat-Bold) format('svg'),
-        url(./fonts/Montserrat-Bold.woff) format('woff'),
-        url(./fonts/Montserrat-Bold.woff2) format('woff2');
+    src: url(./fonts/Inter-700-Bold.eot);
+    src: url(./fonts/Inter-700-Bold.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-700-Bold.otf) format('otf'),
+        url(./fonts/Inter-700-Bold.svg#Inter-700-Bold) format('svg'),
+        url(./fonts/Inter-700-Bold.woff) format('woff'),
+        url(./fonts/Inter-700-Bold.ttf) format('truetype'),
+        url(./fonts/Inter-700-Bold.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-BoldItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 700;
-    src: url(./fonts/Montserrat-BoldItalic.eot);
-    src: url(./fonts/Montserrat-BoldItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-BoldItalic.svg#Montserrat-BoldItalic) format('svg'),
-        url(./fonts/Montserrat-BoldItalic.woff2) format('woff2'),
-        url(./fonts/Montserrat-BoldItalic.woff) format('woff');
+    src: url(./fonts/Inter-700-BoldItalic.eot);
+    src: url(./fonts/Inter-700-BoldItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-700-BoldItalic.otf) format('otf'),
+        url(./fonts/Inter-700-BoldItalic.svg#Inter-700-BoldItalic) format('svg'),
+        url(./fonts/Inter-700-BoldItalic.woff2) format('woff2'),
+        url(./fonts/Inter-700-BoldItalic.woff) format('woff'),
+        url(./fonts/Inter-700-BoldItalic.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-ExtraBold';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 800;
-    src: url(./fonts/Montserrat-ExtraBold.eot);
-    src: url(./fonts/Montserrat-ExtraBold.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-ExtraBold.svg#Montserrat-ExtraBold) format('svg'),
-        url(./fonts/Montserrat-ExtraBold.woff) format('woff'),
-        url(./fonts/Montserrat-ExtraBold.woff2) format('woff2');
+    src: url(./fonts/Inter-800-ExtraBold.eot);
+    src: url(./fonts/Inter-800-ExtraBold.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-800-ExtraBold.otf) format('otf'),
+        url(./fonts/Inter-800-ExtraBold.svg#Inter-800-ExtraBold) format('svg'),
+        url(./fonts/Inter-800-ExtraBold.woff) format('woff'),
+        url(./fonts/Inter-800-ExtraBold.ttf) format('truetype'),
+        url(./fonts/Inter-800-ExtraBold.woff2) format('woff2');
 }
 
 @font-face {
-    font-family: 'Montserrat-ExtraBoldItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 800;
-    src: url(./fonts/Montserrat-ExtraBoldItalic.eot);
-    src: url(./fonts/Montserrat-ExtraBoldItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-ExtraBoldItalic.svg#Montserrat-ExtraBoldItalic) format('svg'),
-        url(./fonts/Montserrat-ExtraBoldItalic.woff) format('woff'),
-        url(./fonts/Montserrat-ExtraBoldItalic.woff2) format('woff2');
+    src: url(./fonts/Inter-800-ExtraBoldItalic.eot);
+    src: url(./fonts/Inter-800-ExtraBoldItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-800-ExtraBoldItalic.svg#Inter-800-ExtraBoldItalic) format('svg'),
+        url(./fonts/Inter-800-ExtraBoldItalic.otf) format('otf'),
+        url(./fonts/Inter-800-ExtraBoldItalic.woff2) format('woff2'),
+        url(./fonts/Inter-800-ExtraBoldItalic.woff) format('woff'),
+        url(./fonts/Inter-800-ExtraBoldItalic.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-Black';
+    font-family: 'Inter';
     font-style: normal;
     font-weight: 900;
-    src: url(./fonts/Montserrat-Black.eot);
-    src: url(./fonts/Montserrat-Black.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-Black.woff) format('woff'),
-        url(./fonts/Montserrat-Black.woff2) format('woff2'),
-        url(./fonts/Montserrat-Black.svg#Montserrat-Black) format('svg');
+    src: url(./fonts/Inter-900-Black.eot);
+    src: url(./fonts/Inter-900-Black.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-900-Black.otf) format('otf'),
+        url(./fonts/Inter-900-Black.svg#Inter-900-Black) format('svg'),
+        url(./fonts/Inter-900-Black.woff2) format('woff2'),
+        url(./fonts/Inter-900-Black.woff) format('woff'),
+        url(./fonts/Inter-900-Black.ttf) format('truetype');
 }
 
 @font-face {
-    font-family: 'Montserrat-BlackItalic';
+    font-family: 'Inter';
     font-style: italic;
     font-weight: 900;
-    src: url(./fonts/Montserrat-BlackItalic.eot);
-    src: url(./fonts/Montserrat-BlackItalic.eot?#iefix) format('embedded-opentype'),
-        url(./fonts/Montserrat-BlackItalic.svg#Montserrat-BlackItalic) format('svg'),
-        url(./fonts/Montserrat-BlackItalic.woff) format('woff'),
-        url(./fonts/Montserrat-BlackItalic.woff2) format('woff2');
+    src: url(./fonts/Inter-900-BlackItalic.eot);
+    src: url(./fonts/Inter-900-BlackItalic.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/Inter-900-BlackItalic.otf) format('otf'),
+        url(./fonts/Inter-900-BlackItalic.svg#Inter-900-BlackItalic) format('svg'),
+        url(./fonts/Inter-900-BlackItalic.woff2) format('woff2'),
+        url(./fonts/Inter-900-BlackItalic.woff) format('woff'),
+        url(./fonts/Inter-900-BlackItalic.ttf) format('truetype');
 }
 
 :root {
+    --font: 'Inter';
 
+    --font_micro_size: 8px;
+    --font_mini_size: 10px;
     --font_small_size: 16px;
-    --font_size: 26px;
-    --font_big_size: 40px;
+    --font_size: 20px;
+    --font_big_size: 28px;
+    --font_title_size: 34px;
 
     --separator_small: 8px;
     --separator: 14px;
     --separator_big: 22px;
-
-    --tab_bar_height: 30px;
-    --tab_bar_font_size: 22px;
-    --tab_width: 200px;
-    --settings_width: 150px;
-    --section_title_font_size: 42px;
-    --list_width: 200px;
-    --list_item_height: 30px;
-
-    --qrcode_color: #ddd;
-    --qrcode_background_color: #181818;
-
-    --img_width: 50vw;
 }
 
-@media screen and (prefers-color-scheme: dark) {
-    :root {
-        --light_font: 'Montserrat-ExtraLight';
-        --light_italian_font: 'Montserrat-ExtraLightItalic';
-        --font: 'Montserrat-Regular';
-        --italian_font: 'Montserrat-RegularItalic';
-        --medium_font: 'Montserrat-Medium';
-        --medium_italian_font: 'Montserrat-MediumItalic';
-        --bold_font: 'Montserrat-Bold';
-        --bold_italian_font: 'Montserrat-BoldItalic';
-        --black_font: 'Montserrat-Black';
-        --black_italian_font: 'Montserrat-BlackItalic';
+:root.dark {
+    --light: 200;
+    --regular: 400;
+    --medium: 500;
+    --bold: 700;
+    --black: 900;
 
-        --prime_color: #aaa;
-        --second_color: #888;
-        --background_color: #121212;
-        --line_color: #444;
+    --mine_color: #00bfff;
+    --mine_2_color: #00a8df;
+    --mine_3_color: #0194c5;
 
-        --outline_color: red;
+    --prime_color: #aaa;
+    --second_color: #888;
+    --third_color: #666;
+    --fourth_color: #444;
 
-        --on_prime_color: #408b07;
-        --on_second_color: #315714;
-        --off_prime_color: #c21010;
-        --off_second_color: #841919;
-    }
+    --fourth_from_end_color: #333;
+    --third_from_end_color: #222;
+    --penultimate_color: #181818;
+    --last_color: #121212;
+
+    --outline_color: red;
+
+    --on_prime_color: #408b07;
+    --on_second_color: #315714;
+    --off_prime_color: #c21010;
+    --off_second_color: #841919;
 }
 
-@media screen and (prefers-color-scheme: light) {
-    :root {
-        --light_font: 'Montserrat-Thin';
-        --light_italian_font: 'Montserrat-ThinItalic';
-        --font: 'Montserrat-Light';
-        --italian_font: 'Montserrat-LightItalic';
-        --medium_font: 'Montserrat-Regular';
-        --medium_italian_font: 'Montserrat-RegularItalic';
-        --bold_font: 'Montserrat-SemiBold';
-        --bold_italian_font: 'Montserrat-SemiBoldItalic';
-        --black_font: 'Montserrat-ExtraBold';
-        --black_italian_font: 'Montserrat-ExtraBoldItalic';
+:root.light {
+    --light: 100;
+    --regular: 300;
+    --medium: 400;
+    --bold: 600;
+    --black: 800;
 
-        --prime_color: #313131;
-        --second_color: #4c4c4c;
-        --background_color: #fff;
-        --line_color: #888;
+    --mine_color: royalblue;
+    --mine_2_color: #5078ef;
+    --mine_3_color: #6c90fc;
 
-        --outline_color: red;
+    --prime_color: #313131;
+    --second_color: #4c4c4c;
+    --third_color: #666666;
+    --fourth_color: #808080;
 
-        --on_prime_color: #539e1a;
-        --on_second_color: #83cd4b;
-        --off_prime_color: #ea5050;
-        --off_second_color: #f58383;
-    }
+    --fourth_from_end_color: #d9d9d9;
+    --third_from_end_color: #e5e5e5;
+    --penultimate_color: #f2f2f2;
+    --last_color: #ffffff;
+
+    --outline_color: red;
+
+    --on_prime_color: #539e1a;
+    --on_second_color: #83cd4b;
+    --off_prime_color: #ea5050;
+    --off_second_color: #f58383;
 }
 
 *:focus:not(:focus-visible) {

@@ -1,6 +1,205 @@
-const glob = {
-    serverUrl: 'https://localhost:3331/rol04/api/',
+const idb = (storeName) => (function () {
+    const promisifyRequest = (request) => new Promise((resolve, reject) => {
+        request.oncomplete = request.onsuccess = () => resolve(request.result);
+        request.onabort = request.onerror = () => reject(request.error);
+    });
+    const createStore = (dbName, storeName) => {
+        const request = indexedDB.open(dbName);
+        request.onupgradeneeded = () => request.result.createObjectStore(storeName);
+        const dbp = promisifyRequest(request);
+        return (txMode, callback) => dbp.then((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+    };
+    let defaultGetStoreFunc;
+    const defaultGetStore = () => {
+        if (!defaultGetStoreFunc) {
+            defaultGetStoreFunc = createStore('rolnik', storeName);
+        }
+        return defaultGetStoreFunc;
+    };
+    const get = (key, customStore = defaultGetStore()) => customStore('readonly', (store) => promisifyRequest(store.get(key)));
+    const set = (key, value, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
+        store.put(value, key);
+        return promisifyRequest(store.transaction);
+    });
+    const update = (key, updater, customStore = defaultGetStore()) => customStore('readwrite', (store) => new Promise((resolve, reject) => {
+        store.get(key).onsuccess = function () {
+            try {
+                store.put(updater(this.result), key);
+                resolve(promisifyRequest(store.transaction));
+            }
+            catch (err) {
+                reject(err);
+            }
+        };
+    }));
+    const del = (key, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
+        store.delete(key);
+        return promisifyRequest(store.transaction);
+    });
+    const eachCursor = (store, callback) => {
+        store.openCursor().onsuccess = function () {
+            if (!this.result)
+                return;
+            callback(this.result);
+            this.result.continue();
+        };
+        return promisifyRequest(store.transaction);
+    };
+    const keys = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
+        if (store.getAllKeys) {
+            return promisifyRequest(store.getAllKeys());
+        }
+        const items = [];
+        return eachCursor(store, (cursor) => items.push(cursor.key)).then(() => items);
+    });
+}());
+const checked = {
+    yes: 'yes',
+    no: 'no',
 };
+const storageNames = {
+    theme: 'theme',
+};
+const getStorage = async () => {
+    const defaultData = {
+        theme: '',
+    };
+    const isValidJSONStringify = (str) => {
+        try {
+            JSON.stringify(str);
+            return true;
+        }
+        catch {
+            return false;
+        }
+    };
+    const set = (key, value) => {
+        if (isValidJSONStringify(value)) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+        else {
+            localStorage.setItem(key, value.toString());
+        }
+    };
+    const isValidJSONParse = (str) => {
+        try {
+            JSON.parse(str);
+            return true;
+        }
+        catch {
+            return false;
+        }
+    };
+    const get = (key) => {
+        const value = localStorage.getItem(key);
+        if (!value)
+            return null;
+        if (typeof value === 'boolean')
+            return `${value}`;
+        if (isValidJSONParse(value)) {
+            return JSON.parse(value);
+        }
+        else {
+            return value.toString();
+        }
+    };
+    const initData = () => {
+        const list = Object.keys(storageNames);
+        list.forEach((k) => {
+            const data = get(k);
+            if (!data && defaultData[k])
+                set(k, defaultData[k]);
+        });
+    };
+    initData();
+    return {
+        set,
+        get,
+    };
+};
+var core;
+(function (core) {
+    core.store = null;
+    core.idbTest = null;
+    core.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10|PlayBook|IEMobile|Windows Phone|Opera Mini|Opera Mobi|Mobile Safari|Fennec|Kindle|Silk|Ubuntu Touch/i
+        .test(navigator.userAgent)
+        || window.innerWidth < 768;
+})(core || (core = {}));
+var dom;
+(function (dom) {
+    dom.root = document.documentElement;
+    dom.byId = (id) => {
+        return document.getElementById(id);
+    };
+    dom.byQuery = (query) => document.querySelector(query);
+    dom.byQueryAll = (query) => document.querySelectorAll(query);
+    dom.byQ = (elem, query) => elem.querySelector(query);
+    dom.byQAll = (elem, query) => elem.querySelectorAll(query);
+    dom.getPx = (num) => `${num}px`;
+    dom.inner = (elem, txt) => elem.innerHTML = txt;
+    dom.getAllById = (obj) => {
+        const results = {};
+        Object.keys(obj).forEach((key) => {
+            const value = obj[key];
+            if (typeof value === "string") {
+                results[key] = dom.byId(value);
+            }
+            else if (Array.isArray(value)) {
+                results[key] = value.map(id => dom.byId(id));
+            }
+            else if (typeof value === "object" && value !== null) {
+                results[key] = dom.getAllById(value);
+            }
+        });
+        return results;
+    };
+    dom.prepare = (node, options) => {
+        const elem = typeof node === "string" ? document.createElement(node) : node;
+        if (elem && elem instanceof HTMLElement) {
+            if (options.delete) {
+                elem.remove();
+                return;
+            }
+            if (options?.id)
+                elem.id = options.id;
+            options?.classes?.forEach((c) => elem.classList.add(c));
+            options?.children?.forEach((c) => elem.appendChild(c));
+            if (options?.src && elem instanceof HTMLImageElement) {
+                elem.src = options.src;
+            }
+            if (options?.inner) {
+                elem.textContent = options.inner;
+            }
+            if (options?.position) {
+                elem.style.left = `${options.position.x}px`;
+                elem.style.top = `${options.position.y}px`;
+            }
+            return elem;
+        }
+    };
+    dom.setStyle = (element, style, value) => element.style[style] = value;
+    dom.setAllStyles = (styles) => styles.forEach((s) => dom.setStyle(s[0], s[1], s[2]));
+    dom.setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
+    dom.setAllAttributes = (attributes) => attributes.forEach((a) => a[0].setAttribute(a[1], a[2]));
+    dom.disable = (elem) => elem.setAttribute('disabled', '');
+    dom.enable = (elem) => elem.removeAttribute('disabled');
+    dom.check = (elem) => elem.checked = true;
+    dom.uncheck = (elem) => elem.checked = false;
+    dom.display = (elem, attribute) => elem.style.display = attribute;
+    dom.setColor = (elem, color) => elem.style.color = color;
+    dom.removeClass = (elem, attribute) => elem.classList.remove(attribute);
+    dom.addClass = (elem, attribute) => elem.classList.add(attribute);
+    dom.colors = {
+        line: 'var(--line_color)',
+        prime: 'var(--prime_color)',
+        off1: 'var(--off_prime_color)',
+        off2: 'var(--off_second_color)',
+    };
+    dom.add = (elem, name, fn) => elem.addEventListener(name, fn);
+    dom.remove = (elem, name, fn) => elem.removeEventListener(name, fn);
+    dom.xmlns = 'http://www.w3.org/2000/svg';
+    dom.newNS = (name) => document.createElementNS(dom.xmlns, 'rect');
+})(dom || (dom = {}));
 const setConsole = () => (function () {
     let styles = [
         'background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)',
@@ -248,269 +447,688 @@ const setConsole = () => (function () {
         "use strict";
         e.exports = function (e) { return "object" == typeof e && !0 === e.isAxiosError; };
     }]); }));
-const idb = (storeName) => {
-    const promisifyRequest = (request) => new Promise((resolve, reject) => {
-        request.oncomplete = request.onsuccess = () => resolve(request.result);
-        request.onabort = request.onerror = () => reject(request.error);
-    });
-    const createStore = (dbName, storeName) => {
-        const request = indexedDB.open(dbName);
-        request.onupgradeneeded = () => request.result.createObjectStore(storeName);
-        const dbp = promisifyRequest(request);
-        return (txMode, callback) => dbp.then((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+var utils;
+(function (utils) {
+    utils.resize = () => {
+        const functionList = [];
+        const add = (fn) => functionList.push(fn);
+        const run = () => {
+            const w = window.visualViewport.width;
+            const h = window.visualViewport.height;
+            functionList.forEach(f => f(w, h));
+        };
+        window.onresize = run;
+        return {
+            add,
+            run
+        };
     };
-    let defaultGetStoreFunc;
-    const defaultGetStore = () => {
-        if (!defaultGetStoreFunc) {
-            defaultGetStoreFunc = createStore('rolnik', storeName);
+})(utils || (utils = {}));
+var utils;
+(function (utils) {
+    utils.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+})(utils || (utils = {}));
+var utils;
+(function (utils) {
+    const { byId, byQ, add, remove } = dom;
+    utils.getRadio = (radioData) => {
+        const themeElements = radioData.list.map(tn => byId(radioData.prefix + tn));
+        console.log('%c themeElements:', 'background: #ffcc00; color: #003300', themeElements);
+        const newRadioData = [];
+        const shift = (num) => newRadioData.forEach((rd, i) => rd.checkbox.checked = i === num);
+        radioData.list.forEach((name, i) => {
+            newRadioData.push({
+                item: themeElements[i],
+                click: () => {
+                    radioData.clickList[i]();
+                    core.store.set(radioData.storeName, name);
+                    shift(i);
+                },
+                checkbox: byQ(themeElements[i], 'input'),
+                name: name,
+            });
+        });
+        const getSaved = () => core.store.get(radioData.storeName);
+        const mark = (name) => newRadioData.forEach(rd => rd.checkbox.checked = rd.name === name);
+        const active = () => newRadioData.forEach(rd => add(rd.item, 'click', rd.click));
+        const deactivate = () => newRadioData.forEach(rd => remove(rd.item, 'click', rd.click));
+        const init = () => {
+            active();
+            const saved = getSaved();
+            mark(saved);
+            return saved;
+        };
+        return {
+            init,
+            active,
+            deactivate,
+        };
+    };
+})(utils || (utils = {}));
+var queries;
+(function (queries) {
+    queries.responseCommand = {
+        main: {
+            ddos: 'DDoS',
+            ddosId: 'DDoSid',
+            csrf: 'csrf',
+        },
+        secure: {
+            noMahakala: 'noMahakala',
+            wrongMahakala: 'wrongMahakala',
+            generateUserId: 'generateUserId',
+            go: 'go',
+            testOk: 'testOk'
+        },
+        user: {
+            set: 'userSet',
+            ok: 'userOk',
+            no: 'noUser',
+            noId: 'noId',
+            qr: 'qr',
         }
-        return defaultGetStoreFunc;
     };
-    const get = (key, customStore = defaultGetStore()) => customStore('readonly', (store) => promisifyRequest(store.get(key)));
-    const set = (key, value, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        store.put(value, key);
-        return promisifyRequest(store.transaction);
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    queries.url = (function () {
+        const main = `api/`;
+        const rol04 = `rol04/api/`;
+        return {
+            test: {
+                csrf: `${main}csrf`,
+                ddos: `${main}ddos`,
+                ddosId: `${main}ddos-id`,
+                noMahakala: `${main}no-mahakala`,
+                wrongMahakala: `${main}wrong-mahakala`,
+            },
+            secure: {
+                get: `${main}secure`,
+                test: `${main}secure-test`,
+            },
+            user: {
+                set: `${rol04}set-user`,
+                check: `${rol04}check-user`,
+                getQr: `${rol04}get-user-qr-code`,
+                setQr: `${rol04}set-user-by-qr-code`,
+            },
+        };
+    }());
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    const okCodes = [304, 401, 403, 429];
+    queries.api = axios.create({
+        baseURL: 'https://localhost:3331/',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 || okCodes.some(c => c === status);
+        }
     });
-    const update = (key, updater, customStore = defaultGetStore()) => customStore('readwrite', (store) => new Promise((resolve, reject) => {
-        store.get(key).onsuccess = function () {
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let test;
+    (function (test) {
+        test.getCsrf = async () => await queries.checkError(async () => {
+            return await queries.api.get(queries.url.test.csrf, {
+                withCredentials: true,
+            });
+        }, queries.url.test.csrf);
+        test.getDdos = async () => queries.checkError(async () => {
+            return await queries.api.get(queries.url.test.ddos, {
+                withCredentials: true,
+            });
+        }, queries.url.test.ddos);
+        test.getDdosId = async () => queries.checkError(async () => {
+            return await queries.api.get(queries.url.test.ddosId, {
+                withCredentials: true,
+            });
+        }, queries.url.test.ddosId);
+        test.getNoMahakala = async () => queries.checkError(async () => {
+            return await queries.api.get(queries.url.test.noMahakala, {
+                withCredentials: true,
+            });
+        }, queries.url.test.noMahakala);
+        test.getWrongMahakala = async () => queries.checkError(async () => {
+            return await queries.api.get(queries.url.test.wrongMahakala, {
+                withCredentials: true,
+            });
+        }, queries.url.test.wrongMahakala);
+    })(test = queries.test || (queries.test = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    queries.responseState = {
+        ok: 'ok',
+        noNetwork: 'noNetwork',
+        csrf: 'csrf',
+        ddos: 'ddos',
+        ddosId: 'DDoSid',
+        noMahakala: 'noMahakala',
+        wrongMahakala: 'wrongMahakala',
+        otherProblem: 'otherProblem',
+        error: 'error'
+    };
+    const baseErrorsChecker = async (promise) => {
+        return await promise()
+            .then((response) => {
+            const okCodes = [200, 304];
+            if (okCodes.includes(response?.status)) {
+                return {
+                    state: queries.responseState.ok,
+                    data: response.data,
+                };
+            }
+            if (response?.status === 403) {
+                return {
+                    state: queries.responseState.csrf,
+                    data: response.data,
+                };
+            }
+            if (response?.status === 429) {
+                if (response.data.command === queries.responseCommand.main.ddos) {
+                    return {
+                        state: queries.responseState.ddos,
+                        data: response.data,
+                    };
+                }
+                else {
+                    return {
+                        state: queries.responseState.ddosId,
+                        data: response.data,
+                    };
+                }
+            }
+            if (response?.status === 401) {
+                if (response.data.command === queries.responseCommand.secure.noMahakala) {
+                    return {
+                        state: queries.responseState.noMahakala,
+                        data: response.data,
+                    };
+                }
+                else {
+                    return {
+                        state: queries.responseState.wrongMahakala,
+                        data: response.data,
+                    };
+                }
+            }
+            return {
+                state: queries.responseState.otherProblem,
+                data: response?.data,
+            };
+        }).catch((error) => {
+            if (error.code === "ERR_NETWORK" || !error.response) {
+                const result = {
+                    state: queries.responseState.noNetwork,
+                    data: null,
+                };
+                return result;
+            }
+            const errorState = error.response?.status ? `${queries.responseState.error}: ${error.response?.status}` : null;
+            return {
+                state: errorState,
+                data: error.response?.data ?? null,
+            };
+        });
+    };
+    queries.checkError = async (promise, endpointName) => {
+        const response = await baseErrorsChecker(promise);
+        const canGo = true;
+        if (response.state === queries.responseState.ok) {
+            return response.data;
+        }
+        return new Promise((resolve) => {
+            const onClose = () => {
+                resolve(response?.data);
+                return response.data;
+            };
+            const getShow = (txt) => {
+                if (endpointName) {
+                    modal.error.show(`endpoint: .../${endpointName}<br><br>${txt}`, canGo, onClose);
+                }
+                else {
+                    modal.error.show(txt, canGo, onClose);
+                }
+            };
+            switch (response.state) {
+                case queries.responseState.noNetwork:
+                    getShow('Brak dostępu do sieci.');
+                    break;
+                case queries.responseState.csrf:
+                    getShow('CSRF token jest błędny.');
+                    break;
+                case queries.responseState.ddos:
+                    getShow('Przekroczono limit zapytań do serwera. Limit zrestartuje się za godzinę.');
+                    break;
+                case queries.responseState.ddosId:
+                    getShow('Przekroczono limit tworzenia uzytkownikow na dzień.  Limit zrestartuje się za 24 godziny');
+                    break;
+                case queries.responseState.noMahakala:
+                    getShow('Brak mahakala token');
+                    break;
+                case queries.responseState.wrongMahakala:
+                    getShow('Wadliwy mahakala token');
+                    break;
+                case queries.responseState.otherProblem:
+                    getShow('Nieznany problem.');
+                    break;
+                case queries.responseState.error:
+                    getShow(response.state);
+                    break;
+            }
+        });
+    };
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let secure;
+    (function (secure) {
+        secure.getSecure = async () => queries.checkError(async () => {
+            return await queries.api.get(queries.url.secure.get, {
+                withCredentials: true,
+            });
+        });
+    })(secure = queries.secure || (queries.secure = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let secure;
+    (function (secure) {
+        secure.secureTest = async () => {
             try {
-                store.put(updater(this.result), key);
-                resolve(promisifyRequest(store.transaction));
+                const response = await queries.api.post(queries.url.secure.test, {
+                    withCredentials: true,
+                });
+                const data = response.data;
+                console.log('---->>> ', data);
+                return data;
             }
-            catch (err) {
-                reject(err);
+            catch (error) {
+                console.error('Błąd podczas pobierania konfiguracji:', error);
+                return null;
             }
         };
-    }));
-    const del = (key, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        store.delete(key);
-        return promisifyRequest(store.transaction);
-    });
-    const eachCursor = (store, callback) => {
-        store.openCursor().onsuccess = function () {
-            if (!this.result)
-                return;
-            callback(this.result);
-            this.result.continue();
+    })(secure = queries.secure || (queries.secure = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let user;
+    (function (user) {
+        user.getId = async () => {
+            return await queries.api.get(queries.url.user.check, {
+                withCredentials: true,
+            });
         };
-        return promisifyRequest(store.transaction);
-    };
-    const keys = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
-        if (store.getAllKeys) {
-            return promisifyRequest(store.getAllKeys());
-        }
-        const items = [];
-        return eachCursor(store, (cursor) => items.push(cursor.key)).then(() => items);
-    });
-    return {
-        get,
-        set,
-        del,
-        keys,
-        update,
-    };
-};
-const checked = {
-    yes: 'yes',
-    no: 'no',
-};
-const getStorage = async () => {
-    const names = {
-        test: 'test',
-    };
-    const defaultData = {
-        test: 'test-test',
-    };
-    const isValidJSONStringify = (str) => {
-        try {
-            JSON.stringify(str);
-            return true;
-        }
-        catch {
-            return false;
+    })(user = queries.user || (queries.user = {}));
+})(queries || (queries = {}));
+var controllers;
+(function (controllers) {
+    const { add } = dom;
+    const keysListener = (event) => {
+        console.log('%c event.code:', 'background: #ffcc00; color: #003300', event.code);
+        switch (event.code) {
+            case 'Tab':
+                {
+                    event.preventDefault();
+                }
+                break;
+            case 'ArrowRight':
+            case 'KeyD':
+                {
+                    tab.goRight();
+                    console.log('goRight');
+                }
+                break;
+            case 'ArrowLeft':
+            case 'KeyA':
+                {
+                    tab.goLeft();
+                    console.log('goLeft');
+                }
+                break;
         }
     };
-    const set = (key, value) => {
-        if (isValidJSONStringify(value)) {
-            localStorage.setItem(key, JSON.stringify(value));
-        }
-        else {
-            localStorage.setItem(key, value.toString());
-        }
+    controllers.initKeys = () => {
+        document.addEventListener('keydown', keysListener);
     };
-    const isValidJSONParse = (str) => {
-        try {
-            JSON.stringify(str);
-            return true;
-        }
-        catch {
-            return false;
-        }
+})(controllers || (controllers = {}));
+var tab;
+(function (tab_1) {
+    const { byId, byQueryAll, getPx, setStyle, display, add } = dom;
+    const WEB_MENU_WIDTH = 200;
+    const elements = {
+        carousel: null,
+        carouselBox: null,
+        allTabs: null,
+        tabs: null,
+        menu: {
+            web: null,
+            mobile: null,
+            items: null
+        },
     };
-    const get = (key) => {
-        const value = localStorage.getItem(key);
-        if (!value)
-            return null;
-        if (typeof value === 'boolean')
-            return `${value}`;
-        if (isValidJSONParse(value)) {
-            return JSON.parse(value);
-        }
-        else {
-            return value.toString();
-        }
+    const state = {
+        screen: 0,
+        max: 0,
+        carouselLeftPos: 0,
+        tabWidth: 0,
     };
-    const initData = () => {
-        const list = Object.keys(names);
-        list.forEach((k) => {
-            const data = get(k);
-            if (!data && defaultData[k])
-                set(k, defaultData[k]);
-        });
-    };
-    initData();
-    return {
-        names,
-        set,
-        get,
-    };
-};
-const dom = (function () {
-    const byId = (id) => {
-        return document.getElementById(id);
-    };
-    const byQuery = (query) => document.querySelector(query);
-    const byQueryAll = (query) => document.querySelectorAll(query);
-    const byQ = (elem, query) => elem.querySelector(query);
-    const byQAll = (elem, query) => elem.querySelectorAll(query);
-    const getAllById = (obj) => {
-        const results = {};
-        Object.keys(obj).forEach((key) => {
-            const value = obj[key];
-            if (typeof value === "string") {
-                results[key] = byId(value);
+    const getTabLeftPos = () => (state.tabWidth * state.screen);
+    const setTab = () => {
+        elements.carousel.style.left = getPx(-getTabLeftPos());
+        elements.menu.items.forEach((t, i) => {
+            if (i === state.screen) {
+                setStyle(t, 'backgroundColor', 'var(--mine_color)');
+                setStyle(t, 'color', 'var(--last_color)');
             }
-            else if (Array.isArray(value)) {
-                results[key] = value.map(id => byId(id));
-            }
-            else if (typeof value === "object" && value !== null) {
-                results[key] = getAllById(value);
+            else {
+                setStyle(t, 'backgroundColor', 'var(--penultimate_color)');
+                setStyle(t, 'color', 'var(--prime_color)');
             }
         });
-        return results;
     };
-    const prepare = (node, options) => {
-        const elem = typeof node === "string" ? document.createElement(node) : node;
-        if (elem && elem instanceof HTMLElement) {
-            if (options.delete) {
-                elem.remove();
-                return;
+    tab_1.goLeft = () => {
+        if (state.screen > 0) {
+            state.screen--;
+            setTab();
+        }
+    };
+    tab_1.goRight = () => {
+        if (state.screen < state.max - 1) {
+            state.screen++;
+            setTab();
+        }
+    };
+    tab_1.getGoTo = (screenNum) => () => {
+        state.screen = screenNum;
+        setTab();
+    };
+    tab_1.blur = () => {
+        setStyle(elements.allTabs, 'filter', 'blur(5px)');
+    };
+    tab_1.unBlur = () => {
+        setStyle(elements.allTabs, 'filter', 'blur(0px)');
+    };
+    tab_1.init = () => {
+        elements.carousel = byId('carousel');
+        elements.carouselBox = byId('carousel-box');
+        elements.allTabs = byId('tabs');
+        elements.tabs = byQueryAll('.tab');
+        state.max = elements.tabs.length;
+        elements.menu.mobile = byId('menu-mobile');
+        elements.menu.web = byId('menu-web');
+        if (core.isMobile) {
+            display(elements.menu.web, 'none');
+            elements.menu.items = byQueryAll('.menu-mobile-item');
+            for (let i = 0; i < elements.menu.items.length; ++i) {
+                const item = elements.menu.items[i];
+                add(item, 'click', tab_1.getGoTo(i));
             }
-            if (options?.id)
-                elem.id = options.id;
-            options?.classes?.forEach((c) => elem.classList.add(c));
-            options?.children?.forEach((c) => elem.appendChild(c));
-            if (options?.src && elem instanceof HTMLImageElement) {
-                elem.src = options.src;
+        }
+        else {
+            display(elements.menu.mobile, 'none');
+            state.carouselLeftPos = WEB_MENU_WIDTH;
+            elements.menu.items = byQueryAll('.menu-web-item');
+            for (let i = 0; i < elements.menu.items.length; ++i) {
+                const item = elements.menu.items[i];
+                add(item, 'click', tab_1.getGoTo(i));
             }
-            if (options?.inner) {
-                elem.textContent = options.inner;
+        }
+    };
+    tab_1.resize = (w, h) => {
+        state.tabWidth = w - state.carouselLeftPos;
+        for (let i = 0; i < elements.tabs.length; ++i) {
+            const tab = elements.tabs[i];
+            setStyle(tab, 'width', getPx(state.tabWidth));
+            setStyle(tab, 'height', getPx(h));
+        }
+        setStyle(elements.allTabs, 'width', getPx(w));
+        setStyle(elements.allTabs, 'height', getPx(h));
+        setStyle(elements.carouselBox, 'width', getPx(state.tabWidth));
+        setStyle(elements.carouselBox, 'left', getPx(state.carouselLeftPos));
+        setStyle(elements.carousel, 'width', getPx(state.max * state.tabWidth));
+        setTab();
+    };
+})(tab || (tab = {}));
+var modal;
+(function (modal) {
+    const { byId, inner, setStyle, add, remove } = dom;
+    const elements = {
+        modal: null,
+        idInput: null,
+        qrCodeBtn: null,
+        qrCodeInput: null,
+        btnOldUser: null,
+        btnNewUser: null,
+    };
+    const fileAdded = () => {
+        if (elements.qrCodeInput.files.length === 0) {
+            inner(elements.qrCodeBtn, 'Brak pliku');
+            elements.btnOldUser.disabled = true;
+        }
+        else {
+            inner(elements.qrCodeBtn, elements.qrCodeInput.files[0].name);
+            elements.btnOldUser.disabled = false;
+        }
+    };
+    modal.user = {
+        init: () => {
+            elements.modal = byId('modal-user');
+            elements.idInput = byId('modal-user-id-input');
+            elements.qrCodeBtn = byId('modal-user-qr-code-btn');
+            elements.qrCodeInput = byId('modal-user-qr-code-file');
+            elements.btnOldUser = byId('modal-user-btn-old-user');
+            elements.btnNewUser = byId('modal-user-btn-new-user');
+        },
+        show: () => {
+            modal.show();
+            setStyle(elements.modal, 'display', 'flex');
+            elements.btnOldUser.disabled = true;
+            add(elements.qrCodeInput, 'change', fileAdded);
+        },
+        hide: () => {
+            modal.hide();
+            setStyle(elements.modal, 'display', 'none');
+            remove(elements.qrCodeInput, 'change', fileAdded);
+        }
+    };
+})(modal || (modal = {}));
+var modal;
+(function (modal) {
+    const { byId, byQuery, getPx, setStyle, inner, add, remove } = dom;
+    const elements = {
+        modal: null,
+        txt: null,
+        info: null,
+        btn: null,
+    };
+    const reload = () => window.location.reload();
+    let close = null;
+    modal.error = {
+        init: () => {
+            elements.modal = byId('modal-error');
+            elements.txt = byId('modal-error-txt');
+            elements.info = byId('modal-error-info');
+            elements.btn = byId('modal-error-btn');
+        },
+        show: (err, canWork, onClose) => {
+            modal.show();
+            setStyle(elements.modal, 'display', 'flex');
+            close = onClose;
+            if (canWork) {
+                inner(elements.txt, err);
+                inner(elements.info, "Będzie działać dzięki zapamiętanym danym.");
+                setStyle(elements.info, 'color', 'var(--on_prime_color)');
+                inner(elements.btn, 'Dalej');
+                add(elements.btn, 'click', modal.error.hide);
             }
-            if (options?.position) {
-                elem.style.left = `${options.position.x}px`;
-                elem.style.top = `${options.position.y}px`;
+            else {
+                inner(elements.txt, err);
+                inner(elements.info, 'Brak danych aby uruchomić aplikację.');
+                setStyle(elements.info, 'color', 'var(--off_prime_color)');
+                inner(elements.btn, 'Przeładuj');
+                add(elements.btn, 'click', reload);
             }
-            return elem;
+        },
+        hide: () => {
+            modal.hide();
+            setStyle(elements.modal, 'display', 'none');
+            remove(elements.btn, 'click', reload);
+            remove(elements.btn, 'click', modal.error.hide);
+            if (close)
+                close();
         }
     };
-    const setStyle = (element, style, value) => element.style[style] = value;
-    const setAllStyles = (styles) => styles.forEach((s) => setStyle(s[0], s[1], s[2]));
-    const setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
-    const setAllAttributes = (attributes) => attributes.forEach((a) => a[0].setAttribute(a[1], a[2]));
-    const disable = (elem) => elem.setAttribute('disabled', '');
-    const enable = (elem) => elem.removeAttribute('disabled');
-    const check = (elem) => elem.checked = true;
-    const uncheck = (elem) => elem.checked = false;
-    const display = (elem, attribute) => elem.style.display = attribute;
-    const setColor = (elem, color) => elem.style.color = color;
-    const removeClass = (elem, attribute) => elem.classList.remove(attribute);
-    const addClass = (elem, attribute) => elem.classList.add(attribute);
-    const colors = {
-        line: 'var(--line_color)',
-        prime: 'var(--prime_color)',
-        off1: 'var(--off_prime_color)',
-        off2: 'var(--off_second_color)',
+})(modal || (modal = {}));
+var modal;
+(function (modal) {
+    const { byId, getPx, setStyle, add } = dom;
+    const elements = {
+        modal: null,
+        back: null,
     };
-    const add = (elem, name, fn) => elem.addEventListener(name, fn);
-    const xmlns = 'http://www.w3.org/2000/svg';
-    const newNS = (name) => document.createElementNS(xmlns, 'rect');
-    return {
-        byId,
-        byQuery,
-        byQueryAll,
-        byQ,
-        byQAll,
-        getAllById,
-        prepare,
-        setStyle,
-        setAllStyles,
-        setAttribute,
-        setAllAttributes,
-        disable,
-        enable,
-        check,
-        uncheck,
-        display,
-        setColor,
-        removeClass,
-        addClass,
-        colors,
-        add,
-        newNS,
+    modal.init = () => {
+        elements.modal = byId('modal');
+        console.log('%c elements.modal:', 'background: #ffcc00; color: #003300', elements.modal);
+        elements.back = byId('modal-back');
+        const testBtn = byId('test-btn');
+        add(testBtn, 'click', () => {
+            modal.user.show();
+        });
+        modal.error.init();
+        modal.user.init();
     };
-}());
-const core = {
-    store: null,
-    idbTest: null,
-};
-const initAndGetData = async () => {
-    let config;
-    function getCookie(name) {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        console.log('%c document.cookie:', 'background: #ffcc00; color: #003300', document.cookie);
-        return match ? match[2] : null;
-    }
-    const getSecure = async () => {
-        try {
-            const response = await axios.get(`${glob.serverUrl}secure`, {
-                withCredentials: true,
-            });
-            const data = response.data;
-            console.log(data);
-            return data;
-        }
-        catch (error) {
-            console.error('Błąd podczas pobierania konfiguracji:', error);
-            return null;
-        }
+    modal.resize = (w, h) => {
+        setStyle(elements.back, 'width', getPx(w));
+        setStyle(elements.back, 'height', getPx(h));
     };
-    const secureTest = async () => {
-        try {
-            const response = await axios.post(`${glob.serverUrl}secure-test`, {
-                withCredentials: true,
-            });
-            const data = response.data;
-            console.log('---->>> ', data);
-            return data;
-        }
-        catch (error) {
-            console.error('Błąd podczas pobierania konfiguracji:', error);
-            return null;
-        }
+    let visible = false;
+    modal.show = () => {
+        visible = true;
+        setStyle(elements.modal, 'opacity', '0');
+        setStyle(elements.modal, 'display', 'flex');
+        setTimeout(() => {
+            setStyle(elements.modal, 'opacity', '1');
+        }, 30);
+        tab.blur();
     };
-    getSecure();
-    setTimeout(secureTest, 1000);
-};
+    modal.hide = () => {
+        visible = false;
+        setStyle(elements.modal, 'opacity', '0');
+        setTimeout(() => {
+            if (!visible) {
+                setStyle(elements.modal, 'display', 'none');
+            }
+        }, 330);
+        tab.unBlur();
+    };
+})(modal || (modal = {}));
+var starter;
+(function (starter) {
+    const { byId, add } = dom;
+    starter.init = async () => {
+    };
+    starter.run = async () => {
+    };
+})(starter || (starter = {}));
+var learning;
+(function (learning) {
+    const { byId, byQueryAll, setStyle, add } = dom;
+    const elements = {
+        question: null,
+        answers: null,
+        answersField: null,
+        checkbox: null,
+        confirm: null,
+    };
+    const mark = (num) => () => {
+        elements.checkbox.forEach((a, i) => a.checked = (i === num));
+        elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
+    };
+    learning.init = () => {
+        elements.question = byId('question');
+        elements.answers = byQueryAll('.answer p');
+        elements.answersField = byQueryAll('.answer');
+        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
+        elements.checkbox = byQueryAll('.answer input');
+        elements.checkbox.forEach(c => c.checked = false);
+        elements.confirm = byId('learning-confirm-btn');
+        mark(-1)();
+    };
+})(learning || (learning = {}));
+var settings;
+(function (settings) {
+    const { root } = dom;
+    let theme;
+    (function (theme_1) {
+        const themeKind = {
+            dark: 'dark',
+            light: 'light',
+            system: 'system'
+        };
+        const themeNames = Object.values(themeKind);
+        const apply = (theme) => {
+            root.setAttribute('data-theme', theme);
+            root.classList.remove(themeKind.dark, themeKind.light);
+            root.classList.add(theme);
+            root.style.colorScheme = theme;
+        };
+        const setSystemTheme = () => {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            apply(systemPrefersDark ? themeKind.dark : themeKind.light);
+        };
+        const set = (saved) => {
+            if (saved === themeKind.dark || saved === themeKind.light) {
+                apply(saved);
+                return saved;
+            }
+            if (saved === themeKind.system) {
+                setSystemTheme();
+                return saved;
+            }
+            core.store.set(storageNames.theme, themeKind.system);
+            setSystemTheme();
+            return themeKind.system;
+        };
+        const themeData = {
+            prefix: 'setting-theme-',
+            storeName: storageNames.theme,
+            list: themeNames,
+            clickList: themeNames.map((name, i) => () => set(name))
+        };
+        theme_1.init = async () => {
+            const themeRatio = utils.getRadio(themeData);
+            const saved = themeRatio.init();
+            set(saved);
+        };
+    })(theme = settings.theme || (settings.theme = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
+    settings.init = () => {
+        settings.theme.init();
+    };
+})(settings || (settings = {}));
+var tests;
+(function (tests) {
+    tests.errorModal = async () => {
+        const test1 = await queries.test.getCsrf();
+        console.log('test 1:', test1);
+        await utils.sleep(100);
+        const test2 = await queries.test.getDdos();
+        console.log('test 2:', test2);
+        await utils.sleep(100);
+        const test3 = await queries.test.getDdosId();
+        console.log('test 3:', test3);
+        await utils.sleep(100);
+        const test4 = await queries.test.getNoMahakala();
+        console.log('test 4:', test4);
+        await utils.sleep(100);
+        const test5 = await queries.test.getWrongMahakala();
+        console.log('test 5:', test5);
+    };
+})(tests || (tests = {}));
 const serviceWorker = () => {
     console.log('serviceWorker');
     if ("serviceWorker" in navigator) {
@@ -527,10 +1145,19 @@ const serviceWorker = () => {
     axios.defaults.withCredentials = true;
     getStorage().then(async (store) => {
         core.store = store;
-        const testDb = idb('test');
-        core.idbTest = testDb;
+        document.addEventListener("DOMContentLoaded", () => {
+            controllers.initKeys();
+            settings.init();
+            starter.init();
+            learning.init();
+            tab.init();
+            modal.init();
+            const resize = utils.resize();
+            resize.add(tab.resize);
+            resize.add(modal.resize);
+            resize.run();
+        });
         setConsole();
         serviceWorker();
-        initAndGetData();
     });
 }());
