@@ -1,3 +1,10 @@
+interface ModulesT {
+    init?: () => void;
+    resize?: () => void;
+    active?: () => void;
+    deactivate?: () => void;
+}
+
 (function () {
     // @ts-ignore
     axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
@@ -6,6 +13,11 @@
     // @ts-ignore
     axios.defaults.withCredentials = true
 
+    const modules = [
+        ...tab.screens,
+        tab,
+        modal
+    ] as ModulesT[]
 
     getStorage().then(async (store) => {
         core.store = store
@@ -15,22 +27,23 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys()
-            settings.init()
-            starter.init()
-            learning.init()
-            tab.init()
-            modal.init()
+
+            modules.forEach(m => { if (m.init) m.init() })
 
             const resize = utils.resize()
-            resize.add(tab.resize)
-            resize.add(modal.resize)
+            modules.forEach(m => { if (m.resize) { resize.add(m.resize) } })
+
             resize.run()
 
             // setTimeout(starter.run, 300)
 
             // tests.errorModal()
 
-            // setTimeout(tab.getGoTo(2), 100)
+            // settings.active()
+
+            setTimeout(() => {
+                tab.getGoTo(4)()
+            }, 100)
         })
 
 

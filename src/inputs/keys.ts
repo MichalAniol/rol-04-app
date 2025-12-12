@@ -7,15 +7,18 @@ namespace controllers {
             case 'Tab': {
                 event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
             } break
+            case 'Space': {
+                tab.mobile.changeVisibility()
+            } break
             case 'ArrowRight':
             case 'KeyD': {
                 tab.goRight()
-                console.log('goRight')
+                // console.log('goRight')
             } break
             case 'ArrowLeft':
             case 'KeyA': {
                 tab.goLeft()
-                console.log('goLeft')
+                // console.log('goLeft')
             } break
         }
     }

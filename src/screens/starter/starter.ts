@@ -43,4 +43,7 @@ namespace starter {
 
 
 
+    export const active = () => {}
+
+    export const deactivate = () => {}
 }

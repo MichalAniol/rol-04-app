@@ -29,16 +29,27 @@ namespace tab {
         },
     }
 
-    const state = {
+    export const state = {
         screen: 0,
         max: 0,
         carouselLeftPos: 0,
         tabWidth: 0,
     }
 
+    export const screens = [
+        starter,
+        statistics,
+        learning,
+        answers,
+        settings
+    ] as ModulesT[]
+
     const getTabLeftPos = () => (state.tabWidth * state.screen)
-    const setTab = () => {
+    export const setTab = () => {
+        // ekran
         elements.carousel.style.left = getPx(-getTabLeftPos())
+
+        // kolor buttonu z menu
         elements.menu.items.forEach((t, i) => {
             if (i === state.screen) {
                 setStyle(t, 'backgroundColor', 'var(--mine_color)')
@@ -48,6 +59,9 @@ namespace tab {
                 setStyle(t, 'color', 'var(--prime_color)')
             }
         })
+
+        // aktywacja wybranego screena
+        screens.forEach((s, i) => (i === state.screen) ? s.active() : s.deactivate())
     }
 
     export const goLeft = () => {
@@ -71,18 +85,10 @@ namespace tab {
 
     export const blur = () => {
         setStyle(elements.allTabs, 'filter', 'blur(5px)')
-
-        // setTimeout(() => {
-        //     setStyle(elements.allTabs, 'filter', 'blur(5px)')
-        // }, 30)
     }
 
     export const unBlur = () => {
         setStyle(elements.allTabs, 'filter', 'blur(0px)')
-
-        // setTimeout(() => {
-        //     setStyle(elements.allTabs, 'filter', 'blur(0px)')
-        // }, 30)
     }
 
     export const init = () => {
@@ -98,12 +104,15 @@ namespace tab {
 
         if (core.isMobile) {
             display(elements.menu.web, 'none')
+            mobile.init()
 
             elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
             for (let i = 0; i < elements.menu.items.length; ++i) {
                 const item = elements.menu.items[i]
                 add(item, 'click', getGoTo(i))
             }
+
+            mobile.init()
         } else {
             display(elements.menu.mobile, 'none')
             state.carouselLeftPos = WEB_MENU_WIDTH
@@ -134,5 +143,7 @@ namespace tab {
         setStyle(elements.carousel, 'width', getPx(state.max * state.tabWidth))
 
         setTab()
+
+        mobile.resize()
     }
 }

@@ -79,10 +79,21 @@ namespace dom {
     }
 
     export type ModifiableCSSProperties = {
-        [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends ((...args: any[]) => any) ? never : K]: string;
+        [K in keyof CSSStyleDeclaration as
+        CSSStyleDeclaration[K] extends (...args: any[]) => any ? never : K
+        ]: string;
+    } & {
+        [customProp: `--${string}`]: string
     }
 
-    export const setStyle = (element: HTMLElement, style: keyof ModifiableCSSProperties, value: string) => element.style[style as any] = value
+
+    export const setStyle = (
+        element: HTMLElement,
+        style: keyof ModifiableCSSProperties,
+        value: string
+    ) => {
+        element.style[style as any] = value
+    }
 
     export type StyleT = [element: HTMLElement, attribute: keyof ModifiableCSSProperties, value: string]
     export type StylesT = StyleT[]

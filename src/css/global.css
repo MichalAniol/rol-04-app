@@ -239,6 +239,7 @@
     --font_mini_size: 10px;
     --font_small_size: 16px;
     --font_size: 20px;
+    --font_medium: 22px;
     --font_big_size: 28px;
     --font_title_size: 34px;
 
@@ -292,9 +293,9 @@
     --third_color: #666666;
     --fourth_color: #808080;
 
-    --fourth_from_end_color: #d9d9d9;
-    --third_from_end_color: #e5e5e5;
-    --penultimate_color: #f2f2f2;
+    --fourth_from_end_color: #dbd7d7;
+    --third_from_end_color: #e3dede;
+    --penultimate_color: #efe8e8;
     --last_color: #ffffff;
 
     --outline_color: red;

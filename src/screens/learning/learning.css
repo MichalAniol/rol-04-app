@@ -3,7 +3,7 @@
 }
 
 .answers-box>*:not(:last-child) {
-    border-bottom: 1px solid var(--fourth_from_end_color);
+    border-bottom: 1px solid var(--penultimate_color);
     background-color: var(--penultimate_color);
 }
 

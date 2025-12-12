@@ -7,10 +7,14 @@ type CheckedValuesT = typeof checked[CheckedKeyT]
 
 type NamesValueTypeT = {
     theme: string,
+    questionsData: CheckedValuesT,
+    imgData: CheckedValuesT,
 }
 
 const storageNames = {
     theme: 'theme',
+    questionsData: 'questionsData',
+    imgData: 'imgData',
 } as const
 type DataNamesKeysT = keyof typeof storageNames
 type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
@@ -19,6 +23,8 @@ const getStorage = async () => {
 
     const defaultData = {
         theme: '',
+        questionsData: checked.yes,
+        imgData: checked.yes,
     } as const
 
     const isValidJSONStringify = (str: string | string[]) => {

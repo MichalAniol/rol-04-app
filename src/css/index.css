@@ -3,12 +3,12 @@
 }
 
 html, body {
-    overflow: hidden;
     height: 100%;
+    overflow: hidden;
 }
 
 body {
-    position: fixed;
+    position: static;
     inset: 0;
     margin: 0;
     padding: 0;
@@ -20,7 +20,6 @@ body {
     font-weight: var(--regular);
     color: var(--prime_color);
     user-select: none;
-    overflow: hidden;
 }
 
 .form label {
@@ -195,4 +194,48 @@ p {
 
 .indentation {
     margin-left: 30px;
+}
+
+.list-item {
+    margin: 4px 0;
+    padding: 16px 20px;
+    font-size: var(--font_big_size);
+    color: var(--mine_color);
+    border-radius: 5px;
+    background-color: var(--third_from_end_color);
+    border: 1px solid var(--fourth_color);
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.list-item:hover {
+    background-color: var(--penultimate_color);
+    color: var(--mine_2_color);
+}
+
+.list-item-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.list-item svg {
+    fill: var(--mine_color)
+}
+
+.list-item-content {
+    font-size: var(--font_size);
+    color: var(--prime_color);
+    overflow: hidden;
+}
+
+.scroll-box {
+    position: relative;
+    overflow: hidden;
+}
+
+.scroll {
+    height: 100%;
+    padding-right: 20px;
+    overflow-y: auto;
 }

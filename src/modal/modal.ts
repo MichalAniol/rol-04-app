@@ -13,7 +13,6 @@ namespace modal {
 
     export const init = () => {
         elements.modal = byId('modal')
-        console.log('%c elements.modal:', 'background: #ffcc00; color: #003300', elements.modal)
         elements.back = byId('modal-back')
 
         const testBtn = byId('test-btn')

@@ -59,10 +59,14 @@ const checked = {
 };
 const storageNames = {
     theme: 'theme',
+    questionsData: 'questionsData',
+    imgData: 'imgData',
 };
 const getStorage = async () => {
     const defaultData = {
         theme: '',
+        questionsData: checked.yes,
+        imgData: checked.yes,
     };
     const isValidJSONStringify = (str) => {
         try {
@@ -177,7 +181,9 @@ var dom;
             return elem;
         }
     };
-    dom.setStyle = (element, style, value) => element.style[style] = value;
+    dom.setStyle = (element, style, value) => {
+        element.style[style] = value;
+    };
     dom.setAllStyles = (styles) => styles.forEach((s) => dom.setStyle(s[0], s[1], s[2]));
     dom.setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
     dom.setAllAttributes = (attributes) => attributes.forEach((a) => a[0].setAttribute(a[1], a[2]));
@@ -472,18 +478,21 @@ var utils;
 (function (utils) {
     const { byId, byQ, add, remove } = dom;
     utils.getRadio = (radioData) => {
-        const themeElements = radioData.list.map(tn => byId(radioData.prefix + tn));
-        console.log('%c themeElements:', 'background: #ffcc00; color: #003300', themeElements);
+        const themeElements = radioData.elementList.map(tn => byId(radioData.prefix + tn));
         const newRadioData = [];
         const shift = (num) => newRadioData.forEach((rd, i) => rd.checkbox.checked = i === num);
-        radioData.list.forEach((name, i) => {
+        radioData.nameList.forEach((name, i) => {
+            const click = radioData.clickList && radioData.clickList[i] ? () => {
+                radioData.clickList[i]();
+                core.store.set(radioData.storeName, name);
+                shift(i);
+            } : () => {
+                core.store.set(radioData.storeName, name);
+                shift(i);
+            };
             newRadioData.push({
                 item: themeElements[i],
-                click: () => {
-                    radioData.clickList[i]();
-                    core.store.set(radioData.storeName, name);
-                    shift(i);
-                },
+                click,
                 checkbox: byQ(themeElements[i], 'input'),
                 name: name,
             });
@@ -495,6 +504,8 @@ var utils;
         const init = () => {
             active();
             const saved = getSaved();
+            if (radioData.init)
+                radioData.init(saved);
             mark(saved);
             return saved;
         };
@@ -773,18 +784,21 @@ var controllers;
                     event.preventDefault();
                 }
                 break;
+            case 'Space':
+                {
+                    tab.mobile.changeVisibility();
+                }
+                break;
             case 'ArrowRight':
             case 'KeyD':
                 {
                     tab.goRight();
-                    console.log('goRight');
                 }
                 break;
             case 'ArrowLeft':
             case 'KeyA':
                 {
                     tab.goLeft();
-                    console.log('goLeft');
                 }
                 break;
         }
@@ -793,6 +807,205 @@ var controllers;
         document.addEventListener('keydown', keysListener);
     };
 })(controllers || (controllers = {}));
+var starter;
+(function (starter) {
+    const { byId, add } = dom;
+    starter.init = async () => {
+    };
+    starter.run = async () => {
+    };
+    starter.active = () => { };
+    starter.deactivate = () => { };
+})(starter || (starter = {}));
+var statistics;
+(function (statistics) {
+    statistics.init = () => { };
+    statistics.active = () => { };
+    statistics.deactivate = () => { };
+})(statistics || (statistics = {}));
+var learning;
+(function (learning) {
+    const { byId, byQueryAll, setStyle, add, remove } = dom;
+    const elements = {
+        question: null,
+        answers: null,
+        answersField: null,
+        checkbox: null,
+        confirm: null,
+    };
+    const mark = (num) => () => {
+        elements.checkbox.forEach((a, i) => a.checked = (i === num));
+        elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
+    };
+    learning.init = () => {
+        elements.question = byId('question');
+        elements.answers = byQueryAll('.answer p');
+        elements.answersField = byQueryAll('.answer');
+        elements.checkbox = byQueryAll('.answer input');
+        elements.checkbox.forEach(c => c.checked = false);
+        elements.confirm = byId('learning-confirm-btn');
+        mark(-1)();
+    };
+    learning.active = () => {
+        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
+    };
+    learning.deactivate = () => {
+        elements.answersField.forEach((a, i) => remove(a, 'click', mark(i)));
+    };
+})(learning || (learning = {}));
+var answers;
+(function (answers) {
+    answers.init = () => { };
+    answers.active = () => { };
+    answers.deactivate = () => { };
+})(answers || (answers = {}));
+var settings;
+(function (settings) {
+    let info;
+    (function (info) {
+        const { byId, byQuery, getPx, setStyle, add, remove } = dom;
+        const elements = {
+            settingsAppInfo: null,
+            settingsAppInfoMore: null,
+            settingsAppInfoLess: null,
+            settingsAppInfoContent: null,
+        };
+        const state = {
+            settingsAppInfoContentHeight: null
+        };
+        info.init = () => {
+            elements.settingsAppInfo = byId('settings-app-info-title');
+            elements.settingsAppInfoMore = byId('settings-app-info-more');
+            elements.settingsAppInfoLess = byId('settings-app-info-less');
+            elements.settingsAppInfoContent = byId('settings-app-info-content');
+            const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
+            state.settingsAppInfoContentHeight = contentBox.height;
+            setStyle(elements.settingsAppInfoLess, 'display', 'none');
+            setStyle(elements.settingsAppInfoContent, 'height', '0px');
+        };
+        info.active = () => {
+            add(elements.settingsAppInfo, 'click', () => {
+                setStyle(elements.settingsAppInfoContent, 'height', `${state.settingsAppInfoContentHeight}px`);
+            });
+        };
+        info.deactivate = () => { };
+    })(info = settings.info || (settings.info = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
+    let dataControl;
+    (function (dataControl) {
+        const { byId, byQuery, getPx, setStyle } = dom;
+        const ids = {
+            prefix: 'setting-data-',
+            questions: {
+                offline: 'questions-offline',
+                online: 'questions-online',
+            },
+            img: {
+                offline: 'img-offline',
+                online: 'img-online',
+            },
+        };
+        const valuesList = [checked.yes, checked.no];
+        const questionsNames = Object.values(ids.questions);
+        const controlQuestionsData = {
+            prefix: ids.prefix,
+            storeName: storageNames.questionsData,
+            elementList: questionsNames,
+            nameList: valuesList,
+        };
+        const imgNames = Object.values(ids.img);
+        const controlImgData = {
+            prefix: ids.prefix,
+            storeName: storageNames.imgData,
+            elementList: imgNames,
+            nameList: valuesList,
+        };
+        dataControl.init = () => {
+            dataControl.questionsRatio = utils.getRadio(controlQuestionsData);
+            dataControl.questionsRatio.init();
+            dataControl.imgRatio = utils.getRadio(controlImgData);
+            dataControl.imgRatio.init();
+        };
+    })(dataControl = settings.dataControl || (settings.dataControl = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
+    const { root } = dom;
+    let theme;
+    (function (theme_1) {
+        const themeKind = {
+            dark: 'dark',
+            light: 'light',
+            system: 'system'
+        };
+        const themeNames = Object.values(themeKind);
+        const apply = (theme) => {
+            root.setAttribute('data-theme', theme);
+            root.classList.remove(themeKind.dark, themeKind.light);
+            root.classList.add(theme);
+            root.style.colorScheme = theme;
+        };
+        const setSystemTheme = () => {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            apply(systemPrefersDark ? themeKind.dark : themeKind.light);
+        };
+        const set = (saved) => {
+            if (saved === themeKind.dark || saved === themeKind.light) {
+                apply(saved);
+                return saved;
+            }
+            if (saved === themeKind.system) {
+                setSystemTheme();
+                return saved;
+            }
+            core.store.set(storageNames.theme, themeKind.system);
+            setSystemTheme();
+            return themeKind.system;
+        };
+        const themeData = {
+            prefix: 'setting-theme-',
+            storeName: storageNames.theme,
+            elementList: themeNames,
+            nameList: themeNames,
+            clickList: themeNames.map((name, i) => () => set(name)),
+            init: set,
+        };
+        theme_1.init = async () => {
+            theme_1.ratio = utils.getRadio(themeData);
+            theme_1.ratio.init();
+        };
+    })(theme = settings.theme || (settings.theme = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
+    const { byQuery, getPx, setStyle } = dom;
+    const elements = {
+        scrollBox: null,
+    };
+    settings.resize = (w, h) => {
+        setStyle(elements.scrollBox, 'height', `calc(${getPx(h)} - 32px - var(--font_title_size))`);
+    };
+    settings.init = () => {
+        elements.scrollBox = byQuery('#settings-tab-box .scroll-box');
+        settings.info.init();
+        settings.theme.init();
+        settings.dataControl.init();
+    };
+    settings.active = () => {
+        settings.info.active();
+        settings.theme.ratio.active();
+        settings.dataControl.questionsRatio.active();
+        settings.dataControl.imgRatio.active();
+    };
+    settings.deactivate = () => {
+        settings.info.deactivate();
+        settings.theme.ratio.deactivate();
+        settings.dataControl.questionsRatio.deactivate();
+        settings.dataControl.imgRatio.deactivate();
+    };
+})(settings || (settings = {}));
 var tab;
 (function (tab_1) {
     const { byId, byQueryAll, getPx, setStyle, display, add } = dom;
@@ -808,17 +1021,24 @@ var tab;
             items: null
         },
     };
-    const state = {
+    tab_1.state = {
         screen: 0,
         max: 0,
         carouselLeftPos: 0,
         tabWidth: 0,
     };
-    const getTabLeftPos = () => (state.tabWidth * state.screen);
-    const setTab = () => {
+    tab_1.screens = [
+        starter,
+        statistics,
+        learning,
+        answers,
+        settings
+    ];
+    const getTabLeftPos = () => (tab_1.state.tabWidth * tab_1.state.screen);
+    tab_1.setTab = () => {
         elements.carousel.style.left = getPx(-getTabLeftPos());
         elements.menu.items.forEach((t, i) => {
-            if (i === state.screen) {
+            if (i === tab_1.state.screen) {
                 setStyle(t, 'backgroundColor', 'var(--mine_color)');
                 setStyle(t, 'color', 'var(--last_color)');
             }
@@ -827,22 +1047,23 @@ var tab;
                 setStyle(t, 'color', 'var(--prime_color)');
             }
         });
+        tab_1.screens.forEach((s, i) => (i === tab_1.state.screen) ? s.active() : s.deactivate());
     };
     tab_1.goLeft = () => {
-        if (state.screen > 0) {
-            state.screen--;
-            setTab();
+        if (tab_1.state.screen > 0) {
+            tab_1.state.screen--;
+            tab_1.setTab();
         }
     };
     tab_1.goRight = () => {
-        if (state.screen < state.max - 1) {
-            state.screen++;
-            setTab();
+        if (tab_1.state.screen < tab_1.state.max - 1) {
+            tab_1.state.screen++;
+            tab_1.setTab();
         }
     };
     tab_1.getGoTo = (screenNum) => () => {
-        state.screen = screenNum;
-        setTab();
+        tab_1.state.screen = screenNum;
+        tab_1.setTab();
     };
     tab_1.blur = () => {
         setStyle(elements.allTabs, 'filter', 'blur(5px)');
@@ -855,20 +1076,22 @@ var tab;
         elements.carouselBox = byId('carousel-box');
         elements.allTabs = byId('tabs');
         elements.tabs = byQueryAll('.tab');
-        state.max = elements.tabs.length;
+        tab_1.state.max = elements.tabs.length;
         elements.menu.mobile = byId('menu-mobile');
         elements.menu.web = byId('menu-web');
         if (core.isMobile) {
             display(elements.menu.web, 'none');
+            tab_1.mobile.init();
             elements.menu.items = byQueryAll('.menu-mobile-item');
             for (let i = 0; i < elements.menu.items.length; ++i) {
                 const item = elements.menu.items[i];
                 add(item, 'click', tab_1.getGoTo(i));
             }
+            tab_1.mobile.init();
         }
         else {
             display(elements.menu.mobile, 'none');
-            state.carouselLeftPos = WEB_MENU_WIDTH;
+            tab_1.state.carouselLeftPos = WEB_MENU_WIDTH;
             elements.menu.items = byQueryAll('.menu-web-item');
             for (let i = 0; i < elements.menu.items.length; ++i) {
                 const item = elements.menu.items[i];
@@ -877,19 +1100,183 @@ var tab;
         }
     };
     tab_1.resize = (w, h) => {
-        state.tabWidth = w - state.carouselLeftPos;
+        tab_1.state.tabWidth = w - tab_1.state.carouselLeftPos;
         for (let i = 0; i < elements.tabs.length; ++i) {
             const tab = elements.tabs[i];
-            setStyle(tab, 'width', getPx(state.tabWidth));
+            setStyle(tab, 'width', getPx(tab_1.state.tabWidth));
             setStyle(tab, 'height', getPx(h));
         }
         setStyle(elements.allTabs, 'width', getPx(w));
         setStyle(elements.allTabs, 'height', getPx(h));
-        setStyle(elements.carouselBox, 'width', getPx(state.tabWidth));
-        setStyle(elements.carouselBox, 'left', getPx(state.carouselLeftPos));
-        setStyle(elements.carousel, 'width', getPx(state.max * state.tabWidth));
-        setTab();
+        setStyle(elements.carouselBox, 'width', getPx(tab_1.state.tabWidth));
+        setStyle(elements.carouselBox, 'left', getPx(tab_1.state.carouselLeftPos));
+        setStyle(elements.carousel, 'width', getPx(tab_1.state.max * tab_1.state.tabWidth));
+        tab_1.setTab();
+        tab_1.mobile.resize();
     };
+})(tab || (tab = {}));
+var tab;
+(function (tab) {
+    let mobile;
+    (function (mobile) {
+        const { setStyle } = dom;
+        const vizElem = {
+            menu: [
+                ['width', 'mobile_diameter'],
+                ['height', 'mobile_diameter'],
+                ['right', 'mobile_negative_radius'],
+                ['bottom', 'mobile_negative_radius'],
+            ],
+            back: [
+                ['width', 'mobile_back_diameter'],
+                ['height', 'mobile_back_diameter'],
+                ['bottom', 'mobile_negative_radius'],
+                ['right', 'mobile_negative_radius'],
+            ],
+            dot: [
+                ['width', 'mobile_dot'],
+                ['height', 'mobile_dot'],
+            ],
+            iconHide: [
+                ['bottom', 'mobile_icon_hide_pos'],
+                ['right', 'mobile_icon_hide_pos'],
+            ],
+        };
+        const setTypeValues = {
+            on: '_on',
+            off: '_off',
+        };
+        const getCssValue = (val, setType) => `var(--${val}${setType})`;
+        const set = (key, val, setType) => setStyle(mobile.elements[key], val[0], getCssValue(val[1], setType));
+        const setOn = (key, val) => set(key, val, setTypeValues.on);
+        const setOff = (key, val) => set(key, val, setTypeValues.off);
+        const getShow = () => () => {
+            Object.keys(vizElem).forEach((key) => vizElem[key].forEach(val => setOn(key, val)));
+            mobile.elements.items.forEach((item) => setStyle(item, 'top', 'var(--mobile_negative_radius_on)'));
+            setStyle(mobile.elements.dot, 'backgroundColor', 'var(--mobile_color_prime)');
+        };
+        const getHide = () => () => {
+            Object.keys(vizElem).forEach((key) => vizElem[key].forEach(val => setOff(key, val)));
+            mobile.elements.items.forEach((item) => setStyle(item, 'top', 'var(--mobile_negative_radius_off)'));
+            setStyle(mobile.elements.dot, 'backgroundColor', 'var(--mobile_color_second)');
+        };
+        const show = getShow();
+        const hide = getHide();
+        let visible = true;
+        mobile.changeVisibility = () => {
+            if (visible) {
+                hide();
+                visible = false;
+            }
+            else {
+                show();
+                visible = true;
+            }
+        };
+    })(mobile = tab.mobile || (tab.mobile = {}));
+})(tab || (tab = {}));
+var tab;
+(function (tab) {
+    let mobile;
+    (function (mobile) {
+        let touch;
+        (function (touch) {
+            const { byId, byQAll, getPx, setStyle, add } = dom;
+            const state = {
+                pivot: {
+                    x: 0,
+                    y: 0,
+                },
+                start: {
+                    x: 0,
+                    y: 0,
+                },
+                originAngle: 0,
+                startAngle: 0,
+                angle: 0,
+            };
+            touch.resize = () => {
+                const menu = mobile.elements.menu.getBoundingClientRect();
+                const r = menu.width / 2;
+                state.pivot.x = menu.left + r;
+                state.pivot.y = menu.top + r;
+                console.log('%c state:', 'background: #ffcc00; color: #003300', state.pivot);
+            };
+            const setDeg = () => {
+                const style = window.getComputedStyle(mobile.elements.list);
+                const transform = style.transform;
+                const values = transform.match(/matrix\(([^)]+)\)/)?.[1].split(',').map(v => parseFloat(v));
+                if (values) {
+                    const [a, b, c, d] = values;
+                    const angleRad = Math.atan2(b, a);
+                    const angleDeg = angleRad * 180 / Math.PI;
+                    state.originAngle = angleDeg;
+                }
+            };
+            const getDeg = () => `rotate(${(state.originAngle + state.angle - state.startAngle)}deg)`;
+            const rotate = () => {
+                setStyle(mobile.elements.list, 'transform', getDeg());
+            };
+            const getAngle = (dx, dy) => Math.atan2(dx, -dy) * 180 / Math.PI;
+            const touchstart = (e) => {
+                const t = e.touches[0];
+                state.start.x = t.clientX;
+                state.start.y = t.clientY;
+                const dx = state.start.x - state.pivot.x;
+                const dy = state.start.y - state.pivot.y;
+                state.startAngle = getAngle(dx, dy);
+                setDeg();
+            };
+            const touchmove = (e) => {
+                const t = e.touches[0];
+                const x = t.clientX;
+                const y = t.clientY;
+                const dx = x - state.pivot.x;
+                const dy = y - state.pivot.y;
+                state.angle = getAngle(dx, dy);
+                rotate();
+            };
+            const touchend = (e) => {
+                const t = e.changedTouches[0];
+                const x = t.clientX;
+                const y = t.clientY;
+                console.log(x, y);
+            };
+            touch.init = () => {
+                add(mobile.elements.menu, 'touchstart', touchstart);
+                add(mobile.elements.menu, 'touchmove', touchmove);
+                add(mobile.elements.menu, 'touchend', touchend);
+            };
+        })(touch = mobile.touch || (mobile.touch = {}));
+    })(mobile = tab.mobile || (tab.mobile = {}));
+})(tab || (tab = {}));
+var tab;
+(function (tab) {
+    let mobile;
+    (function (mobile) {
+        const { byId, byQuery, byQAll, getPx, setStyle } = dom;
+        mobile.elements = {
+            menu: null,
+            back: null,
+            list: null,
+            items: null,
+            dot: null,
+            iconHide: null,
+        };
+        mobile.resize = () => {
+            mobile.touch.resize();
+        };
+        mobile.init = () => {
+            mobile.elements.menu = byId('menu-mobile');
+            mobile.elements.back = byId('menu-mobile-back');
+            mobile.elements.list = byQuery('.menu-mobile-list');
+            mobile.elements.items = byQAll(mobile.elements.menu, '.menu-mobile-item');
+            mobile.elements.dot = byId('menu-mobile-dot');
+            mobile.elements.iconHide = byId('menu-mobile-icon-hide');
+            setStyle(mobile.elements.back, 'display', 'initial');
+            mobile.touch.init();
+        };
+    })(mobile = tab.mobile || (tab.mobile = {}));
 })(tab || (tab = {}));
 var modal;
 (function (modal) {
@@ -990,7 +1377,6 @@ var modal;
     };
     modal.init = () => {
         elements.modal = byId('modal');
-        console.log('%c elements.modal:', 'background: #ffcc00; color: #003300', elements.modal);
         elements.back = byId('modal-back');
         const testBtn = byId('test-btn');
         add(testBtn, 'click', () => {
@@ -1024,92 +1410,6 @@ var modal;
         tab.unBlur();
     };
 })(modal || (modal = {}));
-var starter;
-(function (starter) {
-    const { byId, add } = dom;
-    starter.init = async () => {
-    };
-    starter.run = async () => {
-    };
-})(starter || (starter = {}));
-var learning;
-(function (learning) {
-    const { byId, byQueryAll, setStyle, add } = dom;
-    const elements = {
-        question: null,
-        answers: null,
-        answersField: null,
-        checkbox: null,
-        confirm: null,
-    };
-    const mark = (num) => () => {
-        elements.checkbox.forEach((a, i) => a.checked = (i === num));
-        elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
-    };
-    learning.init = () => {
-        elements.question = byId('question');
-        elements.answers = byQueryAll('.answer p');
-        elements.answersField = byQueryAll('.answer');
-        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
-        elements.checkbox = byQueryAll('.answer input');
-        elements.checkbox.forEach(c => c.checked = false);
-        elements.confirm = byId('learning-confirm-btn');
-        mark(-1)();
-    };
-})(learning || (learning = {}));
-var settings;
-(function (settings) {
-    const { root } = dom;
-    let theme;
-    (function (theme_1) {
-        const themeKind = {
-            dark: 'dark',
-            light: 'light',
-            system: 'system'
-        };
-        const themeNames = Object.values(themeKind);
-        const apply = (theme) => {
-            root.setAttribute('data-theme', theme);
-            root.classList.remove(themeKind.dark, themeKind.light);
-            root.classList.add(theme);
-            root.style.colorScheme = theme;
-        };
-        const setSystemTheme = () => {
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            apply(systemPrefersDark ? themeKind.dark : themeKind.light);
-        };
-        const set = (saved) => {
-            if (saved === themeKind.dark || saved === themeKind.light) {
-                apply(saved);
-                return saved;
-            }
-            if (saved === themeKind.system) {
-                setSystemTheme();
-                return saved;
-            }
-            core.store.set(storageNames.theme, themeKind.system);
-            setSystemTheme();
-            return themeKind.system;
-        };
-        const themeData = {
-            prefix: 'setting-theme-',
-            storeName: storageNames.theme,
-            list: themeNames,
-            clickList: themeNames.map((name, i) => () => set(name))
-        };
-        theme_1.init = async () => {
-            const themeRatio = utils.getRadio(themeData);
-            const saved = themeRatio.init();
-            set(saved);
-        };
-    })(theme = settings.theme || (settings.theme = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    settings.init = () => {
-        settings.theme.init();
-    };
-})(settings || (settings = {}));
 var tests;
 (function (tests) {
     tests.errorModal = async () => {
@@ -1143,19 +1443,25 @@ const serviceWorker = () => {
     axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
     axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
     axios.defaults.withCredentials = true;
+    const modules = [
+        ...tab.screens,
+        tab,
+        modal
+    ];
     getStorage().then(async (store) => {
         core.store = store;
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys();
-            settings.init();
-            starter.init();
-            learning.init();
-            tab.init();
-            modal.init();
+            modules.forEach(m => { if (m.init)
+                m.init(); });
             const resize = utils.resize();
-            resize.add(tab.resize);
-            resize.add(modal.resize);
+            modules.forEach(m => { if (m.resize) {
+                resize.add(m.resize);
+            } });
             resize.run();
+            setTimeout(() => {
+                tab.getGoTo(4)();
+            }, 100);
         });
         setConsole();
         serviceWorker();

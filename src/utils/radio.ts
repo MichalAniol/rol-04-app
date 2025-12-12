@@ -1,8 +1,16 @@
 type RadioDataT = {
     prefix: string
     storeName: DataNamesKeysT
-    list: string[]
-    clickList: (() => void)[]
+    elementList: string[]
+    nameList: string[]
+    clickList?: (() => void)[]
+    init?: (saved: string) => string
+}
+
+type RatioT = {
+    init: () => any
+    active: () => void
+    deactivate: () => void
 }
 
 namespace utils {
@@ -11,8 +19,7 @@ namespace utils {
     export const getRadio = (radioData: RadioDataT) => {
 
         // @ts-ignore
-        const themeElements = radioData.list.map(tn => byId(radioData.prefix + tn)) as const
-        console.log('%c themeElements:', 'background: #ffcc00; color: #003300', themeElements)
+        const themeElements = radioData.elementList.map(tn => byId(radioData.prefix + tn)) as const
 
         type RadioListItemT = {
             item: HTMLElement
@@ -24,14 +31,19 @@ namespace utils {
         const newRadioData: RadioListItemT[] = []
         const shift = (num: number) => newRadioData.forEach((rd, i) => rd.checkbox.checked = i === num)
 
-        radioData.list.forEach((name, i) => {
+        radioData.nameList.forEach((name, i) => {
+            const click = radioData.clickList && radioData.clickList[i] ? () => {
+                radioData.clickList[i]()
+                core.store.set(radioData.storeName, name)
+                shift(i)
+            } : () => {
+                core.store.set(radioData.storeName, name)
+                shift(i)
+            }
+
             newRadioData.push({
                 item: themeElements[i] as HTMLElement,
-                click: () => {
-                    radioData.clickList[i]()
-                    core.store.set(radioData.storeName, name)
-                    shift(i)
-                },
+                click,
                 checkbox: byQ(themeElements[i], 'input') as HTMLInputElement,
                 name: name,
             })
@@ -48,6 +60,7 @@ namespace utils {
         const init = () => {
             active()
             const saved = getSaved()
+            if (radioData.init) radioData.init(saved)
             mark(saved)
             return saved
         }

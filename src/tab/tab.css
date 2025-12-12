@@ -3,7 +3,6 @@
 }
 
 #tabs {
-    overflow: hidden;
     filter: blur(0px);
     transition: filter 0.3s;
 }
@@ -11,7 +10,6 @@
 #carousel-box {
     position: absolute;
     left: 0px;
-    overflow: hidden;
 }
 
 #carousel {
@@ -28,15 +26,9 @@
     height: 100px;
 }
 
-.menu {
-    position: absolute;
-}
-
-#menu-mobile {
-    bottom: 0;
-}
-
 #menu-web {
+    position: absolute;
+    z-index: 100;
     width: 200px;
     height: 100vh;
     left: 0;
@@ -46,7 +38,6 @@
 }
 
 .menu-web-item {
-    /* border:1px solid #5a7515; */
     border-radius: 8px;
     width: 160px;
     height: 40px;
@@ -54,6 +45,5 @@
     line-height: 40px;
     text-align: center;
     background-color: var(--penultimate_color);
-    ;
     cursor: pointer;
 }

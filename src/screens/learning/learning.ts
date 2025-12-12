@@ -7,7 +7,7 @@ namespace learning {
         confirm: HTMLElement | null
     }
 
-    const { byId, byQueryAll, setStyle, add } = dom
+    const { byId, byQueryAll, setStyle, add, remove } = dom
 
     const elements: ElementsT = {
         question: null,
@@ -28,7 +28,6 @@ namespace learning {
         elements.answers = byQueryAll('.answer p') as unknown as HTMLElement[]
 
         elements.answersField = byQueryAll('.answer') as unknown as HTMLElement[]
-        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)))
 
         elements.checkbox = byQueryAll('.answer input') as unknown as HTMLInputElement[]
         elements.checkbox.forEach(c => c.checked = false)
@@ -36,5 +35,13 @@ namespace learning {
         elements.confirm = byId('learning-confirm-btn')
 
         mark(-1)()
+    }
+
+    export const active = () => {
+        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)))
+    }
+
+    export const deactivate = () => {
+        elements.answersField.forEach((a, i) => remove(a, 'click', mark(i)))
     }
 }

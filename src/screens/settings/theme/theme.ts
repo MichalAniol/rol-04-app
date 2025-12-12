@@ -12,22 +12,15 @@ namespace settings {
 
         // @ts-ignore
         const themeNames = Object.values(themeKind) as const
-        // @ts-ignore
-        // const themeElements = themeNames.map(tn => `setting-theme-${tn}`) as const
 
         const apply = (theme: ThemeColorsT) => {
-            // ustaw atrybut (dobrze do selektorów CSS [data-theme="..."])
             root.setAttribute('data-theme', theme)
 
-            // także zostaw klasy (dla tailwind lub innych)
             root.classList.remove(themeKind.dark, themeKind.light)
             root.classList.add(theme)
 
-            // poprawne wsparcie dla elementów systemowych (scrollbars, form controls)
-            // typ: CSSStyleDeclaration accepts ThemeColorsT | 'no-preference', ale ustawiamy string
             root.style.colorScheme = theme
         }
-
 
         const setSystemTheme = () => {
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -35,8 +28,6 @@ namespace settings {
         }
 
         const set = (saved: string) => {
-            // const saved = themeNames[num]
-
             if (saved === themeKind.dark || saved === themeKind.light) {
                 apply(saved)
                 return saved
@@ -55,16 +46,16 @@ namespace settings {
         const themeData = {
             prefix: 'setting-theme-',
             storeName: storageNames.theme,
-            list: themeNames,
-            clickList: themeNames.map((name, i) => () => set(name))
+            elementList: themeNames,
+            nameList: themeNames,
+            clickList: themeNames.map((name, i) => () => set(name)),
+            init: set,
         }
 
-
+        export let ratio: RatioT
         export const init = async () => {
-            const themeRatio = utils.getRadio(themeData)
-
-            const saved = themeRatio.init()
-            set(saved)
+            ratio = utils.getRadio(themeData)
+            ratio.init()
         }
     }
 }
