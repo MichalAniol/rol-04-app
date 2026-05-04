@@ -15,10 +15,10 @@ namespace modal {
         elements.modal = byId('modal')
         elements.back = byId('modal-back')
 
-        const testBtn = byId('test-btn')
-        add(testBtn, 'click', () => {
-            user.show()
-        })
+        // const testBtn = byId('test-btn')
+        // add(testBtn, 'click', () => {
+        //     user.show()
+        // })
 
         error.init()
         user.init()

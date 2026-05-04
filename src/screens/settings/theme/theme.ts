@@ -1,46 +1,62 @@
 namespace settings {
-    const { root } = dom
+    const { root, setAttribute, setStyle, removeClass, addClass } = dom
 
     export namespace theme {
-        const themeKind = {
+        export const theme = {
             dark: 'dark',
             light: 'light',
-            system: 'system'
         } as const
 
-        type ThemeColorsT = typeof themeKind.dark | typeof themeKind.light
+        type ThemeT = keyof typeof theme
+        type ThemeValuesT = typeof theme[ThemeT]
+
+        export const themeMode = {
+            ...theme,
+            system: 'system',
+        } as const
 
         // @ts-ignore
-        const themeNames = Object.values(themeKind) as const
+        const themeNames = Object.values(themeMode) as const
 
-        const apply = (theme: ThemeColorsT) => {
+        type MemoT = { theme: ThemeValuesT | null }
+        const memo: MemoT = {
+            theme: null
+        }
+
+        export const get = () => memo.theme
+
+        const apply = (theme: ThemeValuesT) => {
             root.setAttribute('data-theme', theme)
+            setAttribute(root, 'data-theme', theme)
 
-            root.classList.remove(themeKind.dark, themeKind.light)
-            root.classList.add(theme)
+            removeClass(root, themeMode.dark)
+            removeClass(root, themeMode.light)
+            addClass(root, theme)
 
-            root.style.colorScheme = theme
+            setStyle(root, 'colorScheme', theme)
         }
 
         const setSystemTheme = () => {
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-            apply(systemPrefersDark ? themeKind.dark : themeKind.light)
+            const newTheme = systemPrefersDark ? theme.dark : theme.light
+            apply(newTheme)
+            memo.theme = newTheme
         }
 
         const set = (saved: string) => {
-            if (saved === themeKind.dark || saved === themeKind.light) {
+            if (saved === theme.dark || saved === theme.light) {
                 apply(saved)
                 return saved
             }
-            if (saved === themeKind.system) {
+            if (saved === themeMode.system) {
                 setSystemTheme()
                 return saved
             }
 
-            core.store.set(storageNames.theme, themeKind.system)
+            core.store.set(storageNames.theme, themeMode.system)
             setSystemTheme()
 
-            return themeKind.system
+            return themeMode.system
         }
 
         const themeData = {

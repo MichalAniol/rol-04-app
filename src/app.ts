@@ -35,14 +35,14 @@ interface ModulesT {
 
             resize.run()
 
-            // setTimeout(starter.run, 300)
+            setTimeout(starter.run, 300)
 
             // tests.errorModal()
 
             // settings.active()
 
             setTimeout(() => {
-                tab.getGoTo(4)()
+                tab.getGoTo(0)()
             }, 100)
         })
 

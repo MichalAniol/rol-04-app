@@ -49,16 +49,16 @@ namespace tab {
         // ekran
         elements.carousel.style.left = getPx(-getTabLeftPos())
 
-        // kolor buttonu z menu
-        elements.menu.items.forEach((t, i) => {
-            if (i === state.screen) {
-                setStyle(t, 'backgroundColor', 'var(--mine_color)')
-                setStyle(t, 'color', 'var(--last_color)')
-            } else {
-                setStyle(t, 'backgroundColor', 'var(--penultimate_color)')
-                setStyle(t, 'color', 'var(--prime_color)')
-            }
-        })
+        // // kolor buttonu z menu
+        // elements.menu.items.forEach((t, i) => {
+        //     if (i === state.screen) {
+        //         setStyle(t, 'backgroundColor', 'var(--mine_color)')
+        //         setStyle(t, 'color', 'var(--last_color)')
+        //     } else {
+        //         setStyle(t, 'backgroundColor', 'var(--penultimate_color)')
+        //         setStyle(t, 'color', 'var(--prime_color)')
+        //     }
+        // })
 
         // aktywacja wybranego screena
         screens.forEach((s, i) => (i === state.screen) ? s.active() : s.deactivate())
@@ -99,22 +99,22 @@ namespace tab {
 
         state.max = elements.tabs.length
 
-        elements.menu.mobile = byId('menu-mobile')
+        // elements.menu.mobile = byId('menu-mobile')
         elements.menu.web = byId('menu-web')
 
         if (core.isMobile) {
             display(elements.menu.web, 'none')
-            mobile.init()
+            // mobile.init()
 
-            elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
-            for (let i = 0; i < elements.menu.items.length; ++i) {
-                const item = elements.menu.items[i]
-                add(item, 'click', getGoTo(i))
-            }
+            // elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
+            // for (let i = 0; i < elements.menu.items.length; ++i) {
+            //     const item = elements.menu.items[i]
+            //     add(item, 'click', getGoTo(i))
+            // }
 
-            mobile.init()
+            // mobile.init()
         } else {
-            display(elements.menu.mobile, 'none')
+            // display(elements.menu.mobile, 'none')
             state.carouselLeftPos = WEB_MENU_WIDTH
 
             elements.menu.items = byQueryAll('.menu-web-item') as unknown as HTMLElement[]
@@ -144,6 +144,6 @@ namespace tab {
 
         setTab()
 
-        mobile.resize()
+        // if (core.isMobile) mobile.resize()
     }
 }
