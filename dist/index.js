@@ -570,7 +570,7 @@ var queries;
 (function (queries) {
     const okCodes = [304, 401, 403, 429];
     queries.api = axios.create({
-        baseURL: 'https://localhost:3331/',
+        baseURL: 'https://192.168.1.109:3331/',
         validateStatus: function (status) {
             return status >= 200 && status < 300 || okCodes.some(c => c === status);
         }
@@ -773,6 +773,15 @@ var queries;
         };
     })(user = queries.user || (queries.user = {}));
 })(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let user;
+    (function (user) {
+        user.set = async () => {
+            return await queries.api.post(queries.url.user.set, {}, { withCredentials: true });
+        };
+    })(user = queries.user || (queries.user = {}));
+})(queries || (queries = {}));
 var controllers;
 (function (controllers) {
     const { add } = dom;
@@ -809,10 +818,66 @@ var controllers;
 })(controllers || (controllers = {}));
 var starter;
 (function (starter) {
-    const { byId, add } = dom;
+    const { byId, add, getPx, setStyle } = dom;
+    const elements = {
+        logoDark: null,
+        logoLight: null,
+        title_1: null,
+        title_2: null,
+    };
     starter.init = async () => {
+        elements.logoDark = byId('logo-dark');
+        elements.logoLight = byId('logo-light');
+        elements.title_1 = byId('starter-title-1');
+        elements.title_2 = byId('starter-title-2');
+    };
+    starter.resize = (w, h) => {
+        const setTitleSize = (size) => {
+            setStyle(elements.title_1, 'fontSize', size);
+            setStyle(elements.title_1, 'lineHeight', size);
+            setStyle(elements.title_2, 'fontSize', size);
+            setStyle(elements.title_2, 'lineHeight', size);
+        };
+        const setLogoSize = (width, height) => {
+            [elements.logoDark, elements.logoLight].forEach((elem) => {
+                setStyle(elem, 'width', width);
+                setStyle(elem, 'height', height);
+            });
+        };
+        if (core.isMobile) {
+            const fontSize = `${getPx(w / 7)}`;
+            setTitleSize(fontSize);
+            setLogoSize('100%', 'nope');
+        }
+        else {
+            const fontSize = (w < h) ? `${getPx(w / 12)}` : `${getPx(h / 12)}`;
+            setTitleSize(fontSize);
+            if (w < h) {
+                setLogoSize('100%', 'nope');
+            }
+            else {
+                const scaledH = h * 0.6;
+                const height = `${scaledH}px`;
+                const ratio = 270.9 / 289.7;
+                const width = `${scaledH * ratio}px`;
+                setLogoSize(width, height);
+            }
+        }
     };
     starter.run = async () => {
+        const secure = await queries.secure.getSecure();
+        console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
+        if (secure.command === queries.responseCommand.secure.generateUserId) {
+            setTimeout(async () => {
+                const userId = await queries.user.set();
+                console.log('%c set user:', 'background: #ffcc00; color: #003300', userId);
+            }, 300);
+        }
+        else {
+        }
+        console.log('%c secure:', 'background: #ffcc00; color: #003300', secure);
+        if (secure === null) {
+        }
     };
     starter.active = () => { };
     starter.deactivate = () => { };
@@ -932,37 +997,48 @@ var settings;
 })(settings || (settings = {}));
 var settings;
 (function (settings) {
-    const { root } = dom;
+    const { root, setAttribute, setStyle, removeClass, addClass } = dom;
     let theme;
     (function (theme_1) {
-        const themeKind = {
+        theme_1.theme = {
             dark: 'dark',
             light: 'light',
-            system: 'system'
         };
-        const themeNames = Object.values(themeKind);
+        theme_1.themeMode = {
+            ...theme_1.theme,
+            system: 'system',
+        };
+        const themeNames = Object.values(theme_1.themeMode);
+        const memo = {
+            theme: null
+        };
+        theme_1.get = () => memo.theme;
         const apply = (theme) => {
             root.setAttribute('data-theme', theme);
-            root.classList.remove(themeKind.dark, themeKind.light);
-            root.classList.add(theme);
-            root.style.colorScheme = theme;
+            setAttribute(root, 'data-theme', theme);
+            removeClass(root, theme_1.themeMode.dark);
+            removeClass(root, theme_1.themeMode.light);
+            addClass(root, theme);
+            setStyle(root, 'colorScheme', theme);
         };
         const setSystemTheme = () => {
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            apply(systemPrefersDark ? themeKind.dark : themeKind.light);
+            const newTheme = systemPrefersDark ? theme_1.theme.dark : theme_1.theme.light;
+            apply(newTheme);
+            memo.theme = newTheme;
         };
         const set = (saved) => {
-            if (saved === themeKind.dark || saved === themeKind.light) {
+            if (saved === theme_1.theme.dark || saved === theme_1.theme.light) {
                 apply(saved);
                 return saved;
             }
-            if (saved === themeKind.system) {
+            if (saved === theme_1.themeMode.system) {
                 setSystemTheme();
                 return saved;
             }
-            core.store.set(storageNames.theme, themeKind.system);
+            core.store.set(storageNames.theme, theme_1.themeMode.system);
             setSystemTheme();
-            return themeKind.system;
+            return theme_1.themeMode.system;
         };
         const themeData = {
             prefix: 'setting-theme-',
@@ -1037,16 +1113,6 @@ var tab;
     const getTabLeftPos = () => (tab_1.state.tabWidth * tab_1.state.screen);
     tab_1.setTab = () => {
         elements.carousel.style.left = getPx(-getTabLeftPos());
-        elements.menu.items.forEach((t, i) => {
-            if (i === tab_1.state.screen) {
-                setStyle(t, 'backgroundColor', 'var(--mine_color)');
-                setStyle(t, 'color', 'var(--last_color)');
-            }
-            else {
-                setStyle(t, 'backgroundColor', 'var(--penultimate_color)');
-                setStyle(t, 'color', 'var(--prime_color)');
-            }
-        });
         tab_1.screens.forEach((s, i) => (i === tab_1.state.screen) ? s.active() : s.deactivate());
     };
     tab_1.goLeft = () => {
@@ -1077,20 +1143,11 @@ var tab;
         elements.allTabs = byId('tabs');
         elements.tabs = byQueryAll('.tab');
         tab_1.state.max = elements.tabs.length;
-        elements.menu.mobile = byId('menu-mobile');
         elements.menu.web = byId('menu-web');
         if (core.isMobile) {
             display(elements.menu.web, 'none');
-            tab_1.mobile.init();
-            elements.menu.items = byQueryAll('.menu-mobile-item');
-            for (let i = 0; i < elements.menu.items.length; ++i) {
-                const item = elements.menu.items[i];
-                add(item, 'click', tab_1.getGoTo(i));
-            }
-            tab_1.mobile.init();
         }
         else {
-            display(elements.menu.mobile, 'none');
             tab_1.state.carouselLeftPos = WEB_MENU_WIDTH;
             elements.menu.items = byQueryAll('.menu-web-item');
             for (let i = 0; i < elements.menu.items.length; ++i) {
@@ -1112,7 +1169,6 @@ var tab;
         setStyle(elements.carouselBox, 'left', getPx(tab_1.state.carouselLeftPos));
         setStyle(elements.carousel, 'width', getPx(tab_1.state.max * tab_1.state.tabWidth));
         tab_1.setTab();
-        tab_1.mobile.resize();
     };
 })(tab || (tab = {}));
 var tab;
@@ -1252,6 +1308,20 @@ var tab;
 })(tab || (tab = {}));
 var tab;
 (function (tab) {
+    let simpleMenu;
+    (function (simpleMenu) {
+        const { byId, byQuery, byQAll, getPx, setStyle } = dom;
+        simpleMenu.elements = {
+            menu: null,
+        };
+        simpleMenu.resize = () => {
+        };
+        simpleMenu.init = () => {
+        };
+    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
+})(tab || (tab = {}));
+var tab;
+(function (tab) {
     let mobile;
     (function (mobile) {
         const { byId, byQuery, byQAll, getPx, setStyle } = dom;
@@ -1378,10 +1448,6 @@ var modal;
     modal.init = () => {
         elements.modal = byId('modal');
         elements.back = byId('modal-back');
-        const testBtn = byId('test-btn');
-        add(testBtn, 'click', () => {
-            modal.user.show();
-        });
         modal.error.init();
         modal.user.init();
     };
@@ -1459,8 +1525,9 @@ const serviceWorker = () => {
                 resize.add(m.resize);
             } });
             resize.run();
+            setTimeout(starter.run, 300);
             setTimeout(() => {
-                tab.getGoTo(4)();
+                tab.getGoTo(0)();
             }, 100);
         });
         setConsole();

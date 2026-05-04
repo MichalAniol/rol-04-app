@@ -232,8 +232,22 @@
         url(./fonts/Inter-900-BlackItalic.ttf) format('truetype');
 }
 
+@font-face {
+    font-family: 'Consolas';
+    font-style: normal;
+    font-weight: 400;
+    src: url(./fonts/consolas.eot);
+    src: url(./fonts/consolas.eot?#iefix) format('embedded-opentype'),
+        url(./fonts/consolas.otf) format('otf'),
+        url(./fonts/consolas.svg#consolas) format('svg'),
+        url(./fonts/consolas.woff2) format('woff2'),
+        url(./fonts/consolas.woff) format('woff'),
+        url(./fonts/consolas.ttf) format('truetype');
+}
+
 :root {
     --font: 'Inter';
+    --font-cons: 'Consolas';
 
     --font_micro_size: 8px;
     --font_mini_size: 10px;
@@ -242,6 +256,7 @@
     --font_medium: 22px;
     --font_big_size: 28px;
     --font_title_size: 34px;
+    --font_big_title_size: 48px;
 
     --separator_small: 8px;
     --separator: 14px;
@@ -258,6 +273,8 @@
     --mine_color: #00bfff;
     --mine_2_color: #00a8df;
     --mine_3_color: #0194c5;
+    --mine_4_color: #0d7da2;
+    --mine_5_color: #136a87;
 
     --prime_color: #aaa;
     --second_color: #888;
@@ -287,6 +304,8 @@
     --mine_color: royalblue;
     --mine_2_color: #5078ef;
     --mine_3_color: #6c90fc;
+    --mine_4_color: #94afff;
+    --mine_5_color: #c1d1ff;
 
     --prime_color: #313131;
     --second_color: #4c4c4c;
