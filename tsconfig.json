@@ -19,6 +19,7 @@
         "outFile": "dist/index.js"
     },
     "files": [
+        "src/cookie.ts",
         "src/idb.ts",
         "src/storage.ts",
         "src/core.ts",
@@ -42,6 +43,7 @@
         "src/inputs/keys.ts",
         "src/inputs/touch.ts",
         "src/screens/starter/starter.ts",
+        "src/screens/starter/starterRun.ts",
         "src/screens/statistics/statistics.ts",
         "src/screens/learning/learning.ts",
         "src/screens/answers/answers.ts",

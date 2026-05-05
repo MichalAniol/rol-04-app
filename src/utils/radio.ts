@@ -1,6 +1,6 @@
 type RadioDataT = {
     prefix: string
-    storeName: DataNamesKeysT
+    storeName: DataNamesValuesT
     elementList: string[]
     nameList: string[]
     clickList?: (() => void)[]
@@ -41,10 +41,11 @@ namespace utils {
                 shift(i)
             }
 
+            const elem = themeElements[i] as HTMLElement
             newRadioData.push({
-                item: themeElements[i] as HTMLElement,
+                item: elem,
                 click,
-                checkbox: byQ(themeElements[i], 'input') as HTMLInputElement,
+                checkbox: byQ(elem, 'input') as HTMLInputElement,
                 name: name,
             })
         })

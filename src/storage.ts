@@ -9,12 +9,14 @@ type NamesValueTypeT = {
     theme: string,
     questionsData: CheckedValuesT,
     imgData: CheckedValuesT,
+    userId: string
 }
 
 const storageNames = {
     theme: 'theme',
-    questionsData: 'questionsData',
-    imgData: 'imgData',
+    questionsData: 'questions-data',
+    imgData: 'img-data',
+    userId: 'user-id'
 } as const
 type DataNamesKeysT = keyof typeof storageNames
 type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
@@ -25,6 +27,7 @@ const getStorage = async () => {
         theme: '',
         questionsData: checked.yes,
         imgData: checked.yes,
+        userId: 'null',
     } as const
 
     const isValidJSONStringify = (str: string | string[]) => {
@@ -66,9 +69,16 @@ const getStorage = async () => {
 
     const initData = () => {
         const list = Object.keys(storageNames)
-        list.forEach((k: string) => {
-            const data = get(k as DataNamesValuesT)
-            if (!data && defaultData[k as keyof NamesValueTypeT]) set(k as DataNamesValuesT, defaultData[k as keyof NamesValueTypeT])
+        console.log('%c list:', 'background: #ffcc00; color: #003300', list)
+        list.forEach((key: DataNamesKeysT) => {
+            const keyName = storageNames[key]
+
+            const data = get(keyName)
+            console.log('%c data:', 'background: #ffcc00; color: #003300', data)
+
+            if (!data && defaultData[key]) {
+                set(keyName, defaultData[key])
+            }
         })
     }
     initData()

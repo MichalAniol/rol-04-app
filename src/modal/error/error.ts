@@ -21,9 +21,9 @@ namespace modal {
 
     export const error = {
         init: () => {
-            elements.modal = byId('modal-error')
-            elements.txt = byId('modal-error-txt')
-            elements.info = byId('modal-error-info')
+            elements.modal = byId('modal-error') as HTMLElement
+            elements.txt = byId('modal-error-txt') as HTMLElement
+            elements.info = byId('modal-error-info') as HTMLElement
             elements.btn = byId('modal-error-btn') as HTMLButtonElement
         },
         show: (err: string, canWork: boolean, onClose: () => null) => {

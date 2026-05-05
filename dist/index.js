@@ -1,3 +1,26 @@
+var cookie;
+(function (cookie_1) {
+    cookie_1.names = {
+        userId: 'user-id',
+        test: 'test',
+    };
+    const namesValues = Object.values(cookie_1.names);
+    cookie_1.get = (name) => {
+        const nameIsOk = namesValues.some((n) => n === name);
+        if (nameIsOk) {
+            const cookies = document.cookie.split('; ');
+            console.log('%c cookies:', 'background: #ffcc00; color: #003300', cookies);
+            for (const cookie of cookies) {
+                const [key, value] = cookie.split('=');
+                if (key === name) {
+                    return decodeURIComponent(value);
+                }
+            }
+            return undefined;
+        }
+        return null;
+    };
+})(cookie || (cookie = {}));
 const idb = (storeName) => (function () {
     const promisifyRequest = (request) => new Promise((resolve, reject) => {
         request.oncomplete = request.onsuccess = () => resolve(request.result);
@@ -59,14 +82,16 @@ const checked = {
 };
 const storageNames = {
     theme: 'theme',
-    questionsData: 'questionsData',
-    imgData: 'imgData',
+    questionsData: 'questions-data',
+    imgData: 'img-data',
+    userId: 'user-id'
 };
 const getStorage = async () => {
     const defaultData = {
         theme: '',
         questionsData: checked.yes,
         imgData: checked.yes,
+        userId: 'null',
     };
     const isValidJSONStringify = (str) => {
         try {
@@ -109,10 +134,14 @@ const getStorage = async () => {
     };
     const initData = () => {
         const list = Object.keys(storageNames);
-        list.forEach((k) => {
-            const data = get(k);
-            if (!data && defaultData[k])
-                set(k, defaultData[k]);
+        console.log('%c list:', 'background: #ffcc00; color: #003300', list);
+        list.forEach((key) => {
+            const keyName = storageNames[key];
+            const data = get(keyName);
+            console.log('%c data:', 'background: #ffcc00; color: #003300', data);
+            if (!data && defaultData[key]) {
+                set(keyName, defaultData[key]);
+            }
         });
     };
     initData();
@@ -490,10 +519,11 @@ var utils;
                 core.store.set(radioData.storeName, name);
                 shift(i);
             };
+            const elem = themeElements[i];
             newRadioData.push({
-                item: themeElements[i],
+                item: elem,
                 click,
-                checkbox: byQ(themeElements[i], 'input'),
+                checkbox: byQ(elem, 'input'),
                 name: name,
             });
         });
@@ -818,39 +848,71 @@ var controllers;
 })(controllers || (controllers = {}));
 var starter;
 (function (starter) {
-    const { byId, add, getPx, setStyle } = dom;
-    const elements = {
+    const { byId, add, getPx, setStyle, setAttribute } = dom;
+    starter.elements = {
         logoDark: null,
         logoLight: null,
+        svgTitle: null,
         title_1: null,
         title_2: null,
+        userLabel: null,
+        userId: null,
+        statusNow: null,
+        statusAction: null,
+        version: null,
     };
     starter.init = async () => {
-        elements.logoDark = byId('logo-dark');
-        elements.logoLight = byId('logo-light');
-        elements.title_1 = byId('starter-title-1');
-        elements.title_2 = byId('starter-title-2');
+        starter.elements.logoDark = byId('logo-dark');
+        starter.elements.logoLight = byId('logo-light');
+        starter.elements.svgTitle = byId('starter-svg-title');
+        starter.elements.title_1 = byId('starter-title-1');
+        starter.elements.title_2 = byId('starter-title-2');
+        starter.elements.userLabel = byId('starter-user-label');
+        starter.elements.userId = byId('starter-user-id');
+        starter.elements.statusNow = byId('status-now');
+        starter.elements.statusAction = byId('status-action');
+        starter.elements.version = byId('starter-version');
     };
     starter.resize = (w, h) => {
+        const versionX = w - starter.elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200);
+        const versionY = h - 6;
+        setAttribute(starter.elements.version, 'x', `${getPx(versionX)}`);
+        setAttribute(starter.elements.version, 'y', `${getPx(versionY)}`);
+        const svgHeight = `${getPx(h)}`;
         const setTitleSize = (size) => {
-            setStyle(elements.title_1, 'fontSize', size);
-            setStyle(elements.title_1, 'lineHeight', size);
-            setStyle(elements.title_2, 'fontSize', size);
-            setStyle(elements.title_2, 'lineHeight', size);
+            setStyle(starter.elements.svgTitle, 'height', svgHeight);
+            const fontSize = `${getPx(size)}`;
+            let y = size;
+            [starter.elements.title_1, starter.elements.title_2].forEach(title => {
+                setStyle(title, 'fontSize', fontSize);
+                setStyle(title, 'lineHeight', fontSize);
+                setAttribute(title, 'y', `${getPx(y)}`);
+                y += size * 1.1;
+            });
+            y += 50;
+            [starter.elements.userLabel, starter.elements.userId].forEach(user => {
+                setAttribute(user, 'y', `${getPx(y)}`);
+                y += 24;
+            });
+            y += 20;
+            [starter.elements.statusNow, starter.elements.statusAction].forEach(status => {
+                setAttribute(status, 'y', `${getPx(y)}`);
+                y += 24;
+            });
         };
         const setLogoSize = (width, height) => {
-            [elements.logoDark, elements.logoLight].forEach((elem) => {
+            [starter.elements.logoDark, starter.elements.logoLight].forEach((elem) => {
                 setStyle(elem, 'width', width);
                 setStyle(elem, 'height', height);
             });
         };
         if (core.isMobile) {
-            const fontSize = `${getPx(w / 7)}`;
+            const fontSize = w / 7;
             setTitleSize(fontSize);
             setLogoSize('100%', 'nope');
         }
         else {
-            const fontSize = (w < h) ? `${getPx(w / 12)}` : `${getPx(h / 12)}`;
+            const fontSize = (w < h) ? w / 12 : h / 12;
             setTitleSize(fontSize);
             if (w < h) {
                 setLogoSize('100%', 'nope');
@@ -864,23 +926,33 @@ var starter;
             }
         }
     };
+    starter.active = () => { };
+    starter.deactivate = () => { };
+})(starter || (starter = {}));
+var starter;
+(function (starter) {
+    const memoUserId = (res) => {
+        const userId = res.userId;
+        core.store.set(storageNames.userId, userId);
+        dom.inner(starter.elements.userId, userId);
+    };
     starter.run = async () => {
         const secure = await queries.secure.getSecure();
         console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
         if (secure.command === queries.responseCommand.secure.generateUserId) {
+            modal.user.show();
             setTimeout(async () => {
-                const userId = await queries.user.set();
-                console.log('%c set user:', 'background: #ffcc00; color: #003300', userId);
+                const userIdSet = await queries.user.set();
+                memoUserId(userIdSet);
             }, 300);
         }
-        else {
+        else if (secure.command === queries.responseCommand.secure.go) {
+            memoUserId(secure);
         }
         console.log('%c secure:', 'background: #ffcc00; color: #003300', secure);
         if (secure === null) {
         }
     };
-    starter.active = () => { };
-    starter.deactivate = () => { };
 })(starter || (starter = {}));
 var statistics;
 (function (statistics) {

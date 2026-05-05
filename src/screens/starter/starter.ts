@@ -2,35 +2,78 @@ namespace starter {
     type ElementsT = {
         logoDark: HTMLElement | null
         logoLight: HTMLElement | null
-        title_1: HTMLElement | null
-        title_2: HTMLElement | null
+        svgTitle: SVGElement | null
+        title_1: SVGTextContentElement | null
+        title_2: SVGTextContentElement | null
+        userLabel: SVGTextContentElement | null
+        userId: SVGTextContentElement | null
+        statusNow: SVGTextContentElement | null
+        statusAction: SVGTextContentElement | null
+        version: SVGTextContentElement | null
     }
 
-    const { byId, add, getPx, setStyle } = dom
+    const { byId, add, getPx, setStyle, setAttribute } = dom
 
-    const elements: ElementsT = {
+    export const elements: ElementsT = {
         logoDark: null,
         logoLight: null,
+        svgTitle: null,
         title_1: null,
         title_2: null,
+        userLabel: null,
+        userId: null,
+        statusNow: null,
+        statusAction: null,
+        version: null,
     }
 
     // czy połączenie z netem
     export const init = async () => {
-        elements.logoDark = byId('logo-dark')
-        elements.logoLight = byId('logo-light')
-        elements.title_1 = byId('starter-title-1')
-        elements.title_2 = byId('starter-title-2')
+        elements.logoDark = byId('logo-dark') as HTMLElement
+        elements.logoLight = byId('logo-light') as HTMLElement
+        elements.svgTitle = byId('starter-svg-title') as SVGElement
+        elements.title_1 = byId('starter-title-1') as SVGTextContentElement
+        elements.title_2 = byId('starter-title-2') as SVGTextContentElement
+        elements.userLabel = byId('starter-user-label') as SVGTextContentElement
+        elements.userId = byId('starter-user-id') as SVGTextContentElement
+        elements.statusNow = byId('status-now') as SVGTextContentElement
+        elements.statusAction = byId('status-action') as SVGTextContentElement
+        elements.version = byId('starter-version') as SVGTextContentElement
     }
 
 
     export const resize = (w: number, h: number) => {
+        const versionX = w - elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200)
+        const versionY = h - 6
+        setAttribute(elements.version, 'x', `${getPx(versionX)}`)
+        setAttribute(elements.version, 'y', `${getPx(versionY)}`)
 
-        const setTitleSize = (size: string) => {
-            setStyle(elements.title_1, 'fontSize', size)
-            setStyle(elements.title_1, 'lineHeight', size)
-            setStyle(elements.title_2, 'fontSize', size)
-            setStyle(elements.title_2, 'lineHeight', size)
+        const svgHeight = `${getPx(h)}`
+
+        const setTitleSize = (size: number) => {
+
+            setStyle(elements.svgTitle, 'height', svgHeight)
+
+            const fontSize = `${getPx(size)}`
+            let y = size;
+            [elements.title_1, elements.title_2].forEach(title => {
+                setStyle(title, 'fontSize', fontSize)
+                setStyle(title, 'lineHeight', fontSize)
+                setAttribute(title, 'y', `${getPx(y)}`)
+                y += size * 1.1
+            });
+
+            y += 50;
+            [elements.userLabel, elements.userId].forEach(user => {
+                setAttribute(user, 'y', `${getPx(y)}`)
+                y += 24
+            })
+
+            y += 20;
+            [elements.statusNow, elements.statusAction].forEach(status => {
+                setAttribute(status, 'y', `${getPx(y)}`)
+                y += 24
+            })
         }
 
         const setLogoSize = (width: string, height: string) => {
@@ -41,11 +84,11 @@ namespace starter {
         }
 
         if (core.isMobile) {
-            const fontSize = `${getPx(w / 7)}`
+            const fontSize = w / 7
             setTitleSize(fontSize)
             setLogoSize('100%', 'nope')
         } else {
-            const fontSize = (w < h) ? `${getPx(w / 12)}` : `${getPx(h / 12)}`
+            const fontSize = (w < h) ? w / 12 : h / 12
             setTitleSize(fontSize)
 
             if (w < h) {
@@ -61,43 +104,7 @@ namespace starter {
         }
     }
 
-    export const run = async () => {
-        // const userId = 
 
-
-        const secure = await queries.secure.getSecure()
-        console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure)
-
-        if (secure.command === queries.responseCommand.secure.generateUserId) {
-            // modal.user.show()
-
-
-
-
-            setTimeout(async () => {
-                const userId = await queries.user.set()
-                console.log('%c set user:', 'background: #ffcc00; color: #003300', userId)
-            }, 300)
-        } else {
-
-        }
-
-        console.log('%c secure:', 'background: #ffcc00; color: #003300', secure)
-
-        if (secure === null) {
-
-        }
-    }
-
-    // czy nowy użytkownik
-    // jak nie to wprowadzanie
-    // lub qr code
-
-    // config i porównanie
-
-    // pobieranie danych:
-    // - pytania
-    // - zdjęcia
 
 
 

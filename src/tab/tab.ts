@@ -92,15 +92,15 @@ namespace tab {
     }
 
     export const init = () => {
-        elements.carousel = byId('carousel')
-        elements.carouselBox = byId('carousel-box')
-        elements.allTabs = byId('tabs')
+        elements.carousel = byId('carousel') as HTMLElement
+        elements.carouselBox = byId('carousel-box') as HTMLElement
+        elements.allTabs = byId('tabs') as HTMLElement
         elements.tabs = byQueryAll('.tab') as unknown as HTMLElement[]
 
         state.max = elements.tabs.length
 
         // elements.menu.mobile = byId('menu-mobile')
-        elements.menu.web = byId('menu-web')
+        elements.menu.web = byId('menu-web') as HTMLElement
 
         if (core.isMobile) {
             display(elements.menu.web, 'none')
