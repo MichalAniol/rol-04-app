@@ -36,9 +36,9 @@ namespace modal {
 
     export const user = {
         init: () => {
-            elements.modal = byId('modal-user')
+            elements.modal = byId('modal-user') as HTMLElement
             elements.idInput = byId('modal-user-id-input') as HTMLInputElement
-            elements.qrCodeBtn = byId('modal-user-qr-code-btn')
+            elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
             elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
             elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
             elements.btnNewUser = byId('modal-user-btn-new-user') as HTMLButtonElement

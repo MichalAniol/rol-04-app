@@ -38,8 +38,9 @@ interface ModulesT {
             setTimeout(starter.run, 300)
 
             // tests.errorModal()
-
             // settings.active()
+
+
 
             setTimeout(() => {
                 tab.getGoTo(0)()

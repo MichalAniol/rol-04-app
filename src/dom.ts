@@ -1,7 +1,7 @@
 namespace dom {
     export const root = document.documentElement
 
-    export const byId = (id: string): HTMLElement | HTMLTextAreaElement | null => {
+    export const byId = (id: string): HTMLElement | HTMLTextAreaElement | SVGElement | SVGTextContentElement | null => {
         return document.getElementById(id) as HTMLElement | HTMLTextAreaElement | null;
     }
     export const byQuery = (query: string) => document.querySelector(query)
@@ -10,7 +10,7 @@ namespace dom {
     export const byQAll = (elem: HTMLElement | HTMLInputElement | HTMLButtonElement, query: string) => elem.querySelectorAll(query)
 
     export const getPx = (num: number) => `${num}px`
-    export const inner = (elem: HTMLElement, txt: string) => elem.innerHTML = txt
+    export const inner = (elem: HTMLElement | SVGTextContentElement, txt: string) => elem.innerHTML = txt
 
     export type RecursiveHTMLElement<T> = {
         [K in keyof T]:
@@ -88,7 +88,7 @@ namespace dom {
 
 
     export const setStyle = (
-        element: HTMLElement,
+        element: SVGElement | HTMLElement,
         style: keyof ModifiableCSSProperties,
         value: string
     ) => {

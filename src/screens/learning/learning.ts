@@ -23,7 +23,7 @@ namespace learning {
     }
 
     export const init = () => {
-        elements.question = byId('question')
+        elements.question = byId('question') as HTMLElement
 
         elements.answers = byQueryAll('.answer p') as unknown as HTMLElement[]
 
@@ -32,7 +32,7 @@ namespace learning {
         elements.checkbox = byQueryAll('.answer input') as unknown as HTMLInputElement[]
         elements.checkbox.forEach(c => c.checked = false)
 
-        elements.confirm = byId('learning-confirm-btn')
+        elements.confirm = byId('learning-confirm-btn') as HTMLElement
 
         mark(-1)()
     }

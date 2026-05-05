@@ -26,10 +26,10 @@ namespace settings {
         }
 
         export const init = () => {
-            elements.settingsAppInfo = byId('settings-app-info-title')
-            elements.settingsAppInfoMore = byId('settings-app-info-more')
-            elements.settingsAppInfoLess = byId('settings-app-info-less')
-            elements.settingsAppInfoContent = byId('settings-app-info-content')
+            elements.settingsAppInfo = byId('settings-app-info-title') as HTMLElement
+            elements.settingsAppInfoMore = byId('settings-app-info-more') as HTMLElement
+            elements.settingsAppInfoLess = byId('settings-app-info-less') as HTMLElement
+            elements.settingsAppInfoContent = byId('settings-app-info-content') as HTMLElement
 
             const contentBox = elements.settingsAppInfoContent.getBoundingClientRect()
             state.settingsAppInfoContentHeight = contentBox.height

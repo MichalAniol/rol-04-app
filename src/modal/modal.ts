@@ -12,8 +12,8 @@ namespace modal {
     }
 
     export const init = () => {
-        elements.modal = byId('modal')
-        elements.back = byId('modal-back')
+        elements.modal = byId('modal') as HTMLElement
+        elements.back = byId('modal-back') as HTMLElement
 
         // const testBtn = byId('test-btn')
         // add(testBtn, 'click', () => {
