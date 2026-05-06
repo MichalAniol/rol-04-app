@@ -36,7 +36,7 @@
         "src/queries/error.ts",
         "src/queries/secure/secure.ts",
         "src/queries/secure/secureTest.ts",
-        "src/queries/user/getId.ts",
+        "src/queries/user/checkId.ts",
         "src/queries/user/setId.ts",
         "src/queries/user/getQrCodeId.ts",
         "src/queries/user/setUserIdByQrCode.ts",

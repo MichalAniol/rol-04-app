@@ -8,10 +8,12 @@ namespace queries {
     export namespace user {
 
         export const set = async (): Promise<UserSetResponseT> => {
-            return await api.post<UserSetResponseT>(url.user.set,
+            const result = await api.post<UserSetResponseT>(url.user.set,
                 {},                       // body
                 { withCredentials: true } // config
             )
+
+            return result.data
         }
     }
 }

@@ -3,57 +3,78 @@ namespace modal {
 
     type ElementsT = {
         modal: HTMLElement | null
-        idInput: HTMLInputElement | null
-        qrCodeBtn: HTMLElement | null
-        qrCodeInput: HTMLInputElement | null
-        btnOldUser: HTMLButtonElement | null
         btnNewUser: HTMLButtonElement | null
+        idInfo: HTMLElement | null
+        idInput: HTMLInputElement | null
+        // qrCodeBtn: HTMLElement | null
+        // qrCodeInput: HTMLInputElement | null
+        btnOldUser: HTMLButtonElement | null
     }
 
     const elements: ElementsT = {
         modal: null,
-        idInput: null,
-        qrCodeBtn: null,
-        qrCodeInput: null,
-        btnOldUser: null,
         btnNewUser: null,
+        idInfo: null,
+        idInput: null,
+        // qrCodeBtn: null,
+        // qrCodeInput: null,
+        btnOldUser: null,
     }
 
 
-    const fileAdded = () => {
-        if (elements.qrCodeInput.files.length === 0) {
-            inner(elements.qrCodeBtn, 'Brak pliku')
-            elements.btnOldUser.disabled = true
-        } else {
-            inner(elements.qrCodeBtn, elements.qrCodeInput.files[0].name)
-            elements.btnOldUser.disabled = false
-        }
-    }
-
-    // const setUser = () => {
-    //     queries.
+    // const fileAdded = () => {
+    //     if (elements.qrCodeInput.files.length === 0) {
+    //         inner(elements.qrCodeBtn, 'Brak pliku')
+    //         elements.btnOldUser.disabled = true
+    //     } else {
+    //         inner(elements.qrCodeBtn, elements.qrCodeInput.files[0].name)
+    //         elements.btnOldUser.disabled = false
+    //     }
     // }
+
+    const hideUserModal = () => {
+        hide()
+        setStyle(elements.modal, 'display', 'none')
+        // remove(elements.qrCodeInput, 'change', fileAdded)
+    }
 
     export const user = {
         init: () => {
-            elements.modal = byId('modal-user') as HTMLElement
-            elements.idInput = byId('modal-user-id-input') as HTMLInputElement
-            elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
-            elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
-            elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
             elements.btnNewUser = byId('modal-user-btn-new-user') as HTMLButtonElement
+            elements.modal = byId('modal-user') as HTMLElement
+            elements.idInfo = byId('modal-user-id-info') as HTMLElement
+            elements.idInput = byId('modal-user-id-input') as HTMLInputElement
+            // elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
+            // elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
+            elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
+            console.log('%c elements:', 'background: #ffcc00; color: #003300', elements)
         },
-        show: () => {
+
+        show: (
+            setNewUser: () => void,
+            getValidateUserId: (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => void,
+            getCheckUserId: (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => EventListenerOrEventListenerObject
+        ) => {
             show()
-            setStyle(elements.modal, 'display', 'flex')
-            elements.btnOldUser.disabled = true
-            add(elements.qrCodeInput, 'change', fileAdded)
+
+            const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements
+
+            setStyle(modal, 'display', 'flex')
+            btnOldUser.disabled = true
+            // add(elements.qrCodeInput, 'change', fileAdded)
+
+            add(btnNewUser, 'click', async () => {
+                await setNewUser()
+                hideUserModal()
+            })
+
+            const validateUserId = getValidateUserId(idInfo, btnOldUser)
+            add(idInput, 'input', validateUserId)
+
+            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal)
+            add(btnOldUser, 'click', checkUserId)
         },
-        hide: () => {
-            hide()
-            setStyle(elements.modal, 'display', 'none')
-            remove(elements.qrCodeInput, 'change', fileAdded)
-        }
+        hide: hideUserModal
     }
 
     // setTimeout(user.show, 100)
