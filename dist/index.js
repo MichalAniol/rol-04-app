@@ -778,7 +778,7 @@ var queries;
     (function (secure) {
         secure.secureTest = async () => {
             try {
-                const response = await queries.api.post(queries.url.secure.test, {
+                const response = await queries.api.post(queries.url.secure.test, {}, {
                     withCredentials: true,
                 });
                 const data = response.data;
@@ -796,10 +796,9 @@ var queries;
 (function (queries) {
     let user;
     (function (user) {
-        user.getId = async () => {
-            return await queries.api.get(queries.url.user.check, {
-                withCredentials: true,
-            });
+        user.checkId = async (userId) => {
+            const result = await queries.api.post(queries.url.user.check, { userId: userId }, { withCredentials: true, });
+            return result.data;
         };
     })(user = queries.user || (queries.user = {}));
 })(queries || (queries = {}));
@@ -808,7 +807,8 @@ var queries;
     let user;
     (function (user) {
         user.set = async () => {
-            return await queries.api.post(queries.url.user.set, {}, { withCredentials: true });
+            const result = await queries.api.post(queries.url.user.set, {}, { withCredentials: true });
+            return result.data;
         };
     })(user = queries.user || (queries.user = {}));
 })(queries || (queries = {}));
@@ -931,25 +931,68 @@ var starter;
 })(starter || (starter = {}));
 var starter;
 (function (starter) {
-    const memoUserId = (res) => {
-        const userId = res.userId;
+    const { inner, setStyle, disable, enable } = dom;
+    const memoUserId = (userId) => {
         core.store.set(storageNames.userId, userId);
         dom.inner(starter.elements.userId, userId);
     };
+    const alphabetData = {
+        azSmall: 'qwertyuiopasdfghjklzxcvbnm',
+        azBig: 'QWERTYUIOPASDFGHJKLZXCVBNM',
+        numbers: '1234567890',
+    };
+    const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
+    const regex = new RegExp(`^[${ALPHABET}]{21}$`);
     starter.run = async () => {
         const secure = await queries.secure.getSecure();
         console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
         if (secure.command === queries.responseCommand.secure.generateUserId) {
-            modal.user.show();
-            setTimeout(async () => {
+            const setNewUser = async () => {
                 const userIdSet = await queries.user.set();
-                memoUserId(userIdSet);
-            }, 300);
+                memoUserId(userIdSet.userId);
+            };
+            const getNo = (info, btn) => (text) => {
+                inner(info, text);
+                setStyle(info, 'color', 'var(--off_prime_color)');
+                disable(btn);
+            };
+            const validateUserId = (info, btn) => (event) => {
+                const value = event.target.value;
+                const no = getNo(info, btn);
+                if (value.length < 21) {
+                    no('Za krótki min 21 znaków');
+                    return;
+                }
+                if (value.length > 21) {
+                    no('Za długi max 21 znaków');
+                    return;
+                }
+                if (!regex.test(value)) {
+                    no('String zawiera niedozwolone znaki');
+                    return;
+                }
+                inner(info, 'jest OK.');
+                setStyle(info, 'color', 'var(--on_second_color)');
+                enable(btn);
+            };
+            const checkUserId = (info, btn, input, hide) => async () => {
+                const userIdSet = await queries.user.checkId(input.value);
+                console.log('%c userIdSet:', 'background: #ffcc00; color: #003300', userIdSet);
+                const state = userIdSet.command;
+                const no = getNo(info, btn);
+                if (state === queries.responseCommand.user.ok) {
+                    memoUserId(input.value);
+                    hide();
+                }
+                else {
+                    no('Niema takiego użytkownika');
+                }
+            };
+            modal.user.show(setNewUser, validateUserId, checkUserId);
         }
         else if (secure.command === queries.responseCommand.secure.go) {
-            memoUserId(secure);
+            memoUserId(secure.userId);
         }
-        console.log('%c secure:', 'background: #ffcc00; color: #003300', secure);
         if (secure === null) {
         }
     };
@@ -1421,46 +1464,43 @@ var tab;
     })(mobile = tab.mobile || (tab.mobile = {}));
 })(tab || (tab = {}));
 var modal;
-(function (modal) {
+(function (modal_1) {
     const { byId, inner, setStyle, add, remove } = dom;
     const elements = {
         modal: null,
-        idInput: null,
-        qrCodeBtn: null,
-        qrCodeInput: null,
-        btnOldUser: null,
         btnNewUser: null,
+        idInfo: null,
+        idInput: null,
+        btnOldUser: null,
     };
-    const fileAdded = () => {
-        if (elements.qrCodeInput.files.length === 0) {
-            inner(elements.qrCodeBtn, 'Brak pliku');
-            elements.btnOldUser.disabled = true;
-        }
-        else {
-            inner(elements.qrCodeBtn, elements.qrCodeInput.files[0].name);
-            elements.btnOldUser.disabled = false;
-        }
+    const hideUserModal = () => {
+        modal_1.hide();
+        setStyle(elements.modal, 'display', 'none');
     };
-    modal.user = {
+    modal_1.user = {
         init: () => {
-            elements.modal = byId('modal-user');
-            elements.idInput = byId('modal-user-id-input');
-            elements.qrCodeBtn = byId('modal-user-qr-code-btn');
-            elements.qrCodeInput = byId('modal-user-qr-code-file');
-            elements.btnOldUser = byId('modal-user-btn-old-user');
             elements.btnNewUser = byId('modal-user-btn-new-user');
+            elements.modal = byId('modal-user');
+            elements.idInfo = byId('modal-user-id-info');
+            elements.idInput = byId('modal-user-id-input');
+            elements.btnOldUser = byId('modal-user-btn-old-user');
+            console.log('%c elements:', 'background: #ffcc00; color: #003300', elements);
         },
-        show: () => {
-            modal.show();
-            setStyle(elements.modal, 'display', 'flex');
-            elements.btnOldUser.disabled = true;
-            add(elements.qrCodeInput, 'change', fileAdded);
+        show: (setNewUser, getValidateUserId, getCheckUserId) => {
+            modal_1.show();
+            const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements;
+            setStyle(modal, 'display', 'flex');
+            btnOldUser.disabled = true;
+            add(btnNewUser, 'click', async () => {
+                await setNewUser();
+                hideUserModal();
+            });
+            const validateUserId = getValidateUserId(idInfo, btnOldUser);
+            add(idInput, 'input', validateUserId);
+            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal);
+            add(btnOldUser, 'click', checkUserId);
         },
-        hide: () => {
-            modal.hide();
-            setStyle(elements.modal, 'display', 'none');
-            remove(elements.qrCodeInput, 'change', fileAdded);
-        }
+        hide: hideUserModal
     };
 })(modal || (modal = {}));
 var modal;

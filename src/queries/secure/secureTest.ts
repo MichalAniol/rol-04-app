@@ -3,7 +3,7 @@ namespace queries {
         export const secureTest = async (): Promise<any> => {
             try {
                 // @ts-ignore
-                const response = await api.post(url.secure.test, {
+                const response = await api.post(url.secure.test, {}, {
                     withCredentials: true,
                 })
                 const data = response.data
