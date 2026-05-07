@@ -78,14 +78,9 @@ namespace starter {
                 memoUserId(secure.userId)
             }
 
-            // const checkId = await queries.user.checkId('123456')
-            // console.log('%c checkId:', 'background: #ffcc00; color: #003300', checkId)
+            // if (secure === null) {
 
-            // console.log('%c secure:', 'background: #ffcc00; color: #003300', secure)
-
-            if (secure === null) {
-
-            }
+            // }
         }
     }
 }

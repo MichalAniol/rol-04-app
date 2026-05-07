@@ -21,6 +21,12 @@ namespace queries {
                 getQr: `${rol04}get-user-qr-code`,
                 setQr: `${rol04}set-user-by-qr-code`,
             },
+            data: {
+                version: `${rol04}get-version`,
+                config: `${rol04}get-config`,
+                questions: `${rol04}get-questions`,
+                images: `${rol04}get-images`,
+            },
         }
     }())
 }

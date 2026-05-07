@@ -8,7 +8,7 @@ namespace queries {
         export const checkId = async (userId: string): Promise<UserCheckIdResponseT> => {
             const result = await api.post<UserCheckIdResponseT>(
                 url.user.check,
-                { userId: userId },
+                { userId },
                 { withCredentials: true, }
             )
 
