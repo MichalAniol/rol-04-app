@@ -3,6 +3,19 @@ namespace starter {
         export const check = async () => {
             const { setStyle, inner } = dom
 
+            const waitForIntervalClear = (intervalFn: (clear: () => void) => () => void, time: number) => {
+                return new Promise<void>((resolve) => {
+                    let interval: any
+
+                    const clear = () => {
+                        clearInterval(interval)
+                        resolve()
+                    }
+                    const fn = intervalFn(clear)
+
+                    interval = setInterval(fn, time)
+                })
+            }
 
             const versionDb = await core.store.get(storageNames.version) as string
 
@@ -12,7 +25,6 @@ namespace starter {
             if (versionRes !== versionDb) {
                 const configRes = await queries.data.getConfig()
                 const configDb = await core.store.get(storageNames.config) as GetConfigResponseT
-                console.log('%c configDb:', 'background: #ffcc00; color: #003300', configDb)
 
                 if (configRes.tests !== configDb.tests) {
                     setStyle(elements.statusNow, 'display', 'initial')
@@ -20,17 +32,13 @@ namespace starter {
                     inner(elements.statusAction, 'wczytywanie pytań')
 
                     const allQuestionsRes = await queries.data.getAllQuestions()
-                    console.log('%c allQuestionsRes:', 'background: #ffcc00; color: #003300', allQuestionsRes)
 
                     let index = 0
-                    const interval = setInterval(async () => {
+                    const questionInterval = (clear: () => void) => async () => {
+                        console.log('%c index:', 'background: #ffcc00; color: #003300', index)
                         const question = allQuestionsRes[index]
                         if (!question) {
-                            clearInterval(interval)
-
-                            // dodać img
-
-                            // await core.store.set(storageNames.config, configRes)
+                            clear()
                             return
                         }
 
@@ -45,7 +53,48 @@ namespace starter {
                         }
 
                         index++
-                    }, 1)
+                    }
+                    await waitForIntervalClear(questionInterval, 1)
+
+                    inner(elements.statusAction, `wczytywanie obrazów`)
+                    index = 0
+                    const imageInterval = (clear: () => void) => async () => {
+                        const imageDataRes = (configRes.img[index])
+                        if (!imageDataRes) {
+                            clear()
+                            return
+                        }
+                        console.log('%c imageDataRes.name:', 'background: #ffcc00; color: #003300', imageDataRes.name)
+
+                        inner(elements.statusAction, `wczytywanie obrazów ${index + 1}/${configRes.img.length}`)
+
+                        const imageDataDb = await core.idb.images.get(imageDataRes.name)
+
+                        if (!imageDataDb || imageDataDb.version !== imageDataRes.name) {
+                            const image = await queries.data.getImage(imageDataRes.name)
+
+                            await core.idb.images.set(imageDataRes.name, {
+                                version: imageDataRes.name,
+                                data: image,
+                            })
+                        }
+                        index++
+                    }
+                    await waitForIntervalClear(imageInterval, 300)
+
+                    setStyle(elements.statusNow, 'display', 'none')
+                    setStyle(elements.statusAction, 'display', 'none')
+
+                    // dodać img
+                    // const img = await queries.data.getImage('001')
+                    // console.log('%c img:', 'background: #ffcc00; color: #003300', img)
+
+                    // await core.store.set(storageNames.config, configRes)
+
+
+
+
+                    console.log('%c imageInterval:', 'background:rgb(255, 0, 247); color: #003300', imageInterval)
 
 
                 }

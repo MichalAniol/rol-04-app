@@ -23,6 +23,7 @@ interface ModulesT {
         core.store = store
 
         core.idb.questions = idb<QuestionDbSchemaT>('questions')
+        core.idb.images = idb<ImageDbSchemaT>('images')
 
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys()
