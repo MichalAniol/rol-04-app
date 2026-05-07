@@ -61,8 +61,8 @@ namespace utils {
         const init = () => {
             active()
             const saved = getSaved()
-            if (radioData.init) radioData.init(saved)
-            mark(saved)
+            if (radioData.init) radioData.init(saved as string)
+            mark(saved as string)
             return saved
         }
 

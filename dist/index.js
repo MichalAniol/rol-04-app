@@ -84,18 +84,35 @@ const storageNames = {
     theme: 'theme',
     questionsData: 'questions-data',
     imgData: 'img-data',
-    userId: 'user-id'
+    userId: 'user-id',
+    version: 'version',
+    config: 'config',
+};
+const configData = {
+    tests: 'null',
+    img: [],
+};
+const defaultData = {
+    theme: '',
+    questionsData: checked.yes,
+    imgData: checked.yes,
+    userId: 'null',
+    version: 'null',
+    config: configData,
 };
 const getStorage = async () => {
-    const defaultData = {
-        theme: '',
-        questionsData: checked.yes,
-        imgData: checked.yes,
-        userId: 'null',
-    };
-    const isValidJSONStringify = (str) => {
+    const isValidJSONStringify = (value) => {
         try {
-            JSON.stringify(str);
+            const result = JSON.stringify(value);
+            return result !== undefined;
+        }
+        catch {
+            return false;
+        }
+    };
+    const isValidJSONParse = (value) => {
+        try {
+            JSON.parse(value);
             return true;
         }
         catch {
@@ -103,43 +120,32 @@ const getStorage = async () => {
         }
     };
     const set = (key, value) => {
-        if (isValidJSONStringify(value)) {
-            localStorage.setItem(key, JSON.stringify(value));
+        if (!isValidJSONStringify(value)) {
+            throw new Error(`Value for key "${key}" is not JSON serializable`);
         }
-        else {
-            localStorage.setItem(key, value.toString());
-        }
-    };
-    const isValidJSONParse = (str) => {
-        try {
-            JSON.parse(str);
-            return true;
-        }
-        catch {
-            return false;
-        }
+        localStorage.setItem(key, JSON.stringify(value));
     };
     const get = (key) => {
         const value = localStorage.getItem(key);
-        if (!value)
+        if (value === null)
             return null;
-        if (typeof value === 'boolean')
-            return `${value}`;
-        if (isValidJSONParse(value)) {
-            return JSON.parse(value);
+        if (!isValidJSONParse(value)) {
+            return value;
         }
-        else {
-            return value.toString();
-        }
+        return JSON.parse(value);
+    };
+    const remove = (key) => {
+        localStorage.removeItem(key);
+    };
+    const clear = () => {
+        localStorage.clear();
     };
     const initData = () => {
-        const list = Object.keys(storageNames);
-        console.log('%c list:', 'background: #ffcc00; color: #003300', list);
-        list.forEach((key) => {
+        const keys = Object.keys(storageNames);
+        keys.forEach((key) => {
             const keyName = storageNames[key];
             const data = get(keyName);
-            console.log('%c data:', 'background: #ffcc00; color: #003300', data);
-            if (!data && defaultData[key]) {
+            if (data === null) {
                 set(keyName, defaultData[key]);
             }
         });
@@ -148,6 +154,10 @@ const getStorage = async () => {
     return {
         set,
         get,
+        remove,
+        clear,
+        isValidJSONStringify,
+        isValidJSONParse,
     };
 };
 var core;
@@ -593,6 +603,12 @@ var queries;
                 getQr: `${rol04}get-user-qr-code`,
                 setQr: `${rol04}set-user-by-qr-code`,
             },
+            data: {
+                version: `${rol04}get-version`,
+                config: `${rol04}get-config`,
+                questions: `${rol04}get-questions`,
+                images: `${rol04}get-images`,
+            },
         };
     }());
 })(queries || (queries = {}));
@@ -797,7 +813,7 @@ var queries;
     let user;
     (function (user) {
         user.checkId = async (userId) => {
-            const result = await queries.api.post(queries.url.user.check, { userId: userId }, { withCredentials: true, });
+            const result = await queries.api.post(queries.url.user.check, { userId }, { withCredentials: true, });
             return result.data;
         };
     })(user = queries.user || (queries.user = {}));
@@ -811,6 +827,26 @@ var queries;
             return result.data;
         };
     })(user = queries.user || (queries.user = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let data;
+    (function (data) {
+        data.getVersion = async (version) => {
+            const result = await queries.api.post(queries.url.data.version, { version }, { withCredentials: true, });
+            return result.data;
+        };
+    })(data = queries.data || (queries.data = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let data;
+    (function (data) {
+        data.getConfig = async () => {
+            const result = await queries.api.get(queries.url.data.config, { withCredentials: true, });
+            return result.data;
+        };
+    })(data = queries.data || (queries.data = {}));
 })(queries || (queries = {}));
 var controllers;
 (function (controllers) {
@@ -995,15 +1031,32 @@ var starter;
             else if (secure.command === queries.responseCommand.secure.go) {
                 memoUserId(secure.userId);
             }
-            if (secure === null) {
-            }
         };
     })(user = starter.user || (starter.user = {}));
 })(starter || (starter = {}));
 var starter;
 (function (starter) {
+    let data;
+    (function (data) {
+        data.check = async () => {
+            const versionDb = await core.store.get(storageNames.version);
+            const response = await queries.data.getVersion(versionDb);
+            const versionRes = response.version;
+            if (versionRes !== versionDb) {
+                const configRes = await queries.data.getConfig();
+                const configDb = await core.store.get(storageNames.config);
+                console.log('%c configDb:', 'background: #ffcc00; color: #003300', configDb);
+                if (configRes.tests !== configDb.tests) {
+                }
+            }
+        };
+    })(data = starter.data || (starter.data = {}));
+})(starter || (starter = {}));
+var starter;
+(function (starter) {
     starter.run = async () => {
         await starter.user.init();
+        await starter.data.check();
     };
 })(starter || (starter = {}));
 var statistics;
