@@ -1,4 +1,4 @@
-type QuestionResponseT = {
+type QuestionDbT = {
     version: string,
     question: string,
     answer: string,
@@ -8,7 +8,16 @@ type QuestionResponseT = {
 }
 
 type QuestionDbSchemaT = {
-    [key: string]: QuestionResponseT
+    [key: string]: QuestionDbT
+}
+
+type ImageDbT = {
+    version: string,
+    data: Blob,
+}
+
+type ImageDbSchemaT = {
+    [key: string]: ImageDbT
 }
 
 type CoreT = {
@@ -16,6 +25,7 @@ type CoreT = {
     isMobile: boolean
     idb: {
         questions: Idb<QuestionDbSchemaT> | null
+        images: Idb<ImageDbSchemaT> | null
         // answers: Idb<GetQuestionResponseT> | null
         // statistics: Idb<GetQuestionResponseT> | null
     }
@@ -31,6 +41,7 @@ namespace core {
 
     export const idb: CoreT["idb"] = {
         questions: null,
+        images: null,
         // answers: null,
         // statistics: null,
     }

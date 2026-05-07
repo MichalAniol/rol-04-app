@@ -21,21 +21,58 @@ var cookie;
         return null;
     };
 })(cookie || (cookie = {}));
-const idb = (storeName) => (function () {
-    const promisifyRequest = (request) => new Promise((resolve, reject) => {
-        request.oncomplete = request.onsuccess = () => resolve(request.result);
-        request.onabort = request.onerror = () => reject(request.error);
+const DB_NAME = 'rol04';
+const STORES = [
+    'questions',
+    'images',
+];
+const DB_VERSION = STORES.length;
+let dbPromise = null;
+const promisifyRequest = (request) => new Promise((resolve, reject) => {
+    request.oncomplete = request.onsuccess = () => resolve(request.result);
+    request.onabort = request.onerror = () => reject(request.error);
+});
+const openDb = async () => {
+    if (dbPromise) {
+        return dbPromise;
+    }
+    dbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            for (const storeName of STORES) {
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName);
+                }
+            }
+        };
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+        request.onerror = () => {
+            reject(request.error);
+        };
     });
-    const createStore = (dbName, storeName) => {
-        const request = indexedDB.open(dbName);
-        request.onupgradeneeded = () => request.result.createObjectStore(storeName);
-        const dbp = promisifyRequest(request);
-        return (txMode, callback) => dbp.then((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+    return dbPromise;
+};
+const createStore = (storeName) => {
+    if (!STORES.includes(storeName)) {
+        throw new Error(`Unknown IndexedDB store "${storeName}". Add it to STORES.`);
+    }
+    return async (txMode, callback) => {
+        const db = await openDb();
+        const tx = db.transaction(storeName, txMode);
+        const store = tx.objectStore(storeName);
+        const result = await callback(store);
+        await promisifyRequest(tx);
+        return result;
     };
+};
+const idb = (storeName) => (function () {
     let defaultGetStoreFunc;
     const defaultGetStore = () => {
         if (!defaultGetStoreFunc) {
-            defaultGetStoreFunc = createStore('rol04', storeName);
+            defaultGetStoreFunc = createStore(storeName);
         }
         return defaultGetStoreFunc;
     };
@@ -44,44 +81,47 @@ const idb = (storeName) => (function () {
         store.put(value, key);
         return promisifyRequest(store.transaction);
     });
-    const setMany = (entries, customStore = defaultGetStore()) => {
-        return customStore('readwrite', (store) => {
-            entries.forEach((entry) => store.put(entry[1], entry[0]));
-            return promisifyRequest(store.transaction);
+    const setMany = (entries, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
+        entries.forEach(([key, value]) => {
+            store.put(value, key);
         });
-    };
-    const getMany = (keys, customStore = defaultGetStore()) => {
-        return customStore('readonly', (store) => Promise.all(keys.map((key) => promisifyRequest(store.get(key)))));
-    };
+        return promisifyRequest(store.transaction);
+    });
+    const getMany = (keys, customStore = defaultGetStore()) => customStore('readonly', (store) => Promise.all(keys.map((key) => promisifyRequest(store.get(key)))));
     const update = (key, updater, customStore = defaultGetStore()) => customStore('readwrite', (store) => new Promise((resolve, reject) => {
-        store.get(key).onsuccess = function () {
+        const request = store.get(key);
+        request.onsuccess = () => {
             try {
-                store.put(updater(this.result), key);
+                store.put(updater(request.result), key);
                 resolve(promisifyRequest(store.transaction));
             }
             catch (err) {
                 reject(err);
             }
         };
+        request.onerror = () => {
+            reject(request.error);
+        };
     }));
     const del = (key, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
         store.delete(key);
         return promisifyRequest(store.transaction);
     });
+    const delMany = (keys, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
+        keys.forEach((key) => {
+            store.delete(key);
+        });
+        return promisifyRequest(store.transaction);
+    });
     const eachCursor = (store, callback) => {
         store.openCursor().onsuccess = function () {
-            if (!this.result)
+            if (!this.result) {
                 return;
+            }
             callback(this.result);
             this.result.continue();
         };
         return promisifyRequest(store.transaction);
-    };
-    const delMany = (keys, customStore = defaultGetStore()) => {
-        return customStore('readwrite', (store) => {
-            keys.forEach((key) => store.delete(key));
-            return promisifyRequest(store.transaction);
-        });
     };
     const keys = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
         if (store.getAllKeys) {
@@ -90,33 +130,36 @@ const idb = (storeName) => (function () {
         const items = [];
         return eachCursor(store, (cursor) => items.push(cursor.key)).then(() => items);
     });
-    const values = (customStore = defaultGetStore()) => {
-        return customStore('readonly', (store) => {
-            if (store.getAll) {
-                return promisifyRequest(store.getAll());
-            }
-            const items = [];
-            return eachCursor(store, (cursor) => items.push(cursor.value)).then(() => items);
-        });
-    };
-    const getAllData = (customStore = defaultGetStore()) => {
-        return customStore('readonly', (store) => {
-            if (store.getAll && store.getAllKeys) {
-                return Promise.all([
-                    promisifyRequest(store.getAllKeys()),
-                    promisifyRequest(store.getAll()),
-                ]).then(([keys, values]) => keys.map((key, i) => [key, values[i]]));
-            }
-            const items = [];
-            return customStore('readonly', (store) => eachCursor(store, (cursor) => items.push([cursor.key, cursor.value])).then(() => items));
-        });
-    };
-    const clear = (customStore = defaultGetStore()) => {
-        return customStore('readwrite', (store) => {
-            store.clear();
-            return promisifyRequest(store.transaction);
-        });
-    };
+    const values = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
+        if (store.getAll) {
+            return promisifyRequest(store.getAll());
+        }
+        const items = [];
+        return eachCursor(store, (cursor) => items.push(cursor.value)).then(() => items);
+    });
+    const getAllData = (customStore = defaultGetStore()) => customStore('readonly', async (store) => {
+        if (store.getAll && store.getAllKeys) {
+            const [keys, values] = await Promise.all([
+                promisifyRequest(store.getAllKeys()),
+                promisifyRequest(store.getAll()),
+            ]);
+            return keys.map((key, i) => [
+                key,
+                values[i],
+            ]);
+        }
+        const items = [];
+        return eachCursor(store, (cursor) => {
+            items.push([
+                cursor.key,
+                cursor.value,
+            ]);
+        }).then(() => items);
+    });
+    const clear = (customStore = defaultGetStore()) => customStore('readwrite', (store) => {
+        store.clear();
+        return promisifyRequest(store.transaction);
+    });
     return {
         get,
         set,
@@ -131,9 +174,6 @@ const idb = (storeName) => (function () {
         clear,
     };
 }());
-const db = async () => {
-    const testDb = idb('test');
-};
 const checked = {
     yes: 'yes',
     no: 'no',
@@ -226,6 +266,7 @@ var core;
         || window.innerWidth < 768;
     core.idb = {
         questions: null,
+        images: null,
     };
 })(core || (core = {}));
 var dom;
@@ -918,6 +959,16 @@ var queries;
         };
     })(data = queries.data || (queries.data = {}));
 })(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let data;
+    (function (data) {
+        data.getImage = async (name) => {
+            const result = await queries.api.post(queries.url.data.images, { name }, { withCredentials: true, });
+            return result.data;
+        };
+    })(data = queries.data || (queries.data = {}));
+})(queries || (queries = {}));
 var controllers;
 (function (controllers) {
     const { add } = dom;
@@ -1110,24 +1161,34 @@ var starter;
     (function (data) {
         data.check = async () => {
             const { setStyle, inner } = dom;
+            const waitForIntervalClear = (intervalFn, time) => {
+                return new Promise((resolve) => {
+                    let interval;
+                    const clear = () => {
+                        clearInterval(interval);
+                        resolve();
+                    };
+                    const fn = intervalFn(clear);
+                    interval = setInterval(fn, time);
+                });
+            };
             const versionDb = await core.store.get(storageNames.version);
             const response = await queries.data.getVersion(versionDb);
             const versionRes = response.version;
             if (versionRes !== versionDb) {
                 const configRes = await queries.data.getConfig();
                 const configDb = await core.store.get(storageNames.config);
-                console.log('%c configDb:', 'background: #ffcc00; color: #003300', configDb);
                 if (configRes.tests !== configDb.tests) {
                     setStyle(starter.elements.statusNow, 'display', 'initial');
                     setStyle(starter.elements.statusAction, 'display', 'initial');
                     inner(starter.elements.statusAction, 'wczytywanie pytań');
                     const allQuestionsRes = await queries.data.getAllQuestions();
-                    console.log('%c allQuestionsRes:', 'background: #ffcc00; color: #003300', allQuestionsRes);
                     let index = 0;
-                    const interval = setInterval(async () => {
+                    const questionInterval = (clear) => async () => {
+                        console.log('%c index:', 'background: #ffcc00; color: #003300', index);
                         const question = allQuestionsRes[index];
                         if (!question) {
-                            clearInterval(interval);
+                            clear();
                             return;
                         }
                         inner(starter.elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestionsRes.length}`);
@@ -1137,7 +1198,32 @@ var starter;
                             await core.idb.questions.set(id, newItem);
                         }
                         index++;
-                    }, 1);
+                    };
+                    await waitForIntervalClear(questionInterval, 1);
+                    inner(starter.elements.statusAction, `wczytywanie obrazów`);
+                    index = 0;
+                    const imageInterval = (clear) => async () => {
+                        const imageDataRes = (configRes.img[index]);
+                        if (!imageDataRes) {
+                            clear();
+                            return;
+                        }
+                        console.log('%c imageDataRes.name:', 'background: #ffcc00; color: #003300', imageDataRes.name);
+                        inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${configRes.img.length}`);
+                        const imageDataDb = await core.idb.images.get(imageDataRes.name);
+                        if (!imageDataDb || imageDataDb.version !== imageDataRes.name) {
+                            const image = await queries.data.getImage(imageDataRes.name);
+                            await core.idb.images.set(imageDataRes.name, {
+                                version: imageDataRes.name,
+                                data: image,
+                            });
+                        }
+                        index++;
+                    };
+                    await waitForIntervalClear(imageInterval, 300);
+                    setStyle(starter.elements.statusNow, 'display', 'none');
+                    setStyle(starter.elements.statusAction, 'display', 'none');
+                    console.log('%c imageInterval:', 'background:rgb(255, 0, 247); color: #003300', imageInterval);
                 }
             }
         };
@@ -1782,6 +1868,7 @@ const serviceWorker = () => {
     getStorage().then(async (store) => {
         core.store = store;
         core.idb.questions = idb('questions');
+        core.idb.images = idb('images');
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys();
             modules.forEach(m => { if (m.init)
