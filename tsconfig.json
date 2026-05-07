@@ -42,6 +42,8 @@
         "src/queries/user/setUserIdByQrCode.ts",
         "src/queries/data/version.ts",
         "src/queries/data/config.ts",
+        "src/queries/data/questions.ts",
+        "src/queries/data/images.ts",
         "src/inputs/keys.ts",
         "src/inputs/touch.ts",
         "src/screens/starter/starter.ts",

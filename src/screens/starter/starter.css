@@ -55,3 +55,8 @@
     stroke: var(--mine_color);
     stroke-width: 3px;
 }
+
+#status-now,
+#status-action {
+    display: none;
+}

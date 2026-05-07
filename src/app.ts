@@ -22,8 +22,7 @@ interface ModulesT {
     getStorage().then(async (store) => {
         core.store = store
 
-        // const testDb = idb('test')
-        // core.idbTest = testDb
+        core.idb.questions = idb<QuestionDbSchemaT>('questions')
 
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys()
@@ -48,20 +47,8 @@ interface ModulesT {
         })
 
 
-
-
         setConsole()
-
         serviceWorker()
-
-        // const testsDb = await dataBase.tests('bbb')
-        // await testsDb.set('tt', 'my===Test')
-
-        // const testData = await testsDb.get('tt')
-        // console.log('%c >>> testData:', 'background: #ffcc00; color: #003300', testData)
-
-
-
     })
 
 }())
