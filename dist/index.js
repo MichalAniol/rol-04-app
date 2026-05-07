@@ -35,7 +35,7 @@ const idb = (storeName) => (function () {
     let defaultGetStoreFunc;
     const defaultGetStore = () => {
         if (!defaultGetStoreFunc) {
-            defaultGetStoreFunc = createStore('rolnik', storeName);
+            defaultGetStoreFunc = createStore('rol04', storeName);
         }
         return defaultGetStoreFunc;
     };
@@ -44,6 +44,15 @@ const idb = (storeName) => (function () {
         store.put(value, key);
         return promisifyRequest(store.transaction);
     });
+    const setMany = (entries, customStore = defaultGetStore()) => {
+        return customStore('readwrite', (store) => {
+            entries.forEach((entry) => store.put(entry[1], entry[0]));
+            return promisifyRequest(store.transaction);
+        });
+    };
+    const getMany = (keys, customStore = defaultGetStore()) => {
+        return customStore('readonly', (store) => Promise.all(keys.map((key) => promisifyRequest(store.get(key)))));
+    };
     const update = (key, updater, customStore = defaultGetStore()) => customStore('readwrite', (store) => new Promise((resolve, reject) => {
         store.get(key).onsuccess = function () {
             try {
@@ -68,6 +77,12 @@ const idb = (storeName) => (function () {
         };
         return promisifyRequest(store.transaction);
     };
+    const delMany = (keys, customStore = defaultGetStore()) => {
+        return customStore('readwrite', (store) => {
+            keys.forEach((key) => store.delete(key));
+            return promisifyRequest(store.transaction);
+        });
+    };
     const keys = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
         if (store.getAllKeys) {
             return promisifyRequest(store.getAllKeys());
@@ -75,7 +90,50 @@ const idb = (storeName) => (function () {
         const items = [];
         return eachCursor(store, (cursor) => items.push(cursor.key)).then(() => items);
     });
+    const values = (customStore = defaultGetStore()) => {
+        return customStore('readonly', (store) => {
+            if (store.getAll) {
+                return promisifyRequest(store.getAll());
+            }
+            const items = [];
+            return eachCursor(store, (cursor) => items.push(cursor.value)).then(() => items);
+        });
+    };
+    const getAllData = (customStore = defaultGetStore()) => {
+        return customStore('readonly', (store) => {
+            if (store.getAll && store.getAllKeys) {
+                return Promise.all([
+                    promisifyRequest(store.getAllKeys()),
+                    promisifyRequest(store.getAll()),
+                ]).then(([keys, values]) => keys.map((key, i) => [key, values[i]]));
+            }
+            const items = [];
+            return customStore('readonly', (store) => eachCursor(store, (cursor) => items.push([cursor.key, cursor.value])).then(() => items));
+        });
+    };
+    const clear = (customStore = defaultGetStore()) => {
+        return customStore('readwrite', (store) => {
+            store.clear();
+            return promisifyRequest(store.transaction);
+        });
+    };
+    return {
+        get,
+        set,
+        setMany,
+        getMany,
+        update,
+        del,
+        delMany,
+        keys,
+        values,
+        getAllData,
+        clear,
+    };
 }());
+const db = async () => {
+    const testDb = idb('test');
+};
 const checked = {
     yes: 'yes',
     no: 'no',
@@ -163,10 +221,12 @@ const getStorage = async () => {
 var core;
 (function (core) {
     core.store = null;
-    core.idbTest = null;
     core.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10|PlayBook|IEMobile|Windows Phone|Opera Mini|Opera Mobi|Mobile Safari|Fennec|Kindle|Silk|Ubuntu Touch/i
         .test(navigator.userAgent)
         || window.innerWidth < 768;
+    core.idb = {
+        questions: null,
+    };
 })(core || (core = {}));
 var dom;
 (function (dom) {
@@ -848,6 +908,16 @@ var queries;
         };
     })(data = queries.data || (queries.data = {}));
 })(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let data;
+    (function (data) {
+        data.getAllQuestions = async () => {
+            const result = await queries.api.get(queries.url.data.questions, { withCredentials: true, });
+            return result.data;
+        };
+    })(data = queries.data || (queries.data = {}));
+})(queries || (queries = {}));
 var controllers;
 (function (controllers) {
     const { add } = dom;
@@ -1039,6 +1109,7 @@ var starter;
     let data;
     (function (data) {
         data.check = async () => {
+            const { setStyle, inner } = dom;
             const versionDb = await core.store.get(storageNames.version);
             const response = await queries.data.getVersion(versionDb);
             const versionRes = response.version;
@@ -1047,6 +1118,26 @@ var starter;
                 const configDb = await core.store.get(storageNames.config);
                 console.log('%c configDb:', 'background: #ffcc00; color: #003300', configDb);
                 if (configRes.tests !== configDb.tests) {
+                    setStyle(starter.elements.statusNow, 'display', 'initial');
+                    setStyle(starter.elements.statusAction, 'display', 'initial');
+                    inner(starter.elements.statusAction, 'wczytywanie pytań');
+                    const allQuestionsRes = await queries.data.getAllQuestions();
+                    console.log('%c allQuestionsRes:', 'background: #ffcc00; color: #003300', allQuestionsRes);
+                    let index = 0;
+                    const interval = setInterval(async () => {
+                        const question = allQuestionsRes[index];
+                        if (!question) {
+                            clearInterval(interval);
+                            return;
+                        }
+                        inner(starter.elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestionsRes.length}`);
+                        const { id, ...newItem } = question;
+                        const item = await core.idb.questions.get(id);
+                        if (!item || item.version !== newItem.version) {
+                            await core.idb.questions.set(id, newItem);
+                        }
+                        index++;
+                    }, 1);
                 }
             }
         };
@@ -1690,6 +1781,7 @@ const serviceWorker = () => {
     ];
     getStorage().then(async (store) => {
         core.store = store;
+        core.idb.questions = idb('questions');
         document.addEventListener("DOMContentLoaded", () => {
             controllers.initKeys();
             modules.forEach(m => { if (m.init)
