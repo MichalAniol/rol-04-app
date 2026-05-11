@@ -47,9 +47,7 @@ interface ModulesT {
             }, 100)
         })
 
-
         setConsole()
         serviceWorker()
     })
-
 }())

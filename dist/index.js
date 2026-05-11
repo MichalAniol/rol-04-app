@@ -185,6 +185,7 @@ const storageNames = {
     userId: 'user-id',
     version: 'version',
     config: 'config',
+    menuLeft: 'menu-left',
 };
 const configData = {
     tests: 'null',
@@ -197,6 +198,7 @@ const defaultData = {
     userId: 'null',
     version: 'null',
     config: configData,
+    menuLeft: checked.no,
 };
 const getStorage = async () => {
     const isValidJSONStringify = (value) => {
@@ -982,7 +984,7 @@ var controllers;
                 break;
             case 'Space':
                 {
-                    tab.mobile.changeVisibility();
+                    tab.simpleMenu.visible.changeVisibility();
                 }
                 break;
             case 'ArrowRight':
@@ -1220,11 +1222,12 @@ var starter;
                         }
                         index++;
                     };
-                    await waitForIntervalClear(imageInterval, 300);
+                    await waitForIntervalClear(imageInterval, 500);
                     setStyle(starter.elements.statusNow, 'display', 'none');
                     setStyle(starter.elements.statusAction, 'display', 'none');
-                    console.log('%c imageInterval:', 'background:rgb(255, 0, 247); color: #003300', imageInterval);
+                    await core.store.set(storageNames.config, configRes);
                 }
+                await core.store.set(storageNames.version, versionRes);
             }
         };
     })(data = starter.data || (starter.data = {}));
@@ -1410,6 +1413,36 @@ var settings;
 })(settings || (settings = {}));
 var settings;
 (function (settings) {
+    let menu;
+    (function (menu) {
+        const { byId, byQuery, getPx, setStyle } = dom;
+        const ids = {
+            prefix: 'setting-menu-',
+            side: {
+                right: 'right',
+                left: 'left',
+            },
+        };
+        const valuesList = [checked.no, checked.yes];
+        const menuNames = Object.values(ids.side);
+        const controlMenuData = {
+            prefix: ids.prefix,
+            storeName: storageNames.menuLeft,
+            elementList: menuNames,
+            nameList: valuesList,
+        };
+        menu.init = () => {
+            controlMenuData.clickList = [
+                () => tab.simpleMenu.visible.menuSide(checked.no),
+                () => tab.simpleMenu.visible.menuSide(checked.yes),
+            ];
+            menu.menuRatio = utils.getRadio(controlMenuData);
+            menu.menuRatio.init();
+        };
+    })(menu = settings.menu || (settings.menu = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
     const { byQuery, getPx, setStyle } = dom;
     const elements = {
         scrollBox: null,
@@ -1421,19 +1454,15 @@ var settings;
         elements.scrollBox = byQuery('#settings-tab-box .scroll-box');
         settings.info.init();
         settings.theme.init();
-        settings.dataControl.init();
+        settings.menu.init();
     };
     settings.active = () => {
         settings.info.active();
         settings.theme.ratio.active();
-        settings.dataControl.questionsRatio.active();
-        settings.dataControl.imgRatio.active();
     };
     settings.deactivate = () => {
         settings.info.deactivate();
         settings.theme.ratio.deactivate();
-        settings.dataControl.questionsRatio.deactivate();
-        settings.dataControl.imgRatio.deactivate();
     };
 })(settings || (settings = {}));
 var tab;
@@ -1497,11 +1526,14 @@ var tab;
         elements.allTabs = byId('tabs');
         elements.tabs = byQueryAll('.tab');
         tab_1.state.max = elements.tabs.length;
+        elements.menu.mobile = byId('menu-mobile');
         elements.menu.web = byId('menu-web');
         if (core.isMobile) {
             display(elements.menu.web, 'none');
+            tab_1.simpleMenu.init(tab_1.getGoTo);
         }
         else {
+            display(elements.menu.mobile, 'none');
             tab_1.state.carouselLeftPos = WEB_MENU_WIDTH;
             elements.menu.items = byQueryAll('.menu-web-item');
             for (let i = 0; i < elements.menu.items.length; ++i) {
@@ -1527,68 +1559,153 @@ var tab;
 })(tab || (tab = {}));
 var tab;
 (function (tab) {
-    let mobile;
-    (function (mobile) {
-        const { setStyle } = dom;
-        const vizElem = {
-            menu: [
-                ['width', 'mobile_diameter'],
-                ['height', 'mobile_diameter'],
-                ['right', 'mobile_negative_radius'],
-                ['bottom', 'mobile_negative_radius'],
-            ],
-            back: [
-                ['width', 'mobile_back_diameter'],
-                ['height', 'mobile_back_diameter'],
-                ['bottom', 'mobile_negative_radius'],
-                ['right', 'mobile_negative_radius'],
-            ],
-            dot: [
-                ['width', 'mobile_dot'],
-                ['height', 'mobile_dot'],
-            ],
-            iconHide: [
-                ['bottom', 'mobile_icon_hide_pos'],
-                ['right', 'mobile_icon_hide_pos'],
-            ],
+    let simpleMenu;
+    (function (simpleMenu) {
+        const { byId, byQuery, byQAll, getPx, setStyle, add } = dom;
+        simpleMenu.elements = {
+            menu: null,
+            list: null,
+            items: null,
+            iconShowHide: null,
+            iconShow: null,
+            iconHide: null,
+            iconHideSvg: null,
         };
-        const setTypeValues = {
-            on: '_on',
-            off: '_off',
+        simpleMenu.resize = () => {
         };
-        const getCssValue = (val, setType) => `var(--${val}${setType})`;
-        const set = (key, val, setType) => setStyle(mobile.elements[key], val[0], getCssValue(val[1], setType));
-        const setOn = (key, val) => set(key, val, setTypeValues.on);
-        const setOff = (key, val) => set(key, val, setTypeValues.off);
-        const getShow = () => () => {
-            Object.keys(vizElem).forEach((key) => vizElem[key].forEach(val => setOn(key, val)));
-            mobile.elements.items.forEach((item) => setStyle(item, 'top', 'var(--mobile_negative_radius_on)'));
-            setStyle(mobile.elements.dot, 'backgroundColor', 'var(--mobile_color_prime)');
-        };
-        const getHide = () => () => {
-            Object.keys(vizElem).forEach((key) => vizElem[key].forEach(val => setOff(key, val)));
-            mobile.elements.items.forEach((item) => setStyle(item, 'top', 'var(--mobile_negative_radius_off)'));
-            setStyle(mobile.elements.dot, 'backgroundColor', 'var(--mobile_color_second)');
-        };
-        const show = getShow();
-        const hide = getHide();
-        let visible = true;
-        mobile.changeVisibility = () => {
-            if (visible) {
-                hide();
-                visible = false;
+        const setIconsColor = (index) => simpleMenu.elements.items.forEach((item, i) => {
+            if (index === i) {
+                setStyle(item, 'fill', 'var(--mine_color)');
             }
             else {
-                show();
-                visible = true;
+                setStyle(item, 'fill', 'var(--mine_5_color)');
             }
+        });
+        simpleMenu.init = (getGoTo) => {
+            simpleMenu.elements.menu = byId('menu-mobile');
+            simpleMenu.elements.list = byQuery('.menu-mobile-list');
+            simpleMenu.elements.items = byQAll(simpleMenu.elements.menu, '.menu-mobile-item');
+            simpleMenu.elements.iconShowHide = byId('menu-mobile-icon-menu');
+            simpleMenu.elements.iconShow = byId('menu-mobile-icon-show');
+            simpleMenu.elements.iconHide = byId('menu-mobile-icon-hide');
+            simpleMenu.elements.iconHideSvg = byId('menu-mobile-icon-hide-svg');
+            simpleMenu.elements.items.forEach((item, index) => {
+                const goTo = getGoTo(index);
+                add(item, 'click', () => {
+                    goTo();
+                    setIconsColor(index);
+                });
+            });
+            setIconsColor(0);
+            simpleMenu.visible.init();
         };
-    })(mobile = tab.mobile || (tab.mobile = {}));
+    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
 })(tab || (tab = {}));
 var tab;
 (function (tab) {
-    let mobile;
-    (function (mobile) {
+    let simpleMenu;
+    (function (simpleMenu) {
+        let visible;
+        (function (visible) {
+            const { setStyle, addClass, removeClass, display, add } = dom;
+            let leftSide = checked.no;
+            const showHideIcon = {
+                show: null,
+                hide: null
+            };
+            const moveIconLeft = () => {
+                showHideIcon.hide = () => {
+                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0 30% 0 0');
+                    setStyle(simpleMenu.elements.menu, 'right', '');
+                    setStyle(simpleMenu.elements.menu, 'left', '-3%');
+                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '0%');
+                };
+                showHideIcon.show = () => {
+                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0');
+                    setStyle(simpleMenu.elements.menu, 'right', '');
+                    setStyle(simpleMenu.elements.menu, 'left', '0px');
+                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
+                };
+            };
+            const moveIconRight = () => {
+                showHideIcon.hide = () => {
+                    setStyle(simpleMenu.elements.menu, 'borderRadius', '30% 0 0 0');
+                    setStyle(simpleMenu.elements.menu, 'right', '-3%');
+                    setStyle(simpleMenu.elements.menu, 'left', '');
+                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
+                };
+                showHideIcon.show = () => {
+                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0');
+                    setStyle(simpleMenu.elements.menu, 'right', '0px');
+                    setStyle(simpleMenu.elements.menu, 'left', '');
+                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
+                };
+            };
+            const hide = async () => {
+                display(simpleMenu.elements.iconHide, 'initial');
+                display(simpleMenu.elements.iconShow, 'none');
+                display(simpleMenu.elements.list, 'none');
+                setStyle(simpleMenu.elements.menu, 'width', '17%');
+                setStyle(simpleMenu.elements.iconShowHide, 'width', '80%');
+                if (showHideIcon.hide)
+                    showHideIcon.hide();
+            };
+            const show = async () => {
+                display(simpleMenu.elements.iconHide, 'none');
+                display(simpleMenu.elements.iconShow, 'initial');
+                display(simpleMenu.elements.list, 'flex');
+                setStyle(simpleMenu.elements.menu, 'width', '100%');
+                setStyle(simpleMenu.elements.iconShowHide, 'width', '17%');
+                if (showHideIcon.show)
+                    showHideIcon.show();
+            };
+            let isVisible = true;
+            visible.menuSide = async (side) => {
+                if (side === checked.yes) {
+                    addClass(simpleMenu.elements.iconShowHide, 'menu-mobile-left-icon');
+                    moveIconLeft();
+                    simpleMenu.elements.items.forEach(i => {
+                        setStyle(i, 'borderLeft', '3px solid var(--fourth_from_end_color)');
+                        setStyle(i, 'borderRight', '0px solid var(--fourth_from_end_color)');
+                    });
+                }
+                else {
+                    removeClass(simpleMenu.elements.iconShowHide, 'menu-mobile-left-icon');
+                    moveIconRight();
+                    simpleMenu.elements.items.forEach(i => {
+                        setStyle(i, 'borderLeft', '0px solid var(--fourth_from_end_color)');
+                        setStyle(i, 'borderRight', '3px solid var(--fourth_from_end_color)');
+                    });
+                }
+                if (isVisible) {
+                    showHideIcon.show();
+                }
+                else {
+                    showHideIcon.hide();
+                }
+            };
+            visible.changeVisibility = () => {
+                if (isVisible) {
+                    hide();
+                    isVisible = false;
+                }
+                else {
+                    show();
+                    isVisible = true;
+                }
+            };
+            visible.init = async () => {
+                leftSide = await core.store.get(storageNames.menuLeft);
+                visible.menuSide(leftSide);
+                add(simpleMenu.elements.iconShowHide, 'click', visible.changeVisibility);
+            };
+        })(visible = simpleMenu.visible || (simpleMenu.visible = {}));
+    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
+})(tab || (tab = {}));
+var tab;
+(function (tab) {
+    let simpleMenu;
+    (function (simpleMenu) {
         let touch;
         (function (touch) {
             const { byId, byQAll, getPx, setStyle, add } = dom;
@@ -1606,14 +1723,9 @@ var tab;
                 angle: 0,
             };
             touch.resize = () => {
-                const menu = mobile.elements.menu.getBoundingClientRect();
-                const r = menu.width / 2;
-                state.pivot.x = menu.left + r;
-                state.pivot.y = menu.top + r;
-                console.log('%c state:', 'background: #ffcc00; color: #003300', state.pivot);
             };
             const setDeg = () => {
-                const style = window.getComputedStyle(mobile.elements.list);
+                const style = window.getComputedStyle(simpleMenu.elements.list);
                 const transform = style.transform;
                 const values = transform.match(/matrix\(([^)]+)\)/)?.[1].split(',').map(v => parseFloat(v));
                 if (values) {
@@ -1625,7 +1737,7 @@ var tab;
             };
             const getDeg = () => `rotate(${(state.originAngle + state.angle - state.startAngle)}deg)`;
             const rotate = () => {
-                setStyle(mobile.elements.list, 'transform', getDeg());
+                setStyle(simpleMenu.elements.list, 'transform', getDeg());
             };
             const getAngle = (dx, dy) => Math.atan2(dx, -dy) * 180 / Math.PI;
             const touchstart = (e) => {
@@ -1653,54 +1765,12 @@ var tab;
                 console.log(x, y);
             };
             touch.init = () => {
-                add(mobile.elements.menu, 'touchstart', touchstart);
-                add(mobile.elements.menu, 'touchmove', touchmove);
-                add(mobile.elements.menu, 'touchend', touchend);
+                add(simpleMenu.elements.menu, 'touchstart', touchstart);
+                add(simpleMenu.elements.menu, 'touchmove', touchmove);
+                add(simpleMenu.elements.menu, 'touchend', touchend);
             };
-        })(touch = mobile.touch || (mobile.touch = {}));
-    })(mobile = tab.mobile || (tab.mobile = {}));
-})(tab || (tab = {}));
-var tab;
-(function (tab) {
-    let simpleMenu;
-    (function (simpleMenu) {
-        const { byId, byQuery, byQAll, getPx, setStyle } = dom;
-        simpleMenu.elements = {
-            menu: null,
-        };
-        simpleMenu.resize = () => {
-        };
-        simpleMenu.init = () => {
-        };
+        })(touch = simpleMenu.touch || (simpleMenu.touch = {}));
     })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
-})(tab || (tab = {}));
-var tab;
-(function (tab) {
-    let mobile;
-    (function (mobile) {
-        const { byId, byQuery, byQAll, getPx, setStyle } = dom;
-        mobile.elements = {
-            menu: null,
-            back: null,
-            list: null,
-            items: null,
-            dot: null,
-            iconHide: null,
-        };
-        mobile.resize = () => {
-            mobile.touch.resize();
-        };
-        mobile.init = () => {
-            mobile.elements.menu = byId('menu-mobile');
-            mobile.elements.back = byId('menu-mobile-back');
-            mobile.elements.list = byQuery('.menu-mobile-list');
-            mobile.elements.items = byQAll(mobile.elements.menu, '.menu-mobile-item');
-            mobile.elements.dot = byId('menu-mobile-dot');
-            mobile.elements.iconHide = byId('menu-mobile-icon-hide');
-            setStyle(mobile.elements.back, 'display', 'initial');
-            mobile.touch.init();
-        };
-    })(mobile = tab.mobile || (tab.mobile = {}));
 })(tab || (tab = {}));
 var modal;
 (function (modal_1) {

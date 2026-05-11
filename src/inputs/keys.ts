@@ -8,7 +8,8 @@ namespace controllers {
                 event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
             } break
             case 'Space': {
-                tab.mobile.changeVisibility()
+                // tab.mobile.changeVisibility()
+                tab.simpleMenu.visible.changeVisibility()
             } break
             case 'ArrowRight':
             case 'KeyD': {

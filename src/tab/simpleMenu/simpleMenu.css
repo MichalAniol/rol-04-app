@@ -1,0 +1,46 @@
+#menu-mobile {
+    position: fixed;
+    bottom: 0;
+    /* left: none;
+    right: 0px; */
+    z-index: 100;
+    fill: var(--mine_5_color);
+    background-color: var(--penultimate_color);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+#menu-mobile svg {
+    width: 70%;
+    margin-left: 15%;
+    margin-top: 15%;
+    margin: 19% 15% 10% 15%;
+
+}
+
+.menu-mobile-list {
+    width: 83%;
+    display: flex;
+    /* display: none; */
+}
+
+#menu-mobile-icon-menu {
+    padding: 1% 0% 0% 1%;
+    width: 17%;
+}
+
+#menu-mobile-icon-menu svg {
+    fill: var(--mine_3_color);
+}
+
+.menu-mobile-left-icon {
+    order: -1;
+    transform: scaleX(-1);
+}
+
+
+#menu-mobile-icon-hide {
+    display: none;
+    /* padding: 20% 0% 0% 2%; */
+}

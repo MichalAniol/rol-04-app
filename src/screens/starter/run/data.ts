@@ -80,26 +80,17 @@ namespace starter {
                         }
                         index++
                     }
-                    await waitForIntervalClear(imageInterval, 300)
+                    await waitForIntervalClear(imageInterval, 500)
 
                     setStyle(elements.statusNow, 'display', 'none')
                     setStyle(elements.statusAction, 'display', 'none')
 
-                    // dodać img
-                    // const img = await queries.data.getImage('001')
-                    // console.log('%c img:', 'background: #ffcc00; color: #003300', img)
+                    await core.store.set(storageNames.config, configRes)
 
-                    // await core.store.set(storageNames.config, configRes)
-
-
-
-
-                    console.log('%c imageInterval:', 'background:rgb(255, 0, 247); color: #003300', imageInterval)
-
-
+                    // console.log('%c imageInterval:', 'background:rgb(255, 0, 247); color: #003300', imageInterval)
                 }
 
-                // await core.store.set(storageNames.version, versionRes) 
+                await core.store.set(storageNames.version, versionRes) 
             }
         }
     }

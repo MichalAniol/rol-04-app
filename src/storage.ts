@@ -12,6 +12,7 @@ type NamesValueTypeT = {
     userId: string
     version: string
     config: GetConfigResponseT
+    menuLeft: CheckedValuesT
 }
 
 const storageNames = {
@@ -21,6 +22,7 @@ const storageNames = {
     userId: 'user-id',
     version: 'version',
     config: 'config',
+    menuLeft: 'menu-left',
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -38,6 +40,7 @@ const defaultData: NamesValueTypeT = {
     userId: 'null',
     version: 'null',
     config: configData,
+    menuLeft: checked.no,
 }
 
 const getStorage = async () => {

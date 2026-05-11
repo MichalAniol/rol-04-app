@@ -18,20 +18,21 @@ namespace settings {
 
         info.init()
         theme.init()
-        dataControl.init()
+        // dataControl.init()
+        menu.init()
     }
 
     export const active = () => {
         info.active()
         theme.ratio.active()
-        dataControl.questionsRatio.active()
-        dataControl.imgRatio.active()
+        // dataControl.questionsRatio.active()
+        // dataControl.imgRatio.active()
     }
 
     export const deactivate = () => {
         info.deactivate()
         theme.ratio.deactivate()
-        dataControl.questionsRatio.deactivate()
-        dataControl.imgRatio.deactivate()
+        // dataControl.questionsRatio.deactivate()
+        // dataControl.imgRatio.deactivate()
     }
 }
