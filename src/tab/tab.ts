@@ -100,11 +100,13 @@ namespace tab {
         state.max = elements.tabs.length
 
         // elements.menu.mobile = byId('menu-mobile')
+        elements.menu.mobile = byId('menu-mobile') as HTMLElement
         elements.menu.web = byId('menu-web') as HTMLElement
 
         if (core.isMobile) {
             display(elements.menu.web, 'none')
             // mobile.init()
+            simpleMenu.init(getGoTo)
 
             // elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
             // for (let i = 0; i < elements.menu.items.length; ++i) {
@@ -114,7 +116,7 @@ namespace tab {
 
             // mobile.init()
         } else {
-            // display(elements.menu.mobile, 'none')
+            display(elements.menu.mobile, 'none')
             state.carouselLeftPos = WEB_MENU_WIDTH
 
             elements.menu.items = byQueryAll('.menu-web-item') as unknown as HTMLElement[]
