@@ -27,7 +27,7 @@ namespace utils {
             if (value === null) {
                 console.log(
                     '%c AssertionError:',
-                    'background: #ffcc00; color: #003300',
+                    'background:rgb(255, 0, 212); color: #003300',
                     `Passed value at "${getObjectPath(keys)}" is nullable`
                 )
             }

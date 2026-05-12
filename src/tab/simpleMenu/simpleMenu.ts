@@ -37,7 +37,7 @@ namespace tab {
             }
         })
 
-        export const init = (getGoTo: (screenNum: number) => () => void) => {
+        export const init = (getGoTo: (screenNum: number) => () => void, items: HTMLElement[]) => {
             elements.menu = byId('menu-mobile') as HTMLElement
             // elements.back = byId('menu-mobile-back') as HTMLElement
             elements.list = byQuery('.menu-mobile-list') as HTMLElement
@@ -48,13 +48,14 @@ namespace tab {
             elements.iconHideSvg = byId('menu-mobile-icon-hide-svg') as SVGElement
 
             elements.items.forEach((item, index) => {
+                items.push(item)
                 const goTo = getGoTo(index)
                 add(item, 'click', () => {
                     goTo()
                     setIconsColor(index)
                 })
             })
-            utils.isNotNull(elements)
+            utils.areNotNull(elements, ['simpleMenu'])
 
             setIconsColor(0)
             // setStyle(elements.items[0], 'fill', 'var(--mine_color)')
