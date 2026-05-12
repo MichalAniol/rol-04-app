@@ -125,6 +125,8 @@ namespace tab {
                 add(item, 'click', getGoTo(i))
             }
         }
+
+        utils.isNotNull(elements)
     }
 
     export const resize = (w: number, h: number) => {

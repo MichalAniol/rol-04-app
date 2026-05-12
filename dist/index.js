@@ -597,6 +597,48 @@ const setConsole = () => (function () {
     }]); }));
 var utils;
 (function (utils) {
+    const getObjectPath = (keys) => {
+        let path = '';
+        keys.forEach((key) => {
+            if (typeof key === 'number') {
+                path += `[${key}]`;
+                return;
+            }
+            path += path ? `.${key}` : key;
+        });
+        return path;
+    };
+    utils.isNotNull = (value, keys = []) => {
+        if (value === null) {
+            console.log('%c AssertionError:', 'background: #ffcc00; color: #003300', `Passed value at "${getObjectPath(keys)}" is nullable`);
+        }
+    };
+    utils.areNotNull = (value, keys = []) => {
+        utils.isNotNull(value, keys);
+        if (value === null) {
+            return;
+        }
+        if (Array.isArray(value)) {
+            value.forEach((item, index) => {
+                utils.areNotNull(item, [
+                    ...keys,
+                    index
+                ]);
+            });
+            return;
+        }
+        if (typeof value === 'object') {
+            Object.entries(value).forEach(([key, nestedValue]) => {
+                utils.areNotNull(nestedValue, [
+                    ...keys,
+                    key
+                ]);
+            });
+        }
+    };
+})(utils || (utils = {}));
+var utils;
+(function (utils) {
     utils.resize = () => {
         const functionList = [];
         const add = (fn) => functionList.push(fn);
@@ -1266,6 +1308,7 @@ var learning;
         elements.checkbox = byQueryAll('.answer input');
         elements.checkbox.forEach(c => c.checked = false);
         elements.confirm = byId('learning-confirm-btn');
+        utils.isNotNull(elements);
         mark(-1)();
     };
     learning.active = () => {
@@ -1301,10 +1344,10 @@ var settings;
             elements.settingsAppInfoMore = byId('settings-app-info-more');
             elements.settingsAppInfoLess = byId('settings-app-info-less');
             elements.settingsAppInfoContent = byId('settings-app-info-content');
+            utils.isNotNull(elements);
             setTimeout(() => {
                 const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
                 state.settingsAppInfoContentHeight = contentBox.height;
-                console.log('%c state.settingsAppInfoContentHeight:', 'background:rgb(3, 169, 61); color: #003300', state.settingsAppInfoContentHeight, state.open);
                 setStyle(elements.settingsAppInfoLess, 'display', 'none');
                 setStyle(elements.settingsAppInfoContent, 'height', '0px');
             }, 100);
@@ -1469,6 +1512,7 @@ var settings;
     };
     settings.init = () => {
         elements.scrollBox = byQuery('#settings-tab-box .scroll-box');
+        utils.isNotNull(elements);
         settings.info.init();
         settings.theme.init();
         settings.menu.init();
@@ -1558,6 +1602,7 @@ var tab;
                 add(item, 'click', tab_1.getGoTo(i));
             }
         }
+        utils.isNotNull(elements);
     };
     tab_1.resize = (w, h) => {
         tab_1.state.tabWidth = w - tab_1.state.carouselLeftPos;
@@ -1613,6 +1658,7 @@ var tab;
                     setIconsColor(index);
                 });
             });
+            utils.isNotNull(simpleMenu.elements);
             setIconsColor(0);
             simpleMenu.visible.init();
         };
@@ -1810,7 +1856,7 @@ var modal;
             elements.idInfo = byId('modal-user-id-info');
             elements.idInput = byId('modal-user-id-input');
             elements.btnOldUser = byId('modal-user-btn-old-user');
-            console.log('%c elements:', 'background: #ffcc00; color: #003300', elements);
+            utils.isNotNull(elements);
         },
         show: (setNewUser, getValidateUserId, getCheckUserId) => {
             modal_1.show();
@@ -1886,6 +1932,7 @@ var modal;
     modal.init = () => {
         elements.modal = byId('modal');
         elements.back = byId('modal-back');
+        utils.isNotNull(elements);
         modal.error.init();
         modal.user.init();
     };

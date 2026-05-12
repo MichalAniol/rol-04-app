@@ -32,11 +32,11 @@ namespace settings {
             elements.settingsAppInfoMore = byId('settings-app-info-more') as HTMLElement
             elements.settingsAppInfoLess = byId('settings-app-info-less') as HTMLElement
             elements.settingsAppInfoContent = byId('settings-app-info-content') as HTMLElement
+            utils.isNotNull(elements)
 
             setTimeout(() => {
                 const contentBox = elements.settingsAppInfoContent.getBoundingClientRect()
                 state.settingsAppInfoContentHeight = contentBox.height
-                console.log('%c state.settingsAppInfoContentHeight:', 'background:rgb(3, 169, 61); color: #003300', state.settingsAppInfoContentHeight, state.open)
 
                 setStyle(elements.settingsAppInfoLess, 'display', 'none')
                 setStyle(elements.settingsAppInfoContent, 'height', '0px')
