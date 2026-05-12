@@ -54,6 +54,7 @@ namespace tab {
                     setIconsColor(index)
                 })
             })
+            utils.isNotNull(elements)
 
             setIconsColor(0)
             // setStyle(elements.items[0], 'fill', 'var(--mine_color)')

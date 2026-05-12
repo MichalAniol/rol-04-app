@@ -15,6 +15,7 @@ namespace settings {
 
     export const init = () => {
         elements.scrollBox = byQuery('#settings-tab-box .scroll-box') as HTMLElement
+        utils.isNotNull(elements)
 
         info.init()
         theme.init()

@@ -26,6 +26,7 @@
         "src/dom.ts",
         "src/console.ts",
         "src/axios.min.ts",
+        "src/utils/isNotNull.ts",
         "src/utils/resize.ts",
         "src/utils/sleep.ts",
         "src/utils/radio.ts",

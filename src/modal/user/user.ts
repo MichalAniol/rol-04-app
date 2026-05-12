@@ -47,7 +47,8 @@ namespace modal {
             // elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
             // elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
             elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
-            console.log('%c elements:', 'background: #ffcc00; color: #003300', elements)
+
+            utils.isNotNull(elements)
         },
 
         show: (
