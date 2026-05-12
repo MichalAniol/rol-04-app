@@ -1293,24 +1293,41 @@ var settings;
             settingsAppInfoContent: null,
         };
         const state = {
-            settingsAppInfoContentHeight: null
+            settingsAppInfoContentHeight: null,
+            open: false,
         };
         info.init = () => {
             elements.settingsAppInfo = byId('settings-app-info-title');
             elements.settingsAppInfoMore = byId('settings-app-info-more');
             elements.settingsAppInfoLess = byId('settings-app-info-less');
             elements.settingsAppInfoContent = byId('settings-app-info-content');
-            const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
-            state.settingsAppInfoContentHeight = contentBox.height;
-            setStyle(elements.settingsAppInfoLess, 'display', 'none');
-            setStyle(elements.settingsAppInfoContent, 'height', '0px');
+            setTimeout(() => {
+                const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
+                state.settingsAppInfoContentHeight = contentBox.height;
+                console.log('%c state.settingsAppInfoContentHeight:', 'background:rgb(3, 169, 61); color: #003300', state.settingsAppInfoContentHeight, state.open);
+                setStyle(elements.settingsAppInfoLess, 'display', 'none');
+                setStyle(elements.settingsAppInfoContent, 'height', '0px');
+            }, 100);
+        };
+        const showInfo = () => {
+            if (state.open) {
+                setStyle(elements.settingsAppInfoLess, 'display', 'none');
+                setStyle(elements.settingsAppInfoMore, 'display', 'initial');
+                setStyle(elements.settingsAppInfoContent, 'height', '0px');
+            }
+            else {
+                setStyle(elements.settingsAppInfoLess, 'display', 'initial');
+                setStyle(elements.settingsAppInfoMore, 'display', 'none');
+                setStyle(elements.settingsAppInfoContent, 'height', `${state.settingsAppInfoContentHeight}px`);
+            }
+            state.open = !state.open;
         };
         info.active = () => {
-            add(elements.settingsAppInfo, 'click', () => {
-                setStyle(elements.settingsAppInfoContent, 'height', `${state.settingsAppInfoContentHeight}px`);
-            });
+            add(elements.settingsAppInfo, 'click', showInfo);
         };
-        info.deactivate = () => { };
+        info.deactivate = () => {
+            remove(elements.settingsAppInfo, 'click', showInfo);
+        };
     })(info = settings.info || (settings.info = {}));
 })(settings || (settings = {}));
 var settings;
