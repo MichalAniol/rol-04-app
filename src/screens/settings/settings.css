@@ -16,3 +16,10 @@
     font-size: var(--font_medium);
     font-weight: var(--bold);
 }
+
+.setting-status {
+    font-size: var(--font_big_size);
+    line-height: var(--font_big_size);
+    margin-bottom: 5px;
+
+}
