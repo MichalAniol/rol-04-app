@@ -48,7 +48,7 @@ namespace modal {
             // elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
             elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
 
-            utils.isNotNull(elements)
+            utils.areNotNull(elements, ['modal', 'user'])
         },
 
         show: (

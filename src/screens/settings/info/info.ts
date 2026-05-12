@@ -32,7 +32,7 @@ namespace settings {
             elements.settingsAppInfoMore = byId('settings-app-info-more') as HTMLElement
             elements.settingsAppInfoLess = byId('settings-app-info-less') as HTMLElement
             elements.settingsAppInfoContent = byId('settings-app-info-content') as HTMLElement
-            utils.isNotNull(elements)
+            utils.areNotNull(elements, ['settings', 'info'])
 
             setTimeout(() => {
                 const contentBox = elements.settingsAppInfoContent.getBoundingClientRect()

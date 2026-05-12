@@ -610,7 +610,7 @@ var utils;
     };
     utils.isNotNull = (value, keys = []) => {
         if (value === null) {
-            console.log('%c AssertionError:', 'background: #ffcc00; color: #003300', `Passed value at "${getObjectPath(keys)}" is nullable`);
+            console.log('%c AssertionError:', 'background:rgb(255, 0, 212); color: #003300', `Passed value at "${getObjectPath(keys)}" is nullable`);
         }
     };
     utils.areNotNull = (value, keys = []) => {
@@ -1308,7 +1308,7 @@ var learning;
         elements.checkbox = byQueryAll('.answer input');
         elements.checkbox.forEach(c => c.checked = false);
         elements.confirm = byId('learning-confirm-btn');
-        utils.isNotNull(elements);
+        utils.areNotNull(elements, ['learning']);
         mark(-1)();
     };
     learning.active = () => {
@@ -1344,7 +1344,7 @@ var settings;
             elements.settingsAppInfoMore = byId('settings-app-info-more');
             elements.settingsAppInfoLess = byId('settings-app-info-less');
             elements.settingsAppInfoContent = byId('settings-app-info-content');
-            utils.isNotNull(elements);
+            utils.areNotNull(elements, ['settings', 'info']);
             setTimeout(() => {
                 const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
                 state.settingsAppInfoContentHeight = contentBox.height;
@@ -1512,7 +1512,7 @@ var settings;
     };
     settings.init = () => {
         elements.scrollBox = byQuery('#settings-tab-box .scroll-box');
-        utils.isNotNull(elements);
+        utils.areNotNull(elements, ['settings']);
         settings.info.init();
         settings.theme.init();
         settings.menu.init();
@@ -1591,7 +1591,8 @@ var tab;
         elements.menu.web = byId('menu-web');
         if (core.isMobile) {
             display(elements.menu.web, 'none');
-            tab_1.simpleMenu.init(tab_1.getGoTo);
+            elements.menu.items = [];
+            tab_1.simpleMenu.init(tab_1.getGoTo, elements.menu.items);
         }
         else {
             display(elements.menu.mobile, 'none');
@@ -1602,7 +1603,7 @@ var tab;
                 add(item, 'click', tab_1.getGoTo(i));
             }
         }
-        utils.isNotNull(elements);
+        utils.areNotNull(elements, ['tab']);
     };
     tab_1.resize = (w, h) => {
         tab_1.state.tabWidth = w - tab_1.state.carouselLeftPos;
@@ -1643,7 +1644,7 @@ var tab;
                 setStyle(item, 'fill', 'var(--mine_5_color)');
             }
         });
-        simpleMenu.init = (getGoTo) => {
+        simpleMenu.init = (getGoTo, items) => {
             simpleMenu.elements.menu = byId('menu-mobile');
             simpleMenu.elements.list = byQuery('.menu-mobile-list');
             simpleMenu.elements.items = byQAll(simpleMenu.elements.menu, '.menu-mobile-item');
@@ -1652,13 +1653,14 @@ var tab;
             simpleMenu.elements.iconHide = byId('menu-mobile-icon-hide');
             simpleMenu.elements.iconHideSvg = byId('menu-mobile-icon-hide-svg');
             simpleMenu.elements.items.forEach((item, index) => {
+                items.push(item);
                 const goTo = getGoTo(index);
                 add(item, 'click', () => {
                     goTo();
                     setIconsColor(index);
                 });
             });
-            utils.isNotNull(simpleMenu.elements);
+            utils.areNotNull(simpleMenu.elements, ['simpleMenu']);
             setIconsColor(0);
             simpleMenu.visible.init();
         };
@@ -1856,7 +1858,7 @@ var modal;
             elements.idInfo = byId('modal-user-id-info');
             elements.idInput = byId('modal-user-id-input');
             elements.btnOldUser = byId('modal-user-btn-old-user');
-            utils.isNotNull(elements);
+            utils.areNotNull(elements, ['modal', 'user']);
         },
         show: (setNewUser, getValidateUserId, getCheckUserId) => {
             modal_1.show();
@@ -1932,7 +1934,7 @@ var modal;
     modal.init = () => {
         elements.modal = byId('modal');
         elements.back = byId('modal-back');
-        utils.isNotNull(elements);
+        utils.areNotNull(elements, ['modal']);
         modal.error.init();
         modal.user.init();
     };

@@ -106,7 +106,8 @@ namespace tab {
         if (core.isMobile) {
             display(elements.menu.web, 'none')
             // mobile.init()
-            simpleMenu.init(getGoTo)
+            elements.menu.items = []
+            simpleMenu.init(getGoTo, elements.menu.items)
 
             // elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
             // for (let i = 0; i < elements.menu.items.length; ++i) {
@@ -126,7 +127,7 @@ namespace tab {
             }
         }
 
-        utils.isNotNull(elements)
+        utils.areNotNull(elements, ['tab'])
     }
 
     export const resize = (w: number, h: number) => {
