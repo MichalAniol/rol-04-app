@@ -39,12 +39,15 @@ namespace starter {
         elements.statusNow = byId('status-now') as SVGTextContentElement
         elements.statusAction = byId('status-action') as SVGTextContentElement
         elements.version = byId('starter-version') as SVGTextContentElement
+
+        utils.areNotNull(elements, ['starter', 'screen'])
     }
 
 
     export const resize = (w: number, h: number) => {
+        const menuH = (121 / 701) * w
         const versionX = w - elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200)
-        const versionY = h - 6
+        const versionY = h - 6 - (core.isMobile ? menuH : 0)
         setAttribute(elements.version, 'x', `${getPx(versionX)}`)
         setAttribute(elements.version, 'y', `${getPx(versionY)}`)
 
@@ -63,13 +66,16 @@ namespace starter {
                 y += size * 1.1
             });
 
-            y += 50;
-            [elements.userLabel, elements.userId].forEach(user => {
-                setAttribute(user, 'y', `${getPx(y)}`)
-                y += 24
-            })
+            y += 50
 
-            y += 20;
+            setAttribute(elements.userLabel, 'y', `${getPx(y)}`)
+            const userIdSize = (w < h ? w : h) / 14
+            y += userIdSize + 6
+            setStyle(elements.userId, 'fontSize', `${getPx(userIdSize)}`);
+            setAttribute(elements.userId, 'y', `${getPx(y)}`)
+
+            y += 24 + 24;
+
             [elements.statusNow, elements.statusAction].forEach(status => {
                 setAttribute(status, 'y', `${getPx(y)}`)
                 y += 24
@@ -104,7 +110,7 @@ namespace starter {
         }
     }
 
-    
+
 
 
 

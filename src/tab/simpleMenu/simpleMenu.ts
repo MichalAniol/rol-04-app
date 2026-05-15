@@ -1,7 +1,7 @@
 namespace tab {
     // LINK doc\adr\0002.tab-menu.md
     export namespace simpleMenu {
-        const { byId, byQuery, byQAll, getPx, setStyle, add } = dom
+        const { byId, byQuery, byQAll, getPx, setStyle, add, display } = dom
 
         export type ElementsT = {
             menu: HTMLElement | null
@@ -29,11 +29,11 @@ namespace tab {
             // touch.resize()
         }
 
-       const setIconsColor = (index: number) => elements.items.forEach((item, i) => {
+        const setIconsColor = (index: number) => elements.items.forEach((item, i) => {
             if (index === i) {
-                setStyle(item, 'fill' , 'var(--mine_color)')
+                setStyle(item, 'fill', 'var(--mine_color)')
             } else {
-                setStyle(item, 'fill' , 'var(--mine_5_color)')
+                setStyle(item, 'fill', 'var(--mine_6_color)')
             }
         })
 
@@ -57,12 +57,13 @@ namespace tab {
             })
             utils.areNotNull(elements, ['simpleMenu'])
 
+            display(elements.menu, 'none')
             setIconsColor(0)
-            // setStyle(elements.items[0], 'fill', 'var(--mine_color)')
-            // setStyle(elements.back, 'display', 'initial')
 
             // touch.init()
             visible.init()
         }
+
+        export const showMenu = () => display(elements.menu, 'flex')
     }
 }

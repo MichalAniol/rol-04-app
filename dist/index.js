@@ -25,6 +25,9 @@ const DB_NAME = 'rol04';
 const STORES = [
     'questions',
     'images',
+    'answers',
+    'statistics',
+    'logs',
 ];
 const DB_VERSION = STORES.length;
 let dbPromise = null;
@@ -182,23 +185,31 @@ const storageNames = {
     theme: 'theme',
     questionsData: 'questions-data',
     imgData: 'img-data',
+    imgAvailable: 'img-available',
     userId: 'user-id',
     version: 'version',
     config: 'config',
+    newConfig: 'new-config',
     menuLeft: 'menu-left',
+    questionsRatio: 'questions-ratio'
 };
 const configData = {
     tests: 'null',
     img: [],
 };
+const START_QUESTIONS_RATIO = .85;
+const getQuestionsRatio = () => Math.floor(engine.params.determinants.questionInSession * START_QUESTIONS_RATIO).toString();
 const defaultData = {
     theme: '',
     questionsData: checked.yes,
     imgData: checked.yes,
+    imgAvailable: checked.no,
     userId: 'null',
     version: 'null',
     config: configData,
+    newConfig: checked.no,
     menuLeft: checked.no,
+    questionsRatio: null,
 };
 const getStorage = async () => {
     const isValidJSONStringify = (value) => {
@@ -249,6 +260,10 @@ const getStorage = async () => {
                 set(keyName, defaultData[key]);
             }
         });
+        const questionsRatio = get(storageNames.questionsRatio);
+        if (questionsRatio === null) {
+            set(storageNames.questionsRatio, getQuestionsRatio());
+        }
     };
     initData();
     return {
@@ -269,6 +284,9 @@ var core;
     core.idb = {
         questions: null,
         images: null,
+        answers: null,
+        statistics: null,
+        logs: null,
     };
 })(core || (core = {}));
 var dom;
@@ -701,6 +719,272 @@ var utils;
         };
     };
 })(utils || (utils = {}));
+var engine;
+(function (engine) {
+    let helpers;
+    (function (helpers) {
+        helpers.getDateAtNoonInXDays = (daysPlus, date) => {
+            const newDate = date ? new Date(date) : new Date();
+            const targetDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate() + daysPlus, 12, 0, 0, 0);
+            return targetDate.getTime();
+        };
+        helpers.generateTriangularSequence = (length) => {
+            const result = [];
+            let n = 1, current = 0;
+            for (let i = 0; i < length; i++) {
+                current += n;
+                result.push(current);
+                n++;
+            }
+            return result;
+        };
+    })(helpers = engine.helpers || (engine.helpers = {}));
+})(engine || (engine = {}));
+var engine;
+(function (engine) {
+    let params;
+    (function (params) {
+        params.determinants = {
+            questionInSession: 30,
+            lastGood: 3,
+            repetition: engine.helpers.generateTriangularSequence(10),
+        };
+        params.repeatable = {
+            lastUsed: 0.1,
+            nextUse: 0.3,
+            appearance: 0.1,
+            rating: 1.2,
+            littleUsed: 0,
+            temperature: 0.1,
+        };
+        params.single = {
+            lastUsed: 0.2,
+            nextUse: 0.5,
+            appearance: 0.1,
+            rating: 2,
+            littleUsed: 2,
+            temperature: 1,
+        };
+        params.data = {
+            weights: null,
+            questions: null,
+            answers: null,
+            quantities: [],
+            normalizedWeights: {
+                repeatable: null,
+                single: null,
+            },
+            numOfQuestions: {
+                repeatable: 0,
+                single: 0,
+            }
+        };
+        const getNormalizedWeights = (weights) => {
+            let sume = 0;
+            Object.keys(weights).forEach((key) => sume += weights[key]);
+            sume -= weights.temperature;
+            const normalizedWeights = { ...weights };
+            Object.keys(weights).forEach((key) => normalizedWeights[key] = weights[key] / sume);
+            normalizedWeights.temperature = weights.temperature;
+            return normalizedWeights;
+        };
+        const updateQuestions = async () => {
+            const questions = await core.idb.questions.getAllData();
+            params.data.questions = [];
+            questions.forEach(question => {
+                const index = question[0];
+                const item = question[1];
+                params.data.questions[index] = item;
+            });
+        };
+        params.init = async () => {
+            await updateQuestions();
+            params.data.normalizedWeights.repeatable = getNormalizedWeights(params.repeatable);
+            params.data.normalizedWeights.single = getNormalizedWeights(params.single);
+            const now = engine.helpers.getDateAtNoonInXDays(1);
+            const answers = await core.idb.answers.getAllData();
+            await answers.forEach(async (answer, i) => {
+                if (answer[1].expectedUse < now) {
+                    answer[1].expectedUse = engine.helpers.getDateAtNoonInXDays(0, now);
+                    await core.idb.answers.set(...answer);
+                }
+            });
+            const questionRatio = Number(core.store.get(storageNames.questionsRatio));
+            const questionNum = params.determinants.questionInSession;
+            params.data.numOfQuestions.repeatable = questionRatio;
+            params.data.numOfQuestions.single = questionNum - questionRatio;
+        };
+        params.updateAnswers = async () => {
+            const answersDb = await core.idb.answers.getAllData();
+            const answers = answersDb
+                .sort((a, b) => b[1].used - a[1].used);
+            params.data.answers = [];
+            answers.forEach((answer, i) => {
+                const index = answer[0];
+                const item = answer[1];
+                item.drawn = false;
+                item.index = index;
+                params.data.answers[i] = item;
+            });
+        };
+    })(params = engine.params || (engine.params = {}));
+})(engine || (engine = {}));
+var engine;
+(function (engine) {
+    let analize;
+    (function (analize) {
+        const countLastFewFalse = (answer) => {
+            if (answer) {
+                const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
+                const lastFew = sortedHistory.slice(0, engine.params.determinants.lastGood);
+                const result = lastFew.filter(entry => !entry.result).length;
+                return result;
+            }
+            return 0;
+        };
+        const prepareData = (reverseLastUse) => {
+            const now = engine.helpers.getDateAtNoonInXDays(1);
+            let maxLastUse = now;
+            let maxNextUse = now;
+            let maxImportance = 1;
+            let maxUsed = 0;
+            const preData = engine.params.data.answers.map((answer, i) => {
+                let lastUsed = 0;
+                let nextUse = 0;
+                let rating = 0;
+                if (answer !== null) {
+                    let theLastOne = 0;
+                    const history = answer.history;
+                    const last = answer.history.forEach(a => {
+                        if (a.timestamp > theLastOne)
+                            theLastOne = a.timestamp;
+                    });
+                    lastUsed = now - theLastOne;
+                    nextUse = nextUse - now;
+                    if (maxNextUse < nextUse)
+                        maxNextUse = nextUse;
+                    let allFalsies = countLastFewFalse(answer);
+                    rating = allFalsies / engine.params.determinants.lastGood;
+                }
+                if (lastUsed < maxLastUse)
+                    maxLastUse = lastUsed;
+                const appearance = answer.used;
+                if (maxImportance < appearance)
+                    maxImportance = appearance;
+                if (answer && maxUsed < answer.history.length)
+                    maxUsed = answer.history.length;
+                return {
+                    id: answer.id,
+                    i,
+                    used: answer ? answer.history.length : 0,
+                    lastUsed,
+                    nextUse,
+                    appearance,
+                    rating,
+                };
+            });
+            const data = preData.map(p => {
+                let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
+                if (reverseLastUse)
+                    lastUsed = 1 - lastUsed;
+                const used = maxUsed === 0 ? 1 : (1 - (p.used / maxUsed));
+                return {
+                    id: p.id,
+                    i: p.i,
+                    used,
+                    lastUsed,
+                    nextUse: p.nextUse / maxNextUse,
+                    appearance: p.appearance / maxImportance,
+                    rating: p.rating,
+                };
+            });
+            return data;
+        };
+        const checkGoodAnswers = () => {
+            const countLastFewTrue = (answer) => {
+                if (answer) {
+                    const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
+                    const lastFew = sortedHistory.slice(0, engine.params.determinants.lastGood);
+                    const result = lastFew.filter(entry => !entry.result).length;
+                    if (result === 0)
+                        return true;
+                }
+                return false;
+            };
+            let sume = 0;
+            engine.params.data.answers.forEach(a => {
+                if (countLastFewTrue(a))
+                    sume++;
+            });
+            return sume;
+        };
+        const scoringData = (data, weights) => {
+            const scoredData = data.map(d => {
+                const score = (weights.lastUsed * d.lastUsed) +
+                    (weights.nextUse * d.nextUse) +
+                    (weights.appearance * d.appearance) +
+                    (weights.rating * d.rating) +
+                    (weights.littleUsed * d.used);
+                return { ...d, score };
+            });
+            return scoredData.sort((a, b) => b.score - a.score);
+        };
+        analize.getTensors = async (normalizedWeights) => {
+            await engine.params.updateAnswers();
+            const data = prepareData(false);
+            const result = scoringData(data, normalizedWeights);
+            return result;
+        };
+    })(analize = engine.analize || (engine.analize = {}));
+})(engine || (engine = {}));
+var engine;
+(function (engine) {
+    let select;
+    (function (select) {
+        select.selectByTemperature = (array, temperature, num) => {
+            if (temperature < 0) {
+                throw new Error("Temperature musi być w zakresie od 0 do 1.");
+            }
+            if (temperature > 1)
+                temperature = 1;
+            if (num > array.length) {
+                throw new Error("Nie można wybrać więcej elementów niż zawiera tablica.");
+            }
+            const baseSharpness = 50;
+            const k = baseSharpness * (1 - temperature);
+            const weights = array.map((_, i) => 1 / Math.log(k * i + 2));
+            const result = [];
+            const usedIndices = new Set();
+            while (result.length < num) {
+                const totalWeight = weights.reduce((sum, w, i) => usedIndices.has(i) ? sum : sum + w, 0);
+                let rand = Math.random() * totalWeight * temperature;
+                for (let i = 0; i < array.length; i++) {
+                    if (usedIndices.has(i))
+                        continue;
+                    rand -= weights[i];
+                    if (rand <= 0) {
+                        result.push(array[i]);
+                        usedIndices.add(i);
+                        break;
+                    }
+                }
+            }
+            return result;
+        };
+    })(select = engine.select || (engine.select = {}));
+})(engine || (engine = {}));
+var engine;
+(function (engine) {
+    engine.get20questions = async () => {
+        const answersTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable);
+        const repeatableTensors = engine.select.selectByTemperature(answersTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
+        const newAnswersTensors = answersTensors
+            .filter(answer => !repeatableTensors.some(a => a.i === answer.i));
+        const singleTensors = engine.select.selectByTemperature(newAnswersTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
+        const tensors = [...repeatableTensors, ...singleTensors];
+        console.log('%c tensors:', 'background: #ffcc00; color: #003300', tensors);
+    };
+})(engine || (engine = {}));
 var queries;
 (function (queries) {
     queries.responseCommand = {
@@ -1073,10 +1357,12 @@ var starter;
         starter.elements.statusNow = byId('status-now');
         starter.elements.statusAction = byId('status-action');
         starter.elements.version = byId('starter-version');
+        utils.areNotNull(starter.elements, ['starter', 'screen']);
     };
     starter.resize = (w, h) => {
+        const menuH = (121 / 701) * w;
         const versionX = w - starter.elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200);
-        const versionY = h - 6;
+        const versionY = h - 6 - (core.isMobile ? menuH : 0);
         setAttribute(starter.elements.version, 'x', `${getPx(versionX)}`);
         setAttribute(starter.elements.version, 'y', `${getPx(versionY)}`);
         const svgHeight = `${getPx(h)}`;
@@ -1091,11 +1377,12 @@ var starter;
                 y += size * 1.1;
             });
             y += 50;
-            [starter.elements.userLabel, starter.elements.userId].forEach(user => {
-                setAttribute(user, 'y', `${getPx(y)}`);
-                y += 24;
-            });
-            y += 20;
+            setAttribute(starter.elements.userLabel, 'y', `${getPx(y)}`);
+            const userIdSize = (w < h ? w : h) / 14;
+            y += userIdSize + 6;
+            setStyle(starter.elements.userId, 'fontSize', `${getPx(userIdSize)}`);
+            setAttribute(starter.elements.userId, 'y', `${getPx(y)}`);
+            y += 24 + 24;
             [starter.elements.statusNow, starter.elements.statusAction].forEach(status => {
                 setAttribute(status, 'y', `${getPx(y)}`);
                 y += 24;
@@ -1146,13 +1433,18 @@ var starter;
         };
         const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
         const regex = new RegExp(`^[${ALPHABET}]{21}$`);
-        user.init = async () => {
+        user.init = async (dataCheck) => {
+            const go = async () => {
+                await queries.secure.getSecure();
+                setTimeout(dataCheck, 100);
+            };
             const secure = await queries.secure.getSecure();
             console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
             if (secure.command === queries.responseCommand.secure.generateUserId) {
                 const setNewUser = async () => {
                     const userIdSet = await queries.user.set();
                     memoUserId(userIdSet.userId);
+                    go();
                 };
                 const getNo = (info, btn) => (text) => {
                     inner(info, text);
@@ -1186,6 +1478,7 @@ var starter;
                     if (state === queries.responseCommand.user.ok) {
                         memoUserId(input.value);
                         hide();
+                        go();
                     }
                     else {
                         no('Niema takiego użytkownika');
@@ -1195,6 +1488,7 @@ var starter;
             }
             else if (secure.command === queries.responseCommand.secure.go) {
                 memoUserId(secure.userId);
+                go();
             }
         };
     })(user = starter.user || (starter.user = {}));
@@ -1222,28 +1516,34 @@ var starter;
             if (versionRes !== versionDb) {
                 const configRes = await queries.data.getConfig();
                 const configDb = await core.store.get(storageNames.config);
+                await core.store.set(storageNames.newConfig, checked.yes);
+                await core.store.set(storageNames.imgAvailable, checked.no);
                 if (configRes.tests !== configDb.tests) {
                     setStyle(starter.elements.statusNow, 'display', 'initial');
                     setStyle(starter.elements.statusAction, 'display', 'initial');
                     inner(starter.elements.statusAction, 'wczytywanie pytań');
                     const allQuestionsRes = await queries.data.getAllQuestions();
+                    const allQuestions = allQuestionsRes.map(question => {
+                        if (!question.used)
+                            question.used = [];
+                        return question;
+                    });
                     let index = 0;
                     const questionInterval = (clear) => async () => {
-                        console.log('%c index:', 'background: #ffcc00; color: #003300', index);
-                        const question = allQuestionsRes[index];
+                        const question = allQuestions[index];
                         if (!question) {
                             clear();
                             return;
                         }
-                        inner(starter.elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestionsRes.length}`);
-                        const { id, ...newItem } = question;
-                        const item = await core.idb.questions.get(id);
-                        if (!item || item.version !== newItem.version) {
-                            await core.idb.questions.set(id, newItem);
+                        inner(starter.elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestions.length}`);
+                        const item = await core.idb.questions.get(index);
+                        if (!item || item.version !== question.version) {
+                            await core.idb.questions.set(index, question);
                         }
                         index++;
                     };
                     await waitForIntervalClear(questionInterval, 1);
+                    tab.simpleMenu.showMenu();
                     inner(starter.elements.statusAction, `wczytywanie obrazów`);
                     index = 0;
                     const imageInterval = (clear) => async () => {
@@ -1252,7 +1552,6 @@ var starter;
                             clear();
                             return;
                         }
-                        console.log('%c imageDataRes.name:', 'background: #ffcc00; color: #003300', imageDataRes.name);
                         inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${configRes.img.length}`);
                         const imageDataDb = await core.idb.images.get(imageDataRes.name);
                         if (!imageDataDb || imageDataDb.version !== imageDataRes.name) {
@@ -1264,21 +1563,43 @@ var starter;
                         }
                         index++;
                     };
-                    await waitForIntervalClear(imageInterval, 500);
+                    await waitForIntervalClear(imageInterval, 100);
+                    await core.store.set(storageNames.imgAvailable, checked.yes);
                     setStyle(starter.elements.statusNow, 'display', 'none');
                     setStyle(starter.elements.statusAction, 'display', 'none');
                     await core.store.set(storageNames.config, configRes);
+                    await core.store.set(storageNames.newConfig, checked.no);
                 }
                 await core.store.set(storageNames.version, versionRes);
             }
+            const questions = await core.idb.questions.getAllData();
+            let maxUsed = 0;
+            questions.forEach(async (question, index) => {
+                const key = question[0];
+                const q = question[1];
+                if (maxUsed < q.used.length + 1)
+                    maxUsed = q.used.length + 1;
+                const answer = await core.idb.answers.get(key);
+                if (!answer) {
+                    await core.idb.answers.set(index, {
+                        id: q.id,
+                        history: [],
+                        expectedUse: 0,
+                        used: q.used.length + 1
+                    });
+                }
+            });
+            engine.params.data.quantities = Array(maxUsed).fill(0);
+            questions.forEach(q => engine.params.data.quantities[q[1].used.length]++);
+            console.log('%c engine.params.data.quantities:', 'background: #ffcc00; color: #003300', engine.params.data.quantities);
+            tab.simpleMenu.showMenu();
         };
     })(data = starter.data || (starter.data = {}));
 })(starter || (starter = {}));
 var starter;
 (function (starter) {
     starter.run = async () => {
-        await starter.user.init();
-        await starter.data.check();
+        await starter.user.init(starter.data.check);
     };
 })(starter || (starter = {}));
 var statistics;
@@ -1414,6 +1735,53 @@ var settings;
 })(settings || (settings = {}));
 var settings;
 (function (settings) {
+    let ratio;
+    (function (ratio) {
+        const { byId, byQuery, getPx, setStyle, add, remove, inner } = dom;
+        const elements = {
+            settingsSliderRepeatable: null,
+            settingsSliderSingle: null,
+            settingsSliderInput: null,
+        };
+        const state = {
+            ratio: 0,
+        };
+        ratio.init = async () => {
+            elements.settingsSliderRepeatable = byId('settings-slider-repeatable');
+            elements.settingsSliderSingle = byId('settings-slider-single');
+            elements.settingsSliderInput = byId('settings-slider-input');
+            utils.areNotNull(elements, ['settings', 'ratio']);
+            state.ratio = Number(await core.store.get(storageNames.questionsRatio));
+            elements.settingsSliderInput.value = state.ratio.toString();
+            elements.settingsSliderInput.max = engine.params.determinants.questionInSession.toString();
+            inner(elements.settingsSliderRepeatable, state.ratio.toString());
+            inner(elements.settingsSliderSingle, (engine.params.determinants.questionInSession - state.ratio).toString());
+        };
+        const showRatio = (event) => {
+            const value = event.target.value;
+            inner(elements.settingsSliderRepeatable, value);
+            inner(elements.settingsSliderSingle, (engine.params.determinants.questionInSession - Number(value)).toString());
+        };
+        const memoRatio = async (event) => {
+            const value = event.target.value;
+            state.ratio = Number(value);
+            await core.store.set(storageNames.questionsRatio, value);
+            engine.params.data.numOfQuestions.repeatable = state.ratio;
+            const single = engine.params.determinants.questionInSession - state.ratio;
+            engine.params.data.numOfQuestions.single = single;
+        };
+        ratio.active = () => {
+            add(elements.settingsSliderInput, 'input', showRatio);
+            add(elements.settingsSliderInput, 'change', memoRatio);
+        };
+        ratio.deactivate = () => {
+            remove(elements.settingsSliderInput, 'input', showRatio);
+            remove(elements.settingsSliderInput, 'change', memoRatio);
+        };
+    })(ratio = settings.ratio || (settings.ratio = {}));
+})(settings || (settings = {}));
+var settings;
+(function (settings) {
     const { root, setAttribute, setStyle, removeClass, addClass } = dom;
     let theme;
     (function (theme_1) {
@@ -1515,15 +1883,18 @@ var settings;
         utils.areNotNull(elements, ['settings']);
         settings.info.init();
         settings.theme.init();
+        settings.ratio.init();
         settings.menu.init();
     };
     settings.active = () => {
         settings.info.active();
         settings.theme.ratio.active();
+        settings.ratio.active();
     };
     settings.deactivate = () => {
         settings.info.deactivate();
         settings.theme.ratio.deactivate();
+        settings.ratio.deactivate();
     };
 })(settings || (settings = {}));
 var tab;
@@ -1624,7 +1995,7 @@ var tab;
 (function (tab) {
     let simpleMenu;
     (function (simpleMenu) {
-        const { byId, byQuery, byQAll, getPx, setStyle, add } = dom;
+        const { byId, byQuery, byQAll, getPx, setStyle, add, display } = dom;
         simpleMenu.elements = {
             menu: null,
             list: null,
@@ -1641,7 +2012,7 @@ var tab;
                 setStyle(item, 'fill', 'var(--mine_color)');
             }
             else {
-                setStyle(item, 'fill', 'var(--mine_5_color)');
+                setStyle(item, 'fill', 'var(--mine_6_color)');
             }
         });
         simpleMenu.init = (getGoTo, items) => {
@@ -1661,9 +2032,11 @@ var tab;
                 });
             });
             utils.areNotNull(simpleMenu.elements, ['simpleMenu']);
+            display(simpleMenu.elements.menu, 'none');
             setIconsColor(0);
             simpleMenu.visible.init();
         };
+        simpleMenu.showMenu = () => display(simpleMenu.elements.menu, 'flex');
     })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
 })(tab || (tab = {}));
 var tab;
@@ -2005,7 +2378,10 @@ const serviceWorker = () => {
         core.store = store;
         core.idb.questions = idb('questions');
         core.idb.images = idb('images');
-        document.addEventListener("DOMContentLoaded", () => {
+        core.idb.answers = idb('answers');
+        core.idb.statistics = idb('statistics');
+        core.idb.logs = idb('logs');
+        document.addEventListener("DOMContentLoaded", async () => {
             controllers.initKeys();
             modules.forEach(m => { if (m.init)
                 m.init(); });
@@ -2014,9 +2390,11 @@ const serviceWorker = () => {
                 resize.add(m.resize);
             } });
             resize.run();
-            setTimeout(starter.run, 300);
-            setTimeout(() => {
-                tab.getGoTo(0)();
+            await starter.run();
+            setTimeout(async () => {
+                tab.getGoTo(4)();
+                await engine.params.init();
+                await engine.get20questions();
             }, 100);
         });
         setConsole();

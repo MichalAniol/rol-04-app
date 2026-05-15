@@ -32,6 +32,9 @@ const DB_NAME = 'rol04'
 const STORES = [
     'questions',
     'images',
+    'answers',
+    'statistics',
+    'logs',
 ] as const
 
 const DB_VERSION = STORES.length

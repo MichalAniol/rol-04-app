@@ -19,6 +19,7 @@ namespace settings {
 
         info.init()
         theme.init()
+        ratio.init()
         // dataControl.init()
         menu.init()
     }
@@ -26,6 +27,7 @@ namespace settings {
     export const active = () => {
         info.active()
         theme.ratio.active()
+        ratio.active()
         // dataControl.questionsRatio.active()
         // dataControl.imgRatio.active()
     }
@@ -33,6 +35,7 @@ namespace settings {
     export const deactivate = () => {
         info.deactivate()
         theme.ratio.deactivate()
+        ratio.deactivate()
         // dataControl.questionsRatio.deactivate()
         // dataControl.imgRatio.deactivate()
     }

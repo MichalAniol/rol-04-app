@@ -9,20 +9,26 @@ type NamesValueTypeT = {
     theme: string
     questionsData: CheckedValuesT
     imgData: CheckedValuesT
+    imgAvailable: CheckedValuesT
     userId: string
     version: string
     config: GetConfigResponseT
+    newConfig: CheckedValuesT
     menuLeft: CheckedValuesT
+    questionsRatio: string
 }
 
 const storageNames = {
     theme: 'theme',
     questionsData: 'questions-data',
     imgData: 'img-data',
+    imgAvailable: 'img-available',  //
     userId: 'user-id',
     version: 'version',
     config: 'config',
+    newConfig: 'new-config', //
     menuLeft: 'menu-left',
+    questionsRatio: 'questions-ratio'
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -33,14 +39,20 @@ const configData: GetConfigResponseT = {
     img: [],
 }
 
+const START_QUESTIONS_RATIO = .85
+const getQuestionsRatio = () => Math.floor(engine.params.determinants.questionInSession * START_QUESTIONS_RATIO).toString()
+
 const defaultData: NamesValueTypeT = {
     theme: '',
     questionsData: checked.yes,
     imgData: checked.yes,
+    imgAvailable: checked.no,
     userId: 'null',
     version: 'null',
     config: configData,
+    newConfig: checked.no,
     menuLeft: checked.no,
+    questionsRatio: null,
 }
 
 const getStorage = async () => {
@@ -108,6 +120,11 @@ const getStorage = async () => {
                 set<typeof key>(keyName, defaultData[key])
             }
         })
+
+        const questionsRatio = get(storageNames.questionsRatio)
+        if (questionsRatio === null) {
+            set(storageNames.questionsRatio, getQuestionsRatio())
+        }
     }
 
     initData()

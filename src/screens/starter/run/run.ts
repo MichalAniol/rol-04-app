@@ -1,7 +1,7 @@
 namespace starter {
     export const run = async () => {
-        await user.init()
-        await data.check()
+        await user.init(data.check)
+        // await data.check()
 
 
         // config i porównanie
