@@ -1,8 +1,6 @@
 #menu-mobile {
     position: fixed;
     bottom: 0;
-    /* left: none;
-    right: 0px; */
     z-index: 100;
     fill: var(--mine_5_color);
     background-color: var(--penultimate_color);
@@ -31,7 +29,7 @@
 }
 
 #menu-mobile-icon-menu svg {
-    fill: var(--mine_3_color);
+    fill: var(--mine_5_color);
 }
 
 .menu-mobile-left-icon {
@@ -42,5 +40,4 @@
 
 #menu-mobile-icon-hide {
     display: none;
-    /* padding: 20% 0% 0% 2%; */
 }

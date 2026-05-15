@@ -5,7 +5,7 @@ type GetQuestionResponseT = {
     answer: string,
     falseAnswers: [string, string, string],
     firstUsed: string,
-    used: string[]
+    used?: string[]
   }
 
 namespace queries {

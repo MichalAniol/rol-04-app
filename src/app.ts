@@ -24,8 +24,11 @@ interface ModulesT {
 
         core.idb.questions = idb<QuestionDbSchemaT>('questions')
         core.idb.images = idb<ImageDbSchemaT>('images')
+        core.idb.answers = idb<AnswersDbSchemaT>('answers')
+        core.idb.statistics = idb<any>('statistics')
+        core.idb.logs = idb<any>('logs')
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             controllers.initKeys()
 
             modules.forEach(m => { if (m.init) m.init() })
@@ -35,15 +38,19 @@ interface ModulesT {
 
             resize.run()
 
-            setTimeout(starter.run, 300)
+            // setTimeout(starter.run, 300)
+            await starter.run()
 
             // tests.errorModal()
             // settings.active()
 
 
 
-            setTimeout(() => {
-                tab.getGoTo(0)()
+            setTimeout(async () => {
+                tab.getGoTo(4)()
+
+                await engine.params.init()
+                await engine.get20questions()
             }, 100)
         })
 

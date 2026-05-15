@@ -15,7 +15,12 @@ namespace starter {
         const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig
         const regex = new RegExp(`^[${ALPHABET}]{21}$`)
 
-        export const init = async () => {
+        export const init = async (dataCheck: () => Promise<void>) => {
+            const go = async () => {
+                await queries.secure.getSecure()
+                setTimeout(dataCheck, 100)
+            }
+
             // await queries.secure.getSecure()
             const secure = await queries.secure.getSecure()
             console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure)
@@ -25,6 +30,8 @@ namespace starter {
                 const setNewUser = async () => {
                     const userIdSet = await queries.user.set()
                     memoUserId(userIdSet.userId)
+
+                    go()
                 }
 
                 const getNo = (info: HTMLElement, btn: HTMLButtonElement) => (text: string) => {
@@ -68,6 +75,7 @@ namespace starter {
                     if (state === queries.responseCommand.user.ok) {
                         memoUserId(input.value)
                         hide()
+                        go()
                     } else {
                         no('Niema takiego użytkownika')
                     }
@@ -76,6 +84,7 @@ namespace starter {
                 modal.user.show(setNewUser, validateUserId, checkUserId)
             } else if (secure.command === queries.responseCommand.secure.go) {
                 memoUserId(secure.userId)
+                go()
             }
 
             // if (secure === null) {
