@@ -1,7 +1,15 @@
 namespace statistics {
-    export const init = () => {}
+    export const init = () => {
+        draw.init()
+    }
 
-    export const active = () => {}
+    export const resize = (w: number, h: number) => {
+        draw.resize(w, h)
+    }
 
-    export const deactivate = () => {}
+    export const active = () => {
+        draw.cells()
+    }
+
+    export const deactivate = () => { }
 }

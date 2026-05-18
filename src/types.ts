@@ -36,19 +36,19 @@ type ImageDbSchemaT = {
 }
 
 type AnswersDbT = {
-    id: string
+    id: string // zgodne z pytaniem
     history: {
         timestamp: number,
         result: boolean,
     }[],
     expectedUse: number,
     used: number
+    rating?: null, // ocena do wyświetlania koloru na statystykach
 }
 
 type AnswersT = AnswersDbT & {
-    drawn: boolean,
-    index: number,
-    rating?: null,
+    drawn: boolean, // do usuwania już wylogowany w następnych turach tej samej sesji
+    index: number, // zgodny z pytaniem
 }
 
 type AnswersDbSchemaT = {

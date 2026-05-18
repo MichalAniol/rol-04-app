@@ -292,6 +292,7 @@ var core;
 var dom;
 (function (dom) {
     dom.root = document.documentElement;
+    dom.style = window.getComputedStyle(document.body);
     dom.byId = (id) => {
         return document.getElementById(id);
     };
@@ -344,6 +345,7 @@ var dom;
     dom.setStyle = (element, style, value) => {
         element.style[style] = value;
     };
+    dom.getColorFromStyle = (name) => dom.style.getPropertyValue(name).trim();
     dom.setAllStyles = (styles) => styles.forEach((s) => dom.setStyle(s[0], s[1], s[2]));
     dom.setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
     dom.setAllAttributes = (attributes) => attributes.forEach((a) => a[0].setAttribute(a[1], a[2]));
@@ -746,7 +748,8 @@ var engine;
     (function (params) {
         params.determinants = {
             questionInSession: 30,
-            lastGood: 3,
+            numLastRequiredQuestions: 3,
+            numLastHighlyRatedQuestions: 6,
             repetition: engine.helpers.generateTriangularSequence(10),
         };
         params.repeatable = {
@@ -770,6 +773,7 @@ var engine;
             questions: null,
             answers: null,
             quantities: [],
+            sume: 0,
             normalizedWeights: {
                 repeatable: null,
                 single: null,
@@ -777,7 +781,7 @@ var engine;
             numOfQuestions: {
                 repeatable: 0,
                 single: 0,
-            }
+            },
         };
         const getNormalizedWeights = (weights) => {
             let sume = 0;
@@ -836,7 +840,7 @@ var engine;
         const countLastFewFalse = (answer) => {
             if (answer) {
                 const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
-                const lastFew = sortedHistory.slice(0, engine.params.determinants.lastGood);
+                const lastFew = sortedHistory.slice(0, engine.params.determinants.numLastRequiredQuestions);
                 const result = lastFew.filter(entry => !entry.result).length;
                 return result;
             }
@@ -864,7 +868,7 @@ var engine;
                     if (maxNextUse < nextUse)
                         maxNextUse = nextUse;
                     let allFalsies = countLastFewFalse(answer);
-                    rating = allFalsies / engine.params.determinants.lastGood;
+                    rating = allFalsies / engine.params.determinants.numLastRequiredQuestions;
                 }
                 if (lastUsed < maxLastUse)
                     maxLastUse = lastUsed;
@@ -904,7 +908,7 @@ var engine;
             const countLastFewTrue = (answer) => {
                 if (answer) {
                     const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
-                    const lastFew = sortedHistory.slice(0, engine.params.determinants.lastGood);
+                    const lastFew = sortedHistory.slice(0, engine.params.determinants.numLastRequiredQuestions);
                     const result = lastFew.filter(entry => !entry.result).length;
                     if (result === 0)
                         return true;
@@ -1590,8 +1594,12 @@ var starter;
                 }
             });
             engine.params.data.quantities = Array(maxUsed).fill(0);
-            questions.forEach(q => engine.params.data.quantities[q[1].used.length]++);
-            console.log('%c engine.params.data.quantities:', 'background: #ffcc00; color: #003300', engine.params.data.quantities);
+            engine.params.data.sume = 0;
+            questions.forEach(q => {
+                engine.params.data.quantities[q[1].used.length]++;
+                engine.params.data.sume++;
+            });
+            statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)));
             tab.simpleMenu.showMenu();
         };
     })(data = starter.data || (starter.data = {}));
@@ -1604,9 +1612,134 @@ var starter;
 })(starter || (starter = {}));
 var statistics;
 (function (statistics) {
-    statistics.init = () => { };
-    statistics.active = () => { };
+    statistics.data = {
+        base: {
+            used: { min: null, max: null },
+            bad: { min: null, max: null },
+            good: { min: null, max: null },
+        },
+        steps: {
+            used: [],
+            bad: [],
+            good: [],
+        },
+        monitor: {
+            size: 0,
+            width: 0,
+        },
+        cell: {
+            size: 0,
+            space: 0,
+        }
+    };
+    statistics.determinants = {
+        cell: {
+            size: 20,
+            space: 2,
+        }
+    };
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    let helpers;
+    (function (helpers) {
+        const hexToRgb = (hex) => {
+            const newHex = hex.trim().replace(/^#/, '');
+            if (newHex.length !== 6) {
+                throw new Error(`Nieprawidłowy format koloru HEX: "${hex}"`);
+            }
+            const bigint = parseInt(newHex, 16);
+            return {
+                r: (bigint >> 16) & 255,
+                g: (bigint >> 8) & 255,
+                b: bigint & 255
+            };
+        };
+        const mix = (from, to, ratio) => {
+            const rgb = {
+                r: Math.round(from.r + (to.r - from.r) * ratio),
+                g: Math.round(from.g + (to.g - from.g) * ratio),
+                b: Math.round(from.b + (to.b - from.b) * ratio)
+            };
+            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        };
+        helpers.getColorSteps = (from, to, steps) => {
+            const result = [];
+            const ratio = 1 / (steps - 1);
+            for (let i = 0; i < steps; ++i) {
+                result.push(mix(hexToRgb(from), hexToRgb(to), ratio * i));
+            }
+            return result;
+        };
+        helpers.getColor = (answer) => {
+            return statistics.data.steps.used[answer.used - 1];
+        };
+    })(helpers = statistics.helpers || (statistics.helpers = {}));
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    statistics.init = () => {
+        statistics.draw.init();
+    };
+    statistics.resize = (w, h) => {
+        statistics.draw.resize(w, h);
+    };
+    statistics.active = () => {
+        statistics.draw.cells();
+    };
     statistics.deactivate = () => { };
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    let draw;
+    (function (draw) {
+        const { byId, prepare, getColorFromStyle } = dom;
+        const elements = {
+            monitor: null,
+            ctx: null,
+        };
+        draw.themeChange = () => {
+            statistics.data.base.used.min = getColorFromStyle('--mine_6_color');
+            statistics.data.base.used.max = getColorFromStyle('--mine_color');
+            statistics.data.steps.used = statistics.helpers.getColorSteps(statistics.data.base.used.min, statistics.data.base.used.max, engine.params.data.quantities.length);
+            statistics.data.base.bad.min = getColorFromStyle('--off_second_color');
+            statistics.data.base.bad.max = getColorFromStyle('--off_prime_color');
+            statistics.data.steps.bad = statistics.helpers.getColorSteps(statistics.data.base.bad.min, statistics.data.base.bad.max, engine.params.determinants.numLastRequiredQuestions);
+            statistics.data.base.good.min = getColorFromStyle('--on_second_color');
+            statistics.data.base.good.max = getColorFromStyle('--on_prime_color');
+            statistics.data.steps.good = statistics.helpers.getColorSteps(statistics.data.base.good.min, statistics.data.base.good.max, engine.params.determinants.numLastHighlyRatedQuestions - engine.params.determinants.numLastRequiredQuestions);
+        };
+        draw.cells = async () => {
+            const answers = engine.params.data.answers;
+            if (answers === null)
+                return;
+            answers.forEach((answer, index) => {
+                const pozX = (index % statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
+                const pozY = Math.floor(index / statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
+                const color = statistics.helpers.getColor(answer);
+                elements.ctx.fillStyle = color;
+                elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
+            });
+        };
+        draw.init = () => {
+            elements.monitor = byId('statistics-monitor');
+            elements.ctx = elements.monitor.getContext("2d");
+            utils.areNotNull(elements, ['screens', 'drawing']);
+            setTimeout(() => {
+                draw.themeChange();
+                draw.resize(window.visualViewport.width, window.visualViewport.height);
+            }, 300);
+        };
+        draw.resize = (w, h) => {
+            statistics.data.monitor.width = w - 40;
+            const bit = statistics.data.monitor.width / ((statistics.determinants.cell.size * statistics.data.monitor.size) + (statistics.determinants.cell.space * (statistics.data.monitor.size - 1)));
+            statistics.data.cell.size = statistics.determinants.cell.size * bit;
+            statistics.data.cell.space = statistics.determinants.cell.space * bit;
+            elements.monitor.width = statistics.data.monitor.width;
+            elements.monitor.height = statistics.data.monitor.width;
+            draw.cells();
+        };
+    })(draw = statistics.draw || (statistics.draw = {}));
 })(statistics || (statistics = {}));
 var learning;
 (function (learning) {
@@ -1629,7 +1762,7 @@ var learning;
         elements.checkbox = byQueryAll('.answer input');
         elements.checkbox.forEach(c => c.checked = false);
         elements.confirm = byId('learning-confirm-btn');
-        utils.areNotNull(elements, ['learning']);
+        utils.areNotNull(elements, ['screens', 'learning']);
         mark(-1)();
     };
     learning.active = () => {
@@ -2392,7 +2525,7 @@ const serviceWorker = () => {
             resize.run();
             await starter.run();
             setTimeout(async () => {
-                tab.getGoTo(4)();
+                tab.getGoTo(1)();
                 await engine.params.init();
                 await engine.get20questions();
             }, 100);

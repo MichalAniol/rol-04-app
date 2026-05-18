@@ -124,10 +124,17 @@ namespace starter {
                 }
             })
 
+            // sumy rodzajów pytań
             engine.params.data.quantities = Array(maxUsed).fill(0)
-            questions.forEach(q => engine.params.data.quantities[q[1].used.length]++)
-            console.log('%c engine.params.data.quantities:', 'background: #ffcc00; color: #003300', engine.params.data.quantities)
+            engine.params.data.sume = 0
+            questions.forEach(q => {
+                engine.params.data.quantities[q[1].used.length]++
+                engine.params.data.sume++
+            })
 
+            // ilość pytań, aby ułożyć je w kwadrat
+            // statistics.data.table.size = (Math.ceil(Math.sqrt(engine.params.data.sume)))
+            statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)))
 
 
             // {
