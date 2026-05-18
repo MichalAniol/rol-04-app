@@ -287,7 +287,7 @@
     --penultimate_color: #181818;
     --last_color: #121212;
 
-    --outline_color: red;
+    --outline_color: #ff0000;
 
     --on_prime_color: #408b07;
     --on_second_color: #315714;
@@ -302,7 +302,8 @@
     --bold: 600;
     --black: 800;
 
-    --mine_color: royalblue;
+    /* royalblue */
+    --mine_color: #4169e1;
     --mine_2_color: #5078ef;
     --mine_3_color: #6c90fc;
     --mine_4_color: #7798fc;
@@ -319,7 +320,7 @@
     --penultimate_color: #efe8e8;
     --last_color: #ffffff;
 
-    --outline_color: red;
+    --outline_color: #ff0000;
 
     --on_prime_color: #539e1a;
     --on_second_color: #83cd4b;

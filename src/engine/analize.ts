@@ -5,7 +5,7 @@ namespace engine {
         const countLastFewFalse = (answer: AnswersDbT) => {
             if (answer) {
                 const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp)
-                const lastFew = sortedHistory.slice(0, params.determinants.lastGood)
+                const lastFew = sortedHistory.slice(0, params.determinants.numLastRequiredQuestions)
                 const result = lastFew.filter(entry => !entry.result).length
                 return result
             }
@@ -38,7 +38,7 @@ namespace engine {
                     if (maxNextUse < nextUse) maxNextUse = nextUse
 
                     let allFalsies = countLastFewFalse(answer)
-                    rating = allFalsies / params.determinants.lastGood
+                    rating = allFalsies / params.determinants.numLastRequiredQuestions
                 }
                 if (lastUsed < maxLastUse) maxLastUse = lastUsed
 
@@ -82,7 +82,7 @@ namespace engine {
             const countLastFewTrue = (answer: AnswersDbT) => {
                 if (answer) {
                     const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp)
-                    const lastFew = sortedHistory.slice(0, params.determinants.lastGood)
+                    const lastFew = sortedHistory.slice(0, params.determinants.numLastRequiredQuestions)
                     const result = lastFew.filter(entry => !entry.result).length
                     if (result === 0) return true
                 }

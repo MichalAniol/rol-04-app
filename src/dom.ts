@@ -1,5 +1,6 @@
 namespace dom {
     export const root = document.documentElement
+    export const style = window.getComputedStyle(document.body)
 
     export const byId = (id: string): HTMLElement | HTMLTextAreaElement | SVGElement | SVGTextContentElement | null => {
         return document.getElementById(id) as HTMLElement | HTMLTextAreaElement | null;
@@ -94,6 +95,11 @@ namespace dom {
     ) => {
         element.style[style as any] = value
     }
+
+    export type HexColorT<T extends string = `#${string}`> = T
+    export type RgbColorT<T extends string = `rgb(${string}, ${string}, ${string})`> = T
+
+    export const getColorFromStyle = (name: string) => style.getPropertyValue(name).trim() as HexColorT
 
     export type StyleT = [element: HTMLElement, attribute: keyof ModifiableCSSProperties, value: string]
     export type StylesT = StyleT[]

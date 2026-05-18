@@ -11,7 +11,8 @@ namespace engine {
     export namespace params {
         export const determinants = {
             questionInSession: 30,
-            lastGood: 3,
+            numLastRequiredQuestions: 3, // ile razy pod rząd trzeba odpowiedzieć, żeby było uznane, że umiesz (100%)
+            numLastHighlyRatedQuestions: 6, // --//-- , że umiesz super dobrze (200%)
             // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
             repetition: helpers.generateTriangularSequence(10),
         } as const
@@ -39,14 +40,15 @@ namespace engine {
             questions: QuestionDbT[] | null,
             answers: AnswersT[] | null,
             quantities: number[],
+            sume: number,
             normalizedWeights: {
                 repeatable: WeightsT | null,
                 single: WeightsT | null,
             },
             numOfQuestions: {
-                repeatable: number | null,
-                single: number | null,
-            }
+                repeatable: number,
+                single: number,
+            },
         }
 
         export const data: DataT = {
@@ -54,6 +56,7 @@ namespace engine {
             questions: null,
             answers: null,
             quantities: [],
+            sume: 0,
             normalizedWeights: {
                 repeatable: null,
                 single: null,
@@ -61,7 +64,7 @@ namespace engine {
             numOfQuestions: {
                 repeatable: 0,
                 single: 0,
-            }
+            },
         }
 
         // Wagi dla cech (suma nie musi być 1, ale lepiej by była)
@@ -108,7 +111,7 @@ namespace engine {
             const questionNum = params.determinants.questionInSession
 
             data.numOfQuestions.repeatable = questionRatio
-            data.numOfQuestions.single = questionNum - questionRatio 
+            data.numOfQuestions.single = questionNum - questionRatio
         }
 
         export const updateAnswers = async () => {

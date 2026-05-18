@@ -33,7 +33,7 @@ namespace learning {
         elements.checkbox.forEach(c => c.checked = false)
 
         elements.confirm = byId('learning-confirm-btn') as HTMLElement
-        utils.areNotNull(elements, ['learning'])
+        utils.areNotNull(elements, ['screens', 'learning'])
 
         mark(-1)()
     }
