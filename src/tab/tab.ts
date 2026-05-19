@@ -78,10 +78,26 @@ namespace tab {
         }
     }
 
+    const setWebBtnsColor = (index: number) => {
+        elements.menu.items.forEach((item, i) => {
+            if (index === i) {
+                setStyle(item, 'backgroundColor', 'var(--mine_color)')
+                setStyle(item, 'color', 'var(--last_color)')
+            } else {
+                setStyle(item, 'backgroundColor', 'var(--penultimate_color)')
+                setStyle(item, 'color', 'var(--prime_color)')
+            }
+        })
+    }
+
     export const getGoTo = (screenNum: number) => () => {
         state.screen = screenNum
         setTab()
-        simpleMenu.setIconsColor(screenNum)
+        if (core.isMobile) {
+            simpleMenu.setIconsColor(screenNum)
+        } else {
+            setWebBtnsColor(screenNum)
+        }
     }
 
     export const blur = () => {

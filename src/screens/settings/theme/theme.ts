@@ -56,6 +56,7 @@ namespace settings {
             core.store.set(storageNames.theme, themeMode.system)
             setSystemTheme()
 
+
             return themeMode.system
         }
 
@@ -64,7 +65,10 @@ namespace settings {
             storeName: storageNames.theme,
             elementList: themeNames,
             nameList: themeNames,
-            clickList: themeNames.map((name, i) => () => set(name)),
+            clickList: themeNames.map((name, i) => () => {
+                set(name)
+                setTimeout(() => statistics.draw.themeChange(), 100)
+            }),
             init: set,
         }
 

@@ -27,6 +27,8 @@ namespace statistics {
         }
 
         export const cells = async () => {
+            elements.ctx.clearRect(0, 0, elements.monitor.width, elements.monitor.height)
+
             const answers = engine.params.data.answers
             if (answers === null) return
 
@@ -55,7 +57,7 @@ namespace statistics {
         }
 
         export const resize = (w: number, h: number) => {
-            data.monitor.width = w - 40
+            data.monitor.width = w - 40 - (core.isMobile ? 0 : 200)
             const bit = data.monitor.width / ((determinants.cell.size * data.monitor.size) + (determinants.cell.space * (data.monitor.size - 1)))
             data.cell.size = determinants.cell.size * bit
             data.cell.space = determinants.cell.space * bit

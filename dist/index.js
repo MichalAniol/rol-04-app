@@ -657,6 +657,20 @@ var utils;
         }
     };
 })(utils || (utils = {}));
+const shuffle = (arr) => {
+    const shuffleOnce = (a) => {
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+        }
+    };
+    for (let k = 0; k < 3; k++) {
+        shuffleOnce(arr);
+    }
+    return arr;
+};
 var utils;
 (function (utils) {
     utils.resize = () => {
@@ -981,27 +995,15 @@ var engine;
 })(engine || (engine = {}));
 var engine;
 (function (engine) {
-    const shuffleArray = (arr) => {
-        const shuffleOnce = (a) => {
-            for (let i = a.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const temp = a[i];
-                a[i] = a[j];
-                a[j] = temp;
-            }
-        };
-        for (let k = 0; k < 3; k++) {
-            shuffleOnce(arr);
-        }
-        return arr;
-    };
     engine.getTensors = async () => {
         const answersTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable);
         const repeatableTensors = engine.select.selectByTemperature(answersTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
         const newAnswersTensors = answersTensors
             .filter(answer => !repeatableTensors.some(a => a.index === answer.index));
         const singleTensors = engine.select.selectByTemperature(newAnswersTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
-        return shuffleArray([...repeatableTensors, ...singleTensors]);
+        const result = shuffle([...repeatableTensors, ...singleTensors]);
+        console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result);
+        return result;
     };
     const createTensorGenerator = async () => {
         engine.params.data.session = await engine.getTensors();
@@ -1026,8 +1028,8 @@ var engine;
     engine.getItem = async () => {
         const tensorItem = await generator.tensor.next();
         const tensor = tensorItem.value;
-        const question = engine.params.data.questions[tensor.index];
-        const answer = engine.params.data.answers.find(a => a.index === tensor.index);
+        const answer = engine.params.data.answers[tensor.index];
+        const question = engine.params.data.questions[answer.index];
         const result = {
             question,
             answer,
@@ -1429,7 +1431,8 @@ var starter;
             });
             y += 50;
             setAttribute(starter.elements.userLabel, 'y', `${getPx(y)}`);
-            const userIdSize = (w < h ? w : h) / 14;
+            const correctW = core.isMobile ? w : w - 200;
+            const userIdSize = (correctW < h ? correctW : h) / 14;
             y += userIdSize + 6;
             setStyle(starter.elements.userId, 'fontSize', `${getPx(userIdSize)}`);
             setAttribute(starter.elements.userId, 'y', `${getPx(y)}`);
@@ -1594,7 +1597,8 @@ var starter;
                         index++;
                     };
                     await waitForIntervalClear(questionInterval, 1);
-                    tab.simpleMenu.showMenu();
+                    if (core.isMobile)
+                        tab.simpleMenu.showMenu();
                     inner(starter.elements.statusAction, `wczytywanie obrazów`);
                     index = 0;
                     const imageInterval = (clear) => async () => {
@@ -1647,7 +1651,8 @@ var starter;
                 engine.params.data.sume++;
             });
             statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)));
-            tab.simpleMenu.showMenu();
+            if (core.isMobile)
+                tab.simpleMenu.showMenu();
         };
     })(data = starter.data || (starter.data = {}));
 })(starter || (starter = {}));
@@ -1758,6 +1763,7 @@ var statistics;
             statistics.data.steps.good = statistics.helpers.getColorSteps(statistics.data.base.good.min, statistics.data.base.good.max, engine.params.determinants.numLastHighlyRatedQuestions - engine.params.determinants.numLastRequiredQuestions);
         };
         draw.cells = async () => {
+            elements.ctx.clearRect(0, 0, elements.monitor.width, elements.monitor.height);
             const answers = engine.params.data.answers;
             if (answers === null)
                 return;
@@ -1779,7 +1785,7 @@ var statistics;
             }, 300);
         };
         draw.resize = (w, h) => {
-            statistics.data.monitor.width = w - 40;
+            statistics.data.monitor.width = w - 40 - (core.isMobile ? 0 : 200);
             const bit = statistics.data.monitor.width / ((statistics.determinants.cell.size * statistics.data.monitor.size) + (statistics.determinants.cell.space * (statistics.data.monitor.size - 1)));
             statistics.data.cell.size = statistics.determinants.cell.size * bit;
             statistics.data.cell.space = statistics.determinants.cell.space * bit;
@@ -1791,9 +1797,13 @@ var statistics;
 })(statistics || (statistics = {}));
 var learning;
 (function (learning) {
-    const { byId, byQueryAll, setStyle, add, remove, display } = dom;
+    const { byId, byQueryAll, setStyle, add, remove, display, getPx, inner } = dom;
     const elements = {
+        startEnd: null,
+        startEndBtn: null,
         sheet: null,
+        info: null,
+        separator: null,
         question: null,
         answers: null,
         answersField: null,
@@ -1802,6 +1812,12 @@ var learning;
     };
     const data = {
         mark: 0,
+        started: false,
+        tabH: 0,
+        answers: {
+            origin: null,
+            shuffled: [],
+        }
     };
     const mark = (num) => () => {
         data.mark = num;
@@ -1809,7 +1825,11 @@ var learning;
         elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
     };
     learning.init = () => {
+        elements.startEnd = byId('learning-start-end');
+        elements.startEndBtn = byId('learning-start-end-btn');
         elements.sheet = byId('learning-sheet');
+        elements.info = byId('learning-question-info');
+        elements.separator = byId('learning-sheet-separator');
         elements.question = byId('question');
         elements.answers = byQueryAll('.answer p');
         elements.answersField = byQueryAll('.answer');
@@ -1817,19 +1837,82 @@ var learning;
         elements.checkbox.forEach(c => c.checked = false);
         elements.confirm = byId('learning-confirm-btn');
         utils.areNotNull(elements, ['screens', 'learning']);
-        mark(-1)();
         display(elements.sheet, 'none');
-        display(elements.confirm, 'none');
     };
-    const start = () => {
+    const LOW_START_END_BTN = 12 + 28 + 12;
+    const HIGH_START_END_BTN = 24 + 28 + 24;
+    learning.resize = (w, h) => {
+        const menuH = core.isMobile ? (121 / 701) * w : 0;
+        data.tabH = h - 30 - menuH - 20;
+        if (data.started) {
+            setStyle(elements.separator, 'height', ``);
+            setStyle(elements.sheet, 'height', ``);
+            setStyle(elements.sheet, 'opacity', `0`);
+            setStyle(elements.startEnd, 'height', getPx(LOW_START_END_BTN));
+            setStyle(elements.startEndBtn, 'padding', '12px 0');
+            setTimeout(() => {
+                const sheetH = elements.sheet.getBoundingClientRect().height;
+                setStyle(elements.separator, 'height', getPx(sheetH < data.tabH ? data.tabH - sheetH : 0));
+                setStyle(elements.sheet, 'opacity', `1`);
+            }, 30);
+        }
+        else {
+            setStyle(elements.sheet, 'height', `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
+            setStyle(elements.startEnd, 'height', getPx(h - 30 - menuH - 20));
+            setStyle(elements.startEndBtn, 'padding', '24px 0');
+        }
+    };
+    const setQuestion = async () => {
+        const item = await engine.getItem();
+        data.answers.origin = item;
+        inner(elements.info, `${item.question.id}, ${item.question.used.length}`);
+        inner(elements.question, item.question.question);
+        const answers = [{
+                content: item.question.answer,
+                correct: true,
+            }];
+        item.question.falseAnswers.forEach(fa => {
+            answers.push({
+                content: fa,
+                correct: false,
+            });
+        });
+        data.answers.shuffled = shuffle(answers);
+        elements.answers.forEach((a, i) => {
+            inner(a, data.answers.shuffled[i].content);
+        });
+    };
+    const start = async () => {
+        data.started = true;
         display(elements.sheet, 'block');
-        display(elements.confirm, 'flex');
+        learning.resize(window.visualViewport.width, window.visualViewport.height);
+        mark(-1)();
+        await engine.init();
+        setQuestion();
+        inner(elements.startEndBtn, 'Zakończ');
+        setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
+        remove(elements.startEndBtn, 'click', start);
+        add(elements.startEndBtn, 'click', end);
+    };
+    const end = () => {
+        data.started = false;
+        display(elements.sheet, 'none');
+        learning.resize(window.visualViewport.width, window.visualViewport.height);
+        inner(elements.startEndBtn, 'Rozpocznij');
+        setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
+        remove(elements.startEndBtn, 'click', end);
+        add(elements.startEndBtn, 'click', start);
     };
     learning.active = () => {
         elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
+        add(elements.startEndBtn, 'click', data.started ? end : start);
+        add(elements.confirm, 'click', setQuestion);
     };
     learning.deactivate = () => {
         elements.answersField.forEach((a, i) => remove(a, 'click', mark(i)));
+        remove(elements.startEndBtn, 'click', start);
+        remove(elements.startEndBtn, 'click', end);
+        remove(elements.confirm, 'click', setQuestion);
     };
 })(learning || (learning = {}));
 var answers;
@@ -2023,7 +2106,10 @@ var settings;
             storeName: storageNames.theme,
             elementList: themeNames,
             nameList: themeNames,
-            clickList: themeNames.map((name, i) => () => set(name)),
+            clickList: themeNames.map((name, i) => () => {
+                set(name);
+                setTimeout(() => statistics.draw.themeChange(), 100);
+            }),
             init: set,
         };
         theme_1.init = async () => {
@@ -2135,10 +2221,27 @@ var tab;
             tab_1.setTab();
         }
     };
+    const setWebBtnsColor = (index) => {
+        elements.menu.items.forEach((item, i) => {
+            if (index === i) {
+                setStyle(item, 'backgroundColor', 'var(--mine_color)');
+                setStyle(item, 'color', 'var(--last_color)');
+            }
+            else {
+                setStyle(item, 'backgroundColor', 'var(--penultimate_color)');
+                setStyle(item, 'color', 'var(--prime_color)');
+            }
+        });
+    };
     tab_1.getGoTo = (screenNum) => () => {
         tab_1.state.screen = screenNum;
         tab_1.setTab();
-        tab_1.simpleMenu.setIconsColor(screenNum);
+        if (core.isMobile) {
+            tab_1.simpleMenu.setIconsColor(screenNum);
+        }
+        else {
+            setWebBtnsColor(screenNum);
+        }
     };
     tab_1.blur = () => {
         setStyle(elements.allTabs, 'filter', 'blur(5px)');
@@ -2586,7 +2689,7 @@ const serviceWorker = () => {
             resize.run();
             await starter.run();
             setTimeout(async () => {
-                tab.getGoTo(1)();
+                tab.getGoTo(2)();
                 await engine.params.init();
             }, 100);
         });

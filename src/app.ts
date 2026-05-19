@@ -47,7 +47,7 @@ interface ModulesT {
 
 
             setTimeout(async () => {
-                tab.getGoTo(1)()
+                tab.getGoTo(2)()
 
                 await engine.params.init()
                 // await engine.init()
