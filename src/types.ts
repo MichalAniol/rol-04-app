@@ -1,6 +1,6 @@
 type TensorDataT = {
     id: string;
-    i: number; // index
+    index: number; // index
     used?: number; // ile razy użyto
     lastUsed?: number;     // timestamp
     nextUse?: number;      // timestamp

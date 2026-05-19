@@ -782,6 +782,8 @@ var engine;
                 repeatable: 0,
                 single: 0,
             },
+            session: [],
+            index: 0,
         };
         const getNormalizedWeights = (weights) => {
             let sume = 0;
@@ -852,7 +854,7 @@ var engine;
             let maxNextUse = now;
             let maxImportance = 1;
             let maxUsed = 0;
-            const preData = engine.params.data.answers.map((answer, i) => {
+            const preData = engine.params.data.answers.map((answer, index) => {
                 let lastUsed = 0;
                 let nextUse = 0;
                 let rating = 0;
@@ -879,7 +881,7 @@ var engine;
                     maxUsed = answer.history.length;
                 return {
                     id: answer.id,
-                    i,
+                    index,
                     used: answer ? answer.history.length : 0,
                     lastUsed,
                     nextUse,
@@ -894,7 +896,7 @@ var engine;
                 const used = maxUsed === 0 ? 1 : (1 - (p.used / maxUsed));
                 return {
                     id: p.id,
-                    i: p.i,
+                    index: p.index,
                     used,
                     lastUsed,
                     nextUse: p.nextUse / maxNextUse,
@@ -979,14 +981,59 @@ var engine;
 })(engine || (engine = {}));
 var engine;
 (function (engine) {
-    engine.get20questions = async () => {
+    const shuffleArray = (arr) => {
+        const shuffleOnce = (a) => {
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        };
+        for (let k = 0; k < 3; k++) {
+            shuffleOnce(arr);
+        }
+        return arr;
+    };
+    engine.getTensors = async () => {
         const answersTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable);
         const repeatableTensors = engine.select.selectByTemperature(answersTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
         const newAnswersTensors = answersTensors
-            .filter(answer => !repeatableTensors.some(a => a.i === answer.i));
+            .filter(answer => !repeatableTensors.some(a => a.index === answer.index));
         const singleTensors = engine.select.selectByTemperature(newAnswersTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
-        const tensors = [...repeatableTensors, ...singleTensors];
-        console.log('%c tensors:', 'background: #ffcc00; color: #003300', tensors);
+        return shuffleArray([...repeatableTensors, ...singleTensors]);
+    };
+    const createTensorGenerator = async () => {
+        engine.params.data.session = await engine.getTensors();
+        engine.params.data.index = 0;
+        return (async function* () {
+            while (true) {
+                if (engine.params.data.index >= engine.params.data.session.length) {
+                    engine.params.data.session = await engine.getTensors();
+                    engine.params.data.index = 0;
+                }
+                const result = engine.params.data.session[engine.params.data.index++];
+                yield result;
+            }
+        })();
+    };
+    const generator = {
+        tensor: null
+    };
+    engine.init = async () => {
+        generator.tensor = await createTensorGenerator();
+    };
+    engine.getItem = async () => {
+        const tensorItem = await generator.tensor.next();
+        const tensor = tensorItem.value;
+        const question = engine.params.data.questions[tensor.index];
+        const answer = engine.params.data.answers.find(a => a.index === tensor.index);
+        const result = {
+            question,
+            answer,
+            index: tensor.index
+        };
+        return result;
     };
 })(engine || (engine = {}));
 var queries;
@@ -1717,6 +1764,7 @@ var statistics;
                 const pozX = (index % statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
                 const pozY = Math.floor(index / statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
                 const color = statistics.helpers.getColor(answer);
+                console.log('%c color:', 'background: #ffcc00; color: #003300', color);
                 elements.ctx.fillStyle = color;
                 elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
             });
@@ -1743,19 +1791,25 @@ var statistics;
 })(statistics || (statistics = {}));
 var learning;
 (function (learning) {
-    const { byId, byQueryAll, setStyle, add, remove } = dom;
+    const { byId, byQueryAll, setStyle, add, remove, display } = dom;
     const elements = {
+        sheet: null,
         question: null,
         answers: null,
         answersField: null,
         checkbox: null,
         confirm: null,
     };
+    const data = {
+        mark: 0,
+    };
     const mark = (num) => () => {
+        data.mark = num;
         elements.checkbox.forEach((a, i) => a.checked = (i === num));
         elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
     };
     learning.init = () => {
+        elements.sheet = byId('learning-sheet');
         elements.question = byId('question');
         elements.answers = byQueryAll('.answer p');
         elements.answersField = byQueryAll('.answer');
@@ -1764,6 +1818,12 @@ var learning;
         elements.confirm = byId('learning-confirm-btn');
         utils.areNotNull(elements, ['screens', 'learning']);
         mark(-1)();
+        display(elements.sheet, 'none');
+        display(elements.confirm, 'none');
+    };
+    const start = () => {
+        display(elements.sheet, 'block');
+        display(elements.confirm, 'flex');
     };
     learning.active = () => {
         elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
@@ -2078,6 +2138,7 @@ var tab;
     tab_1.getGoTo = (screenNum) => () => {
         tab_1.state.screen = screenNum;
         tab_1.setTab();
+        tab_1.simpleMenu.setIconsColor(screenNum);
     };
     tab_1.blur = () => {
         setStyle(elements.allTabs, 'filter', 'blur(5px)');
@@ -2140,7 +2201,7 @@ var tab;
         };
         simpleMenu.resize = () => {
         };
-        const setIconsColor = (index) => simpleMenu.elements.items.forEach((item, i) => {
+        simpleMenu.setIconsColor = (index) => simpleMenu.elements.items.forEach((item, i) => {
             if (index === i) {
                 setStyle(item, 'fill', 'var(--mine_color)');
             }
@@ -2161,12 +2222,12 @@ var tab;
                 const goTo = getGoTo(index);
                 add(item, 'click', () => {
                     goTo();
-                    setIconsColor(index);
+                    simpleMenu.setIconsColor(index);
                 });
             });
             utils.areNotNull(simpleMenu.elements, ['simpleMenu']);
             display(simpleMenu.elements.menu, 'none');
-            setIconsColor(0);
+            simpleMenu.setIconsColor(0);
             simpleMenu.visible.init();
         };
         simpleMenu.showMenu = () => display(simpleMenu.elements.menu, 'flex');
@@ -2527,7 +2588,6 @@ const serviceWorker = () => {
             setTimeout(async () => {
                 tab.getGoTo(1)();
                 await engine.params.init();
-                await engine.get20questions();
             }, 100);
         });
         setConsole();

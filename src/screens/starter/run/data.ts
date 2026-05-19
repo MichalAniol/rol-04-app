@@ -98,7 +98,6 @@ namespace starter {
                     // zapamiętanie configu
                     await core.store.set(storageNames.config, configRes)
                     await core.store.set(storageNames.newConfig, checked.no)
-
                 }
 
                 // zapamiętanie versji

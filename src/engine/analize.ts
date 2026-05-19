@@ -20,7 +20,7 @@ namespace engine {
             let maxImportance = 1
             let maxUsed = 0
 
-            const preData: TensorDataT[] = params.data.answers.map((answer, i) => {
+            const preData: TensorDataT[] = params.data.answers.map((answer, index) => {
                 // const answer = params.data.answers.find(a => a.id === question.id)
                 let lastUsed = 0
                 let nextUse = 0
@@ -49,7 +49,7 @@ namespace engine {
 
                 return {
                     id: answer.id,
-                    i, // index
+                    index, // index
                     used: answer ? answer.history.length : 0,
                     lastUsed,
                     nextUse,
@@ -66,7 +66,7 @@ namespace engine {
                 const used = maxUsed === 0 ? 1 : (1 - (p.used / maxUsed))
                 return {
                     id: p.id,
-                    i: p.i,
+                    index: p.index,
                     used, // 1 czym zadziej uzyto
                     lastUsed,
                     nextUse: p.nextUse / maxNextUse, // 1 czym bliżej w czasie

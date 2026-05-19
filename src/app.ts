@@ -50,7 +50,12 @@ interface ModulesT {
                 tab.getGoTo(1)()
 
                 await engine.params.init()
-                await engine.get20questions()
+                // await engine.init()
+                // await engine.getItem()
+                // await engine.getItem()
+                // await engine.getItem()
+                // await engine.getItem()
+                // await engine.getItem()
             }, 100)
         })
 
