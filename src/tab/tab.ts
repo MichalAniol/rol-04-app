@@ -81,6 +81,7 @@ namespace tab {
     export const getGoTo = (screenNum: number) => () => {
         state.screen = screenNum
         setTab()
+        simpleMenu.setIconsColor(screenNum)
     }
 
     export const blur = () => {

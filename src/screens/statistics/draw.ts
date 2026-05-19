@@ -37,6 +37,7 @@ namespace statistics {
                 const pozY = Math.floor(index / data.monitor.size) * (data.cell.size + data.cell.space)
 
                 const color = helpers.getColor(answer)
+                console.log('%c color:', 'background: #ffcc00; color: #003300', color)
                 elements.ctx.fillStyle = color
                 elements.ctx.fillRect(pozX, pozY, data.cell.size, data.cell.size)
             })

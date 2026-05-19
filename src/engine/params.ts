@@ -23,7 +23,7 @@ namespace engine {
             appearance: 0.1, // w ilu testach pojawiło się pytanie
             rating: 1.2, // poziom nauki pytań
             littleUsed: 0, // najmniej powtarzalne pytania
-            temperature: 0.1, // wielkośc zbioru do losowania
+            temperature: 0.1, // wielkość zbioru do losowania
         } as const
 
         export const single: WeightsT = {
@@ -49,6 +49,8 @@ namespace engine {
                 repeatable: number,
                 single: number,
             },
+            session: TensorDataT[],
+            index: number,
         }
 
         export const data: DataT = {
@@ -65,6 +67,8 @@ namespace engine {
                 repeatable: 0,
                 single: 0,
             },
+            session: [],
+            index: 0,
         }
 
         // Wagi dla cech (suma nie musi być 1, ale lepiej by była)

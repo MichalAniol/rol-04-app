@@ -29,7 +29,7 @@ namespace tab {
             // touch.resize()
         }
 
-        const setIconsColor = (index: number) => elements.items.forEach((item, i) => {
+        export const setIconsColor = (index: number) => elements.items.forEach((item, i) => {
             if (index === i) {
                 setStyle(item, 'fill', 'var(--mine_color)')
             } else {
