@@ -135,7 +135,5 @@ namespace engine {
                 data.answers[i] = item
             })
         }
-
-
     }
 }

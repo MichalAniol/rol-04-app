@@ -1726,6 +1726,7 @@ var statistics;
 var statistics;
 (function (statistics) {
     statistics.init = () => {
+        engine.params.updateAnswers();
         statistics.draw.init();
     };
     statistics.resize = (w, h) => {
@@ -1764,7 +1765,6 @@ var statistics;
                 const pozX = (index % statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
                 const pozY = Math.floor(index / statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
                 const color = statistics.helpers.getColor(answer);
-                console.log('%c color:', 'background: #ffcc00; color: #003300', color);
                 elements.ctx.fillStyle = color;
                 elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
             });
