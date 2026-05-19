@@ -1,5 +1,6 @@
 namespace statistics {
     export const init = () => {
+        engine.params.updateAnswers()
         draw.init()
     }
 
