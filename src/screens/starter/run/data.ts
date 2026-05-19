@@ -63,7 +63,7 @@ namespace starter {
                     }
                     await waitForIntervalClear(questionInterval, 1)
 
-                    tab.simpleMenu.showMenu()
+                    if (core.isMobile) tab.simpleMenu.showMenu()
 
                     inner(elements.statusAction, `wczytywanie obrazów`)
                     index = 0
@@ -156,7 +156,7 @@ namespace starter {
             // }, 100)
 
 
-            tab.simpleMenu.showMenu()
+            if (core.isMobile) tab.simpleMenu.showMenu()
         }
     }
 }

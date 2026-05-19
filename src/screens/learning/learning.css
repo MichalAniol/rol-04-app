@@ -1,3 +1,23 @@
+.learning-start-end {
+    display: block;
+    width: 100%;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+#learning-start-end-btn {
+    padding: 24px 0;
+    width: 100%;
+    max-width: 300px;
+    height: min-content;
+    font-size: var(--font_big_size);
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, 0%);
+}
+
 .sheet {
     margin: 10px 20px;
 }
@@ -39,4 +59,10 @@
 }
 
 #learning-confirm-btn {
+    padding: 12px 0;
+    width: 100%;
+    max-width: 300px;
+    height: min-content;
+    font-size: var(--font_big_size);
+    margin-bottom: 30px;
 }

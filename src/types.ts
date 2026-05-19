@@ -55,3 +55,8 @@ type AnswersDbSchemaT = {
     [key: number]: AnswersDbT
 }
 
+type LearningT = {
+    question: QuestionDbT,
+    answer: AnswersT,
+    index: number,
+}

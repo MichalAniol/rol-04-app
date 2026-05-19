@@ -69,7 +69,8 @@ namespace starter {
             y += 50
 
             setAttribute(elements.userLabel, 'y', `${getPx(y)}`)
-            const userIdSize = (w < h ? w : h) / 14
+            const correctW = core.isMobile ? w : w - 200
+            const userIdSize = (correctW < h ? correctW : h) / 14
             y += userIdSize + 6
             setStyle(elements.userId, 'fontSize', `${getPx(userIdSize)}`);
             setAttribute(elements.userId, 'y', `${getPx(y)}`)

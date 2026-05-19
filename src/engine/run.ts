@@ -1,20 +1,5 @@
 namespace engine {
-    const shuffleArray = <T>(arr: T[]): T[] => {
-        const shuffleOnce = (a: T[]) => {
-            for (let i = a.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1))
-                const temp = a[i]
-                a[i] = a[j]
-                a[j] = temp
-            }
-        }
 
-        for (let k = 0; k < 3; k++) {
-            shuffleOnce(arr)
-        }
-
-        return arr
-    }
 
     export const getTensors = async () => {
         const answersTensors = await analize.getTensors(params.data.normalizedWeights.repeatable)
@@ -26,7 +11,10 @@ namespace engine {
 
         const singleTensors = select.selectByTemperature(newAnswersTensors, params.single.temperature, params.data.numOfQuestions.single)
 
-        return shuffleArray([...repeatableTensors, ...singleTensors])
+        const result = shuffle([...repeatableTensors, ...singleTensors])
+        console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result)
+
+        return result
     }
 
     const createTensorGenerator = async (): Promise<AsyncGenerator<TensorDataT, void, unknown>> => {
@@ -63,14 +51,18 @@ namespace engine {
     export const getItem = async () => {
         const tensorItem = await generator.tensor.next()
         const tensor = tensorItem.value as TensorDataT
-        const question = engine.params.data.questions[tensor.index]
-        const answer = engine.params.data.answers.find(a => a.index === tensor.index)
+
+        const answer = engine.params.data.answers[tensor.index]
+        const question = engine.params.data.questions[answer.index]
+
+        // const question = engine.params.data.questions[tensor.index]
+        // const answer = engine.params.data.answers.find(a => a.index === tensor.index)
 
         const result = {
             question,
             answer,
             index: tensor.index
-        }
+        } as LearningT
 
         return result
     }
