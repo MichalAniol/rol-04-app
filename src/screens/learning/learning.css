@@ -1,3 +1,12 @@
+#learning .tab-box {
+    height: 100%;
+    padding: 30px 0 30px 20px;
+}
+
+#learning-measure {
+    height: min-content;
+}
+
 .learning-start-end {
     display: block;
     width: 100%;
@@ -16,6 +25,24 @@
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, 0%);
+}
+
+#learning-question-info {
+    color: var(--third_color);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.learning-img {
+    margin-bottom: 20px;
+}
+
+.learning-img-big {
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: none;
 }
 
 .sheet {
@@ -55,7 +82,7 @@
     display: flex;
     justify-content: space-around;
     width: 100%;
-    margin: 20px 0 40px 0;
+    margin: 20px 0 20px 0;
 }
 
 #learning-confirm-btn {
@@ -64,5 +91,5 @@
     max-width: 300px;
     height: min-content;
     font-size: var(--font_big_size);
-    margin-bottom: 30px;
+    /* margin-bottom: 30px; */
 }

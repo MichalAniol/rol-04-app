@@ -15,15 +15,13 @@ body {
     padding: 0;
     background-color: var(--last_color);
     font-family: var(--font);
-    font-size: var(--font_size);
-    line-height: var(--font_size);
+    font-size: var(--font_medium);
+    line-height: var(--font_medium);
     font-style: normal;
     font-weight: var(--regular);
     color: var(--prime_color);
     /* user-select: none; */
 }
-
-.tab-box {}
 
 .content-box {
     position: absolute;
@@ -246,6 +244,7 @@ p {
 .scroll-box {
     position: relative;
     overflow: hidden;
+    height: 100%;
 }
 
 .scroll {

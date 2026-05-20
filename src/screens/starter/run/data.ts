@@ -84,7 +84,7 @@ namespace starter {
 
                             await core.idb.images.set(imageDataRes.name, {
                                 version: imageDataRes.name,
-                                data: image,
+                                data: await utils.blob.toString(image),
                             })
                         }
                         index++
