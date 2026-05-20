@@ -4,7 +4,10 @@ namespace queries {
             const result = await api.post<Blob>(
                 url.data.images,
                 { name },
-                { withCredentials: true, }
+                {
+                    withCredentials: true,
+                    responseType: 'blob',
+                }
             )
 
             return result.data

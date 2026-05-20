@@ -8,7 +8,7 @@
 }
 
 .setting-check span {
-    font-size: var(--font_size);
+    font-size: var(--font_medium);
     line-height: var(--font_big_size);
 }
 

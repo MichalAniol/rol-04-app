@@ -28,7 +28,7 @@ type QuestionDbSchemaT = {
 
 type ImageDbT = {
     version: string,
-    data: Blob,
+    data: string,
 }
 
 type ImageDbSchemaT = {

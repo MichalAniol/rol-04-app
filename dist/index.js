@@ -735,6 +735,93 @@ var utils;
         };
     };
 })(utils || (utils = {}));
+var utils;
+(function (utils) {
+    let blob;
+    (function (blob_1) {
+        blob_1.toString = (blob) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+        blob_1.toBlob = async (value) => {
+            const response = await fetch(value);
+            return await response.blob();
+        };
+    })(blob = utils.blob || (utils.blob = {}));
+})(utils || (utils = {}));
+var utils;
+(function (utils) {
+    utils.drawImage = () => (() => {
+        const data = {
+            canvas: null,
+            ctx: null,
+            fitCanvas: null,
+            fitCtx: null,
+            fitWidth: 0
+        };
+        const init = (canvas, fitCanvas) => {
+            data.canvas = canvas;
+            data.ctx = canvas.getContext('2d');
+            data.fitCanvas = fitCanvas;
+            data.fitCtx = fitCanvas.getContext('2d');
+        };
+        const setWidth = (width) => data.fitWidth = width;
+        const fitToWidth = (img) => {
+            if (!data.fitCanvas || !data.fitCtx)
+                return;
+            const scale = data.fitWidth / img.width;
+            const displayWidth = img.width * scale;
+            const displayHeight = img.height * scale;
+            const dpr = window.devicePixelRatio || 1;
+            data.fitCanvas.style.width = displayWidth + 'px';
+            data.fitCanvas.style.height = displayHeight + 'px';
+            data.fitCanvas.width = displayWidth * dpr;
+            data.fitCanvas.height = displayHeight * dpr;
+            data.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            data.fitCtx.clearRect(0, 0, displayWidth, displayHeight);
+            data.fitCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
+        };
+        const draw = (() => {
+            let currentUrl = null;
+            return async (source) => {
+                if (!data.ctx || !data.canvas)
+                    return;
+                if (currentUrl) {
+                    URL.revokeObjectURL(currentUrl);
+                    currentUrl = null;
+                }
+                const img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = reject;
+                    if (typeof source === 'string') {
+                        img.src = source;
+                    }
+                    else {
+                        currentUrl = URL.createObjectURL(source);
+                        img.src = currentUrl;
+                    }
+                });
+                data.canvas.width = img.width;
+                data.canvas.height = img.height;
+                data.ctx.clearRect(0, 0, img.width, img.height);
+                data.ctx.drawImage(img, 0, 0);
+                fitToWidth(img);
+                if (currentUrl) {
+                    URL.revokeObjectURL(currentUrl);
+                    currentUrl = null;
+                }
+            };
+        })();
+        return {
+            init,
+            setWidth,
+            draw,
+        };
+    })();
+})(utils || (utils = {}));
 var engine;
 (function (engine) {
     let helpers;
@@ -1345,7 +1432,10 @@ var queries;
     let data;
     (function (data) {
         data.getImage = async (name) => {
-            const result = await queries.api.post(queries.url.data.images, { name }, { withCredentials: true, });
+            const result = await queries.api.post(queries.url.data.images, { name }, {
+                withCredentials: true,
+                responseType: 'blob',
+            });
             return result.data;
         };
     })(data = queries.data || (queries.data = {}));
@@ -1613,7 +1703,7 @@ var starter;
                             const image = await queries.data.getImage(imageDataRes.name);
                             await core.idb.images.set(imageDataRes.name, {
                                 version: imageDataRes.name,
-                                data: image,
+                                data: await utils.blob.toString(image),
                             });
                         }
                         index++;
@@ -1797,122 +1887,225 @@ var statistics;
 })(statistics || (statistics = {}));
 var learning;
 (function (learning) {
-    const { byId, byQueryAll, setStyle, add, remove, display, getPx, inner } = dom;
-    const elements = {
-        startEnd: null,
-        startEndBtn: null,
-        sheet: null,
-        info: null,
-        separator: null,
-        question: null,
-        answers: null,
-        answersField: null,
-        checkbox: null,
-        confirm: null,
-    };
-    const data = {
+    learning.data = {
         mark: 0,
         started: false,
+        confirm: false,
         tabH: 0,
         answers: {
             origin: null,
             shuffled: [],
         }
     };
-    const mark = (num) => () => {
-        data.mark = num;
-        elements.checkbox.forEach((a, i) => a.checked = (i === num));
-        elements.answersField.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
+    let preparation;
+    (function (preparation) {
+        const { setStyle, add, remove, display, getPx, inner, disable, enable } = dom;
+        preparation.setSheetHight = () => {
+            setStyle(learning.elements.separator, 'height', ``);
+            setStyle(learning.elements.sheet, 'height', ``);
+            setStyle(learning.elements.sheet, 'opacity', `0`);
+            setTimeout(() => {
+                const menuH = core.isMobile ? (121 / 701) * window.visualViewport.width : 0;
+                const sheetH = learning.elements.measure.getBoundingClientRect().height - menuH;
+                const condition = sheetH < learning.data.tabH;
+                setStyle(learning.elements.bottom, 'height', getPx(menuH + (condition ? 0 : 40)));
+                const separatorH = condition ? getPx(learning.data.tabH - sheetH - 80) : '';
+                setStyle(learning.elements.separator, 'height', separatorH);
+                setStyle(learning.elements.sheet, 'opacity', `1`);
+            }, 300);
+        };
+        preparation.setQuestion = async () => {
+            const item = await engine.getItem();
+            learning.data.answers.origin = item;
+            learning.evaluation.mark(-1)();
+            setStyle(learning.elements.sheet, 'opacity', `0`);
+            inner(learning.elements.info, `pytanie: ${item.question.id}, wystąpiło: ${item.question.used.length + 1}x`);
+            if (item.question.img) {
+                display(learning.elements.img, 'block');
+                const imgData = await core.idb.images.get(item.question.img);
+                learning.elements.drawImage.draw(imgData.data);
+            }
+            else {
+                display(learning.elements.img, 'none');
+            }
+            inner(learning.elements.question, item.question.question);
+            const answers = [{
+                    content: item.question.answer,
+                    correct: true,
+                }];
+            item.question.falseAnswers.forEach(falseAnswer => {
+                answers.push({
+                    content: falseAnswer,
+                    correct: false,
+                });
+            });
+            learning.data.answers.shuffled = shuffle(answers);
+            learning.elements.answers.forEach((a, i) => {
+                inner(a, learning.data.answers.shuffled[i].content);
+            });
+            preparation.setSheetHight();
+        };
+        preparation.start = async () => {
+            learning.data.started = true;
+            setStyle(learning.elements.sheet, 'opacity', `0`);
+            learning.resize(window.visualViewport.width, window.visualViewport.height);
+            inner(learning.elements.startEndBtn, 'Zakończ');
+            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
+            remove(learning.elements.startEndBtn, 'click', preparation.start);
+            add(learning.elements.startEndBtn, 'click', preparation.end);
+            await engine.init();
+            setTimeout(() => {
+                display(learning.elements.sheet, 'block');
+                preparation.setQuestion();
+            }, 500);
+        };
+        preparation.end = () => {
+            learning.data.started = false;
+            display(learning.elements.sheet, 'none');
+            learning.resize(window.visualViewport.width, window.visualViewport.height);
+            inner(learning.elements.startEndBtn, 'Rozpocznij');
+            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
+            remove(learning.elements.startEndBtn, 'click', preparation.end);
+            add(learning.elements.startEndBtn, 'click', preparation.start);
+        };
+    })(preparation = learning.preparation || (learning.preparation = {}));
+})(learning || (learning = {}));
+var learning;
+(function (learning) {
+    let evaluation;
+    (function (evaluation) {
+        const { byId, byQueryAll, setStyle, add, remove, display, getPx, inner, disable, enable } = dom;
+        evaluation.mark = (num) => () => {
+            if (num === -1) {
+                disable(learning.elements.confirm);
+            }
+            else {
+                enable(learning.elements.confirm);
+            }
+            learning.data.mark = num;
+            learning.elements.checkbox.forEach((a, i) => a.checked = (i === num));
+            learning.elements.answersFields.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
+        };
+        const showResult = () => {
+            learning.data.confirm = true;
+            inner(learning.elements.confirm, 'Następne');
+            disable(learning.elements.confirm);
+            setTimeout(() => {
+                enable(learning.elements.confirm);
+            }, 1000);
+            const markedAnswer = learning.data.answers.shuffled[learning.data.mark];
+            if (markedAnswer.correct) {
+                setStyle(learning.elements.answersFields[learning.data.mark], 'backgroundColor', 'var(--on_prime_color)');
+            }
+            else {
+                learning.elements.answersFields.forEach((field, index) => {
+                    if (index === learning.data.mark) {
+                        setStyle(field, 'backgroundColor', 'var(--off_prime_color)');
+                    }
+                    const correct = learning.data.answers.shuffled[index].correct;
+                    if (correct) {
+                        setStyle(field, 'backgroundColor', 'var(--on_prime_color)');
+                    }
+                });
+            }
+        };
+        const clearResults = () => {
+            learning.data.confirm = false;
+            inner(learning.elements.confirm, 'Zatwierdź');
+            learning.preparation.setQuestion();
+            learning.elements.answersFields.forEach((field, index) => {
+                if (index % 2 === 0) {
+                    setStyle(field, 'backgroundColor', 'var(--penultimate_color)');
+                }
+                else {
+                    setStyle(field, 'backgroundColor', 'var(--third_from_end_color)');
+                }
+            });
+        };
+        evaluation.confirmClick = () => {
+            if (learning.data.confirm) {
+                clearResults();
+            }
+            else {
+                showResult();
+            }
+        };
+    })(evaluation = learning.evaluation || (learning.evaluation = {}));
+})(learning || (learning = {}));
+var learning;
+(function (learning) {
+    const { byId, byQueryAll, setStyle, add, remove, display, getPx } = dom;
+    learning.elements = {
+        startEnd: null,
+        startEndBtn: null,
+        sheet: null,
+        measure: null,
+        imgBig: null,
+        info: null,
+        separator: null,
+        question: null,
+        img: null,
+        answers: null,
+        answersFields: null,
+        checkbox: null,
+        confirm: null,
+        bottom: null,
+        drawImage: null,
     };
     learning.init = () => {
-        elements.startEnd = byId('learning-start-end');
-        elements.startEndBtn = byId('learning-start-end-btn');
-        elements.sheet = byId('learning-sheet');
-        elements.info = byId('learning-question-info');
-        elements.separator = byId('learning-sheet-separator');
-        elements.question = byId('question');
-        elements.answers = byQueryAll('.answer p');
-        elements.answersField = byQueryAll('.answer');
-        elements.checkbox = byQueryAll('.answer input');
-        elements.checkbox.forEach(c => c.checked = false);
-        elements.confirm = byId('learning-confirm-btn');
-        utils.areNotNull(elements, ['screens', 'learning']);
-        display(elements.sheet, 'none');
+        learning.elements.startEnd = byId('learning-start-end');
+        learning.elements.startEndBtn = byId('learning-start-end-btn');
+        learning.elements.sheet = byId('learning-sheet');
+        learning.elements.measure = byId('learning-measure');
+        learning.elements.imgBig = byId('learning-img-big');
+        learning.elements.info = byId('learning-question-info');
+        learning.elements.separator = byId('learning-sheet-separator');
+        learning.elements.question = byId('question');
+        learning.elements.img = byId('learning-img');
+        learning.elements.answers = byQueryAll('.answer p');
+        learning.elements.answersFields = byQueryAll('.answer');
+        learning.elements.checkbox = byQueryAll('.answer input');
+        learning.elements.checkbox.forEach(c => c.checked = false);
+        learning.elements.confirm = byId('learning-confirm-btn');
+        learning.elements.bottom = byId('learning-bottom-separator');
+        learning.elements.drawImage = utils.drawImage();
+        const canvas = byId('learning-img-big-canvas');
+        const fitCanvas = byId('learning-img-canvas');
+        learning.elements.drawImage.init(canvas, fitCanvas);
+        utils.areNotNull(learning.elements, ['screens', 'learning']);
+        display(learning.elements.sheet, 'none');
     };
     const LOW_START_END_BTN = 12 + 28 + 12;
     const HIGH_START_END_BTN = 24 + 28 + 24;
     learning.resize = (w, h) => {
         const menuH = core.isMobile ? (121 / 701) * w : 0;
-        data.tabH = h - 30 - menuH - 20;
-        if (data.started) {
-            setStyle(elements.separator, 'height', ``);
-            setStyle(elements.sheet, 'height', ``);
-            setStyle(elements.sheet, 'opacity', `0`);
-            setStyle(elements.startEnd, 'height', getPx(LOW_START_END_BTN));
-            setStyle(elements.startEndBtn, 'padding', '12px 0');
-            setTimeout(() => {
-                const sheetH = elements.sheet.getBoundingClientRect().height;
-                setStyle(elements.separator, 'height', getPx(sheetH < data.tabH ? data.tabH - sheetH : 0));
-                setStyle(elements.sheet, 'opacity', `1`);
-            }, 30);
+        learning.data.tabH = h - 30 - menuH - 20;
+        const tabW = w - (core.isMobile ? 0 : 200);
+        setStyle(learning.elements.imgBig, 'height', getPx(h - menuH));
+        setStyle(learning.elements.imgBig, 'width', getPx(tabW));
+        setStyle(learning.elements.bottom, 'height', getPx(menuH));
+        learning.elements.drawImage.setWidth(tabW - 80);
+        if (learning.data.started) {
+            setStyle(learning.elements.startEnd, 'height', getPx(LOW_START_END_BTN));
+            setStyle(learning.elements.startEndBtn, 'padding', '12px 0');
+            learning.preparation.setSheetHight();
         }
         else {
-            setStyle(elements.sheet, 'height', `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
-            setStyle(elements.startEnd, 'height', getPx(h - 30 - menuH - 20));
-            setStyle(elements.startEndBtn, 'padding', '24px 0');
+            setStyle(learning.elements.sheet, 'height', `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
+            setStyle(learning.elements.startEnd, 'height', getPx(h - 30 - menuH - 20));
+            setStyle(learning.elements.startEndBtn, 'padding', '24px 0');
         }
     };
-    const setQuestion = async () => {
-        const item = await engine.getItem();
-        data.answers.origin = item;
-        inner(elements.info, `${item.question.id}, ${item.question.used.length}`);
-        inner(elements.question, item.question.question);
-        const answers = [{
-                content: item.question.answer,
-                correct: true,
-            }];
-        item.question.falseAnswers.forEach(fa => {
-            answers.push({
-                content: fa,
-                correct: false,
-            });
-        });
-        data.answers.shuffled = shuffle(answers);
-        elements.answers.forEach((a, i) => {
-            inner(a, data.answers.shuffled[i].content);
-        });
-    };
-    const start = async () => {
-        data.started = true;
-        display(elements.sheet, 'block');
-        learning.resize(window.visualViewport.width, window.visualViewport.height);
-        mark(-1)();
-        await engine.init();
-        setQuestion();
-        inner(elements.startEndBtn, 'Zakończ');
-        setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
-        remove(elements.startEndBtn, 'click', start);
-        add(elements.startEndBtn, 'click', end);
-    };
-    const end = () => {
-        data.started = false;
-        display(elements.sheet, 'none');
-        learning.resize(window.visualViewport.width, window.visualViewport.height);
-        inner(elements.startEndBtn, 'Rozpocznij');
-        setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
-        remove(elements.startEndBtn, 'click', end);
-        add(elements.startEndBtn, 'click', start);
-    };
     learning.active = () => {
-        elements.answersField.forEach((a, i) => add(a, 'click', mark(i)));
-        add(elements.startEndBtn, 'click', data.started ? end : start);
-        add(elements.confirm, 'click', setQuestion);
+        learning.elements.answersFields.forEach((a, i) => add(a, 'click', learning.evaluation.mark(i)));
+        add(learning.elements.startEndBtn, 'click', learning.data.started ? learning.preparation.end : learning.preparation.start);
+        add(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
     };
     learning.deactivate = () => {
-        elements.answersField.forEach((a, i) => remove(a, 'click', mark(i)));
-        remove(elements.startEndBtn, 'click', start);
-        remove(elements.startEndBtn, 'click', end);
-        remove(elements.confirm, 'click', setQuestion);
+        learning.elements.answersFields.forEach((a, i) => remove(a, 'click', learning.evaluation.mark(i)));
+        remove(learning.elements.startEndBtn, 'click', learning.preparation.start);
+        remove(learning.elements.startEndBtn, 'click', learning.preparation.end);
+        remove(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
     };
 })(learning || (learning = {}));
 var answers;
