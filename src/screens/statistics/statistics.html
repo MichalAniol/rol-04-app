@@ -1,9 +1,96 @@
 <link rel='stylesheet' type='text/css' href='./statistics.css'>
 
-<div class="tab-box">
-    <div class="title">Statystyki</div>
+<div class="statistics-tab-box">
+    <div id="statistics-sheet" class="scroll-box">
+        <div class="scroll">
+            <div class="title">Statystyki</div>
 
-    <div class="canvas-box monitor">
-        <canvas id="statistics-monitor" class="statistics-monitor-canvas"></canvas>
+            <div class="canvas-box monitor">
+                <canvas id="statistics-monitor" class="statistics-monitor-canvas"></canvas>
+            </div>
+
+            <div id="statistics-colors-legend" class="statistics-colors-legend">
+                <div class="statistics-box-title">legenda</div>
+
+                <div class="statistics-colors-title">poprawne</div>
+                <div id="statistics-good-colors" class="statistics-section"> </div>
+
+                <div class="statistics-colors-title">nieużyte</div>
+                <div id="statistics-used-colors" class="statistics-section"> </div>
+
+                <div class="statistics-colors-title">błędne</div>
+                <div id="statistics-bad-colors" class="statistics-section"> </div>
+            </div>
+
+            <div class="statistics-box-table">
+                <div class="statistics-box-title">wyniki nauki</div>
+
+                <table id="statistics-table" class="statistics-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>dobrze</th>
+                            <th>źle</th>
+                            <th>nie użyte</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr data-row="all">
+                            <td>all</td>
+                            <td class="statistics-good" data-col="good" data-field="all">45%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="all">15%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="all">15%</td>
+                        </tr>
+
+                        <tr data-row="allPercent">
+                            <td>all%</td>
+                            <td class="statistics-good" data-col="good" data-field="all">45%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="all">15%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="all">15%</td>
+                        </tr>
+
+                        <tr class="separator">
+                            <td colspan="4"></td>
+                        </tr>
+
+                        <tr data-row="moreOne">
+                            <td>>1x</td>
+                            <td class="statistics-good" data-col="good" data-field="more-than-1x">45%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="more-than-1x">15%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="more-than-1x">15%</td>
+                        </tr>
+
+                        <tr data-row="moreOnePercent">
+                            <td>>1x%</td>
+                            <td class="statistics-good" data-col="good" data-field="more-than-1x-percent">45%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="more-than-1x-percent">15%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="more-than-1x-percent">15%</td>
+                        </tr>
+
+                        <tr class="separator">
+                            <td colspan="4"></td>
+                        </tr>
+
+                        <tr data-row="one">
+                            <td>1x</td>
+                            <td class="statistics-good" data-col="good" data-field="1x">20%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="1x">10%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="1x">10%</td>
+                        </tr>
+
+                        <tr data-row="onePercent">
+                            <td>1x%</td>
+                            <td class="statistics-good" data-col="good" data-field="1x-percent">45%</td>
+                            <td class="statistics-bad" data-col="bad" data-field="1x-percent">15%</td>
+                            <td class="statistics-unused" data-col="unused" data-field="1x-percent">15%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div id="statistics-bottom"></div>
+        </div>
     </div>
 </div>

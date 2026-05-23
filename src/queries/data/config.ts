@@ -1,9 +1,12 @@
+type ConfigResponseImgT = {
+    name: string,
+    version: string,
+}
+
+
 type GetConfigResponseT = {
     tests: string,
-    img: {
-        name: string,
-        version: string,
-    }[]
+    img: ConfigResponseImgT[]
 }
 
 namespace queries {

@@ -23,30 +23,30 @@ namespace starter {
             const versionRes = response.version
 
             if (versionRes !== versionDb) {
+                setStyle(elements.statusAction, 'display', 'initial')
+                inner(elements.statusAction, 'wczytywanie pytań')
+
                 // pobieranie config
                 const configRes = await queries.data.getConfig()
-                const configDb = await core.store.get(storageNames.config) as GetConfigResponseT
-                await core.store.set(storageNames.newConfig, checked.yes)
-                await core.store.set(storageNames.imgAvailable, checked.no)
+                // console.log('%c configRes:', 'background: #ffcc00; color: #003300', configRes)
+                const configTestsDb = await core.store.get(storageNames.configTests)
 
-                if (configRes.tests !== configDb.tests) {
+                if (configRes.tests !== configTestsDb) {
                     setStyle(elements.statusNow, 'display', 'initial')
-                    setStyle(elements.statusAction, 'display', 'initial')
-                    inner(elements.statusAction, 'wczytywanie pytań')
 
                     // pobieranie pytań
                     const allQuestionsRes = await queries.data.getAllQuestions()
                     const allQuestions = allQuestionsRes.map(question => {
                         if (!question.used) question.used = []
                         return question
-                    })//.sort((a, b) => b.used.length - a.used.length)
+                    })
 
                     let index = 0
                     // zapis pytań
                     const questionInterval = (clear: () => void) => async () => {
-                        // console.log('%c index:', 'background: #ffcc00; color: #003300', index)
                         const question = allQuestions[index]
                         if (!question) {
+                            await core.store.set(storageNames.configTests, configRes.tests)
                             clear()
                             return
                         }
@@ -65,43 +65,49 @@ namespace starter {
 
                     if (core.isMobile) tab.simpleMenu.showMenu()
 
+                }
+
+                const imgAvailable = await core.store.get(storageNames.imgAvailable)
+                if (imgAvailable === checked.no) {
                     inner(elements.statusAction, `wczytywanie obrazów`)
-                    index = 0
+
+                    const imgSToAdd: ConfigResponseImgT[] = []
+                    await configRes.img.forEach(async (img) => {
+                        const imgDb = await core.idb.images.get(img.name)
+                        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img)
+                    })
+
+                    let index = 0
                     // pobieranie i zapisywanie obrazów
                     const imageInterval = (clear: () => void) => async () => {
-                        const imageDataRes = (configRes.img[index])
+                        const imageDataRes = imgSToAdd[index]
+                        console.log('%c imageDataRes:', 'background: #ffcc00; color: #003300', imageDataRes)
                         if (!imageDataRes) {
+                            await core.store.set(storageNames.imgAvailable, checked.yes)
+
+                            setStyle(elements.statusNow, 'display', 'none')
+                            setStyle(elements.statusAction, 'display', 'none')
+
+                            // zapamiętanie versji
+                            await core.store.set(storageNames.version, versionRes)
+
                             clear()
                             return
                         }
 
-                        inner(elements.statusAction, `wczytywanie obrazów ${index + 1}/${configRes.img.length}`)
+                        inner(elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`)
+                        index++
 
-                        const imageDataDb = await core.idb.images.get(imageDataRes.name)
-
-                        if (!imageDataDb || imageDataDb.version !== imageDataRes.name) {
-                            const image = await queries.data.getImage(imageDataRes.name)
-
+                        const image = await queries.data.getImage(imageDataRes.name)
+                        if (image) {
                             await core.idb.images.set(imageDataRes.name, {
-                                version: imageDataRes.name,
+                                version: imageDataRes.version,
                                 data: await utils.blob.toString(image),
                             })
                         }
-                        index++
                     }
-                    await waitForIntervalClear(imageInterval, 100)
-                    await core.store.set(storageNames.imgAvailable, checked.yes)
-
-                    setStyle(elements.statusNow, 'display', 'none')
-                    setStyle(elements.statusAction, 'display', 'none')
-
-                    // zapamiętanie configu
-                    await core.store.set(storageNames.config, configRes)
-                    await core.store.set(storageNames.newConfig, checked.no)
+                    waitForIntervalClear(imageInterval, 1000)
                 }
-
-                // zapamiętanie versji
-                await core.store.set(storageNames.version, versionRes)
             }
 
 
@@ -132,7 +138,6 @@ namespace starter {
             })
 
             // ilość pytań, aby ułożyć je w kwadrat
-            // statistics.data.table.size = (Math.ceil(Math.sqrt(engine.params.data.sume)))
             statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)))
 
 

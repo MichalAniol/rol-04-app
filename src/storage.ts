@@ -12,8 +12,7 @@ type NamesValueTypeT = {
     imgAvailable: CheckedValuesT
     userId: string
     version: string
-    config: GetConfigResponseT
-    newConfig: CheckedValuesT
+    configTests: string
     menuLeft: CheckedValuesT
     questionsRatio: string
 }
@@ -25,8 +24,7 @@ const storageNames = {
     imgAvailable: 'img-available',  //
     userId: 'user-id',
     version: 'version',
-    config: 'config',
-    newConfig: 'new-config', //
+    configTests: 'config-tests',
     menuLeft: 'menu-left',
     questionsRatio: 'questions-ratio'
 } as const
@@ -49,8 +47,7 @@ const defaultData: NamesValueTypeT = {
     imgAvailable: checked.no,
     userId: 'null',
     version: 'null',
-    config: configData,
-    newConfig: checked.no,
+    configTests: 'null',
     menuLeft: checked.no,
     questionsRatio: null,
 }

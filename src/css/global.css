@@ -289,10 +289,10 @@
 
     --outline_color: #ff0000;
 
-    --on_prime_color: #408b07;
-    --on_second_color: #315714;
-    --off_prime_color: #c21010;
-    --off_second_color: #841919;
+    --on_prime_color: #60cf0b;
+    --on_second_color: #224e00;
+    --off_prime_color: #f40606;
+    --off_second_color: #7d0404;
 }
 
 :root.light {
@@ -322,10 +322,10 @@
 
     --outline_color: #ff0000;
 
-    --on_prime_color: #539e1a;
-    --on_second_color: #83cd4b;
-    --off_prime_color: #ea5050;
-    --off_second_color: #f58383;
+    --on_prime_color: #428e08;
+    --on_second_color: #81e138;
+    --off_prime_color: #ec1111;
+    --off_second_color: #ff8282;
 }
 
 *:focus:not(:focus-visible) {

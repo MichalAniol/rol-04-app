@@ -1,3 +1,8 @@
+const rating = {
+    bad: 'bad',
+    good: 'good'
+};
+const ratingNames = Object.values(rating);
 var cookie;
 (function (cookie_1) {
     cookie_1.names = {
@@ -188,8 +193,7 @@ const storageNames = {
     imgAvailable: 'img-available',
     userId: 'user-id',
     version: 'version',
-    config: 'config',
-    newConfig: 'new-config',
+    configTests: 'config-tests',
     menuLeft: 'menu-left',
     questionsRatio: 'questions-ratio'
 };
@@ -206,8 +210,7 @@ const defaultData = {
     imgAvailable: checked.no,
     userId: 'null',
     version: 'null',
-    config: configData,
-    newConfig: checked.no,
+    configTests: 'null',
     menuLeft: checked.no,
     questionsRatio: null,
 };
@@ -694,6 +697,21 @@ var utils;
 })(utils || (utils = {}));
 var utils;
 (function (utils) {
+    utils.waitFor = (condition, fn) => {
+        const check = () => {
+            setTimeout(() => {
+                if (condition()) {
+                    fn();
+                    return;
+                }
+                check();
+            }, 100);
+        };
+        return check;
+    };
+})(utils || (utils = {}));
+var utils;
+(function (utils) {
     const { byId, byQ, add, remove } = dom;
     utils.getRadio = (radioData) => {
         const themeElements = radioData.elementList.map(tn => byId(radioData.prefix + tn));
@@ -871,8 +889,10 @@ var engine;
         };
         params.data = {
             weights: null,
-            questions: null,
-            answers: null,
+            questions: [],
+            answers: [],
+            repeatableAnswers: [],
+            singleAnswers: [],
             quantities: [],
             sume: 0,
             normalizedWeights: {
@@ -923,15 +943,26 @@ var engine;
         };
         params.updateAnswers = async () => {
             const answersDb = await core.idb.answers.getAllData();
-            const answers = answersDb
-                .sort((a, b) => b[1].used - a[1].used);
-            params.data.answers = [];
-            answers.forEach((answer, i) => {
+            const newAnswers = answersDb.map((answer, i) => {
                 const index = answer[0];
                 const item = answer[1];
                 item.drawn = false;
                 item.index = index;
-                params.data.answers[i] = item;
+                return item;
+            });
+            const answers = newAnswers
+                .sort((a, b) => b.used - a.used);
+            params.data.answers = [];
+            params.data.repeatableAnswers = [];
+            params.data.singleAnswers = [];
+            answers.forEach((answer, i) => {
+                params.data.answers[i] = answer;
+                if (answer.used === 1) {
+                    params.data.singleAnswers.push(answer);
+                }
+                else {
+                    params.data.repeatableAnswers.push(answer);
+                }
             });
         };
     })(params = engine.params || (engine.params = {}));
@@ -949,13 +980,13 @@ var engine;
             }
             return 0;
         };
-        const prepareData = (reverseLastUse) => {
+        const prepareData = (reverseLastUse, answers) => {
             const now = engine.helpers.getDateAtNoonInXDays(1);
             let maxLastUse = now;
             let maxNextUse = now;
             let maxImportance = 1;
             let maxUsed = 0;
-            const preData = engine.params.data.answers.map((answer, index) => {
+            const preData = answers.map((answer, index) => {
                 let lastUsed = 0;
                 let nextUse = 0;
                 let rating = 0;
@@ -1036,9 +1067,8 @@ var engine;
             });
             return scoredData.sort((a, b) => b.score - a.score);
         };
-        analize.getTensors = async (normalizedWeights) => {
-            await engine.params.updateAnswers();
-            const data = prepareData(false);
+        analize.getTensors = async (normalizedWeights, answers) => {
+            const data = prepareData(false, answers);
             const result = scoringData(data, normalizedWeights);
             return result;
         };
@@ -1083,12 +1113,12 @@ var engine;
 var engine;
 (function (engine) {
     engine.getTensors = async () => {
-        const answersTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable);
-        const repeatableTensors = engine.select.selectByTemperature(answersTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
-        const newAnswersTensors = answersTensors
-            .filter(answer => !repeatableTensors.some(a => a.index === answer.index));
-        const singleTensors = engine.select.selectByTemperature(newAnswersTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
-        const result = shuffle([...repeatableTensors, ...singleTensors]);
+        await engine.params.updateAnswers();
+        const repeatableTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable, engine.params.data.repeatableAnswers);
+        const selectedRepeatableTensors = engine.select.selectByTemperature(repeatableTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
+        const singleTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.single, engine.params.data.singleAnswers);
+        const selectedSingleTensors = engine.select.selectByTemperature(singleTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
+        const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors]);
         console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result);
         return result;
     };
@@ -1658,14 +1688,12 @@ var starter;
             const response = await queries.data.getVersion(versionDb);
             const versionRes = response.version;
             if (versionRes !== versionDb) {
+                setStyle(starter.elements.statusAction, 'display', 'initial');
+                inner(starter.elements.statusAction, 'wczytywanie pytań');
                 const configRes = await queries.data.getConfig();
-                const configDb = await core.store.get(storageNames.config);
-                await core.store.set(storageNames.newConfig, checked.yes);
-                await core.store.set(storageNames.imgAvailable, checked.no);
-                if (configRes.tests !== configDb.tests) {
+                const configTestsDb = await core.store.get(storageNames.configTests);
+                if (configRes.tests !== configTestsDb) {
                     setStyle(starter.elements.statusNow, 'display', 'initial');
-                    setStyle(starter.elements.statusAction, 'display', 'initial');
-                    inner(starter.elements.statusAction, 'wczytywanie pytań');
                     const allQuestionsRes = await queries.data.getAllQuestions();
                     const allQuestions = allQuestionsRes.map(question => {
                         if (!question.used)
@@ -1676,6 +1704,7 @@ var starter;
                     const questionInterval = (clear) => async () => {
                         const question = allQuestions[index];
                         if (!question) {
+                            await core.store.set(storageNames.configTests, configRes.tests);
                             clear();
                             return;
                         }
@@ -1689,33 +1718,40 @@ var starter;
                     await waitForIntervalClear(questionInterval, 1);
                     if (core.isMobile)
                         tab.simpleMenu.showMenu();
+                }
+                const imgAvailable = await core.store.get(storageNames.imgAvailable);
+                if (imgAvailable === checked.no) {
                     inner(starter.elements.statusAction, `wczytywanie obrazów`);
-                    index = 0;
+                    const imgSToAdd = [];
+                    await configRes.img.forEach(async (img) => {
+                        const imgDb = await core.idb.images.get(img.name);
+                        if (!imgDb || imgDb.version !== img.version)
+                            imgSToAdd.push(img);
+                    });
+                    let index = 0;
                     const imageInterval = (clear) => async () => {
-                        const imageDataRes = (configRes.img[index]);
+                        const imageDataRes = imgSToAdd[index];
+                        console.log('%c imageDataRes:', 'background: #ffcc00; color: #003300', imageDataRes);
                         if (!imageDataRes) {
+                            await core.store.set(storageNames.imgAvailable, checked.yes);
+                            setStyle(starter.elements.statusNow, 'display', 'none');
+                            setStyle(starter.elements.statusAction, 'display', 'none');
+                            await core.store.set(storageNames.version, versionRes);
                             clear();
                             return;
                         }
-                        inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${configRes.img.length}`);
-                        const imageDataDb = await core.idb.images.get(imageDataRes.name);
-                        if (!imageDataDb || imageDataDb.version !== imageDataRes.name) {
-                            const image = await queries.data.getImage(imageDataRes.name);
+                        inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`);
+                        index++;
+                        const image = await queries.data.getImage(imageDataRes.name);
+                        if (image) {
                             await core.idb.images.set(imageDataRes.name, {
-                                version: imageDataRes.name,
+                                version: imageDataRes.version,
                                 data: await utils.blob.toString(image),
                             });
                         }
-                        index++;
                     };
-                    await waitForIntervalClear(imageInterval, 100);
-                    await core.store.set(storageNames.imgAvailable, checked.yes);
-                    setStyle(starter.elements.statusNow, 'display', 'none');
-                    setStyle(starter.elements.statusAction, 'display', 'none');
-                    await core.store.set(storageNames.config, configRes);
-                    await core.store.set(storageNames.newConfig, checked.no);
+                    waitForIntervalClear(imageInterval, 1000);
                 }
-                await core.store.set(storageNames.version, versionRes);
             }
             const questions = await core.idb.questions.getAllData();
             let maxUsed = 0;
@@ -1755,6 +1791,7 @@ var starter;
 var statistics;
 (function (statistics) {
     statistics.data = {
+        background: null,
         base: {
             used: { min: null, max: null },
             bad: { min: null, max: null },
@@ -1814,34 +1851,39 @@ var statistics;
             return result;
         };
         helpers.getColor = (answer) => {
+            if (answer.rating) {
+                if (answer.rating.type === rating.bad) {
+                    return statistics.data.steps.bad[answer.rating.scale];
+                }
+                if (answer.rating.type === rating.good) {
+                    return statistics.data.steps.good[answer.rating.scale];
+                }
+            }
             return statistics.data.steps.used[answer.used - 1];
         };
+        helpers.getOnThisSession = (answer) => engine.params.data.session.some(item => item.id === answer.id);
     })(helpers = statistics.helpers || (statistics.helpers = {}));
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    statistics.init = () => {
-        engine.params.updateAnswers();
-        statistics.draw.init();
-    };
-    statistics.resize = (w, h) => {
-        statistics.draw.resize(w, h);
-    };
-    statistics.active = () => {
-        statistics.draw.cells();
-    };
-    statistics.deactivate = () => { };
 })(statistics || (statistics = {}));
 var statistics;
 (function (statistics) {
     let draw;
     (function (draw) {
         const { byId, prepare, getColorFromStyle } = dom;
-        const elements = {
-            monitor: null,
-            ctx: null,
+        const getMetrics = () => {
+            const halfSpace = statistics.data.cell.space / 2;
+            const offset = statistics.data.cell.space + halfSpace;
+            const smallRect = statistics.data.cell.size - (offset * 2);
+            return {
+                twoPi: Math.PI * 2,
+                halfSpace,
+                offset,
+                smallRect,
+                center: statistics.data.cell.size / 2,
+                quarter: statistics.data.cell.size / 4,
+            };
         };
         draw.themeChange = () => {
+            statistics.data.background = getColorFromStyle('--last_color');
             statistics.data.base.used.min = getColorFromStyle('--mine_6_color');
             statistics.data.base.used.max = getColorFromStyle('--mine_color');
             statistics.data.steps.used = statistics.helpers.getColorSteps(statistics.data.base.used.min, statistics.data.base.used.max, engine.params.data.quantities.length);
@@ -1850,40 +1892,224 @@ var statistics;
             statistics.data.steps.bad = statistics.helpers.getColorSteps(statistics.data.base.bad.min, statistics.data.base.bad.max, engine.params.determinants.numLastRequiredQuestions);
             statistics.data.base.good.min = getColorFromStyle('--on_second_color');
             statistics.data.base.good.max = getColorFromStyle('--on_prime_color');
-            statistics.data.steps.good = statistics.helpers.getColorSteps(statistics.data.base.good.min, statistics.data.base.good.max, engine.params.determinants.numLastHighlyRatedQuestions - engine.params.determinants.numLastRequiredQuestions);
+            statistics.data.steps.good = statistics.helpers.getColorSteps(statistics.data.base.good.min, statistics.data.base.good.max, engine.params.determinants.numLastHighlyRatedQuestions);
         };
         draw.cells = async () => {
-            elements.ctx.clearRect(0, 0, elements.monitor.width, elements.monitor.height);
+            statistics.elements.ctx.clearRect(0, 0, statistics.elements.monitor.width, statistics.elements.monitor.height);
+            const { twoPi, offset, smallRect, center, quarter } = getMetrics();
             const answers = engine.params.data.answers;
             if (answers === null)
                 return;
             answers.forEach((answer, index) => {
                 const pozX = (index % statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
                 const pozY = Math.floor(index / statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
-                const color = statistics.helpers.getColor(answer);
-                elements.ctx.fillStyle = color;
-                elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
+                statistics.elements.ctx.fillStyle = statistics.helpers.getColor(answer);
+                statistics.elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
+                const onThisSession = statistics.helpers.getOnThisSession(answer);
+                if (onThisSession) {
+                    statistics.elements.ctx.strokeStyle = statistics.data.background;
+                    statistics.elements.ctx.lineWidth = statistics.data.cell.space;
+                    const sesX = pozX + offset;
+                    const sesY = pozY + offset;
+                    const sesSize = smallRect;
+                    statistics.elements.ctx.strokeRect(sesX, sesY, sesSize, sesSize);
+                }
+                if (learning.data.answers.origin?.answer) {
+                    const condition = learning.data.answers.origin.answer.id === answer.id;
+                    if (condition) {
+                        statistics.elements.ctx.fillStyle = statistics.data.background;
+                        const nowX = pozX + center;
+                        const nowY = pozY + center;
+                        statistics.elements.ctx.beginPath();
+                        statistics.elements.ctx.arc(nowX, nowY, quarter, 0, twoPi);
+                        statistics.elements.ctx.fill();
+                    }
+                }
             });
         };
         draw.init = () => {
-            elements.monitor = byId('statistics-monitor');
-            elements.ctx = elements.monitor.getContext("2d");
-            utils.areNotNull(elements, ['screens', 'drawing']);
             setTimeout(() => {
                 draw.themeChange();
                 draw.resize(window.visualViewport.width, window.visualViewport.height);
             }, 300);
         };
         draw.resize = (w, h) => {
-            statistics.data.monitor.width = w - 40 - (core.isMobile ? 0 : 200);
             const bit = statistics.data.monitor.width / ((statistics.determinants.cell.size * statistics.data.monitor.size) + (statistics.determinants.cell.space * (statistics.data.monitor.size - 1)));
             statistics.data.cell.size = statistics.determinants.cell.size * bit;
             statistics.data.cell.space = statistics.determinants.cell.space * bit;
-            elements.monitor.width = statistics.data.monitor.width;
-            elements.monitor.height = statistics.data.monitor.width;
+            statistics.elements.monitor.width = statistics.data.monitor.width;
+            statistics.elements.monitor.height = statistics.data.monitor.width;
             draw.cells();
         };
     })(draw = statistics.draw || (statistics.draw = {}));
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    let legend;
+    (function (legend) {
+        const { prepare, setStyle } = dom;
+        const listElements = {
+            bad: null,
+            good: null,
+            used: null,
+        };
+        const data = [
+            { name: 'poprawne', id: 'good' },
+            { name: 'nieużyte', id: 'used' },
+            { name: 'błędne', id: 'bad' }
+        ];
+        const prepareColorLines = () => {
+            statistics.elements.legend.replaceChildren();
+            const children = [
+                prepare('div', {
+                    classes: ['statistics-box-title'],
+                    inner: 'legenda'
+                })
+            ];
+            const setLegendColors = (name, id) => {
+                children.push(prepare('div', {
+                    classes: ['statistics-colors-title'],
+                    inner: name,
+                }));
+                const item = prepare('div', {
+                    id: `statistics-${id}-colors`,
+                    classes: ['statistics-section']
+                });
+                listElements[id] = item;
+                children.push(item);
+            };
+            data.forEach(item => setLegendColors(item.name, item.id));
+            prepare(statistics.elements.legend, {
+                children
+            });
+        };
+        const setColorLine = (key) => {
+            console.log('%c key:', 'background: #ffcc00; color: #003300', key);
+            const colors = statistics.data.steps[key];
+            const parent = listElements[key];
+            setTimeout(() => {
+                colors.forEach((color, index) => {
+                    const elem = prepare('div', {
+                        classes: ['statistics-color'],
+                    });
+                    setStyle(elem, 'backgroundColor', color);
+                    prepare(parent, { children: [elem] });
+                    const p = prepare('p', {
+                        inner: `${index + 1}x`
+                    });
+                    prepare(elem, { children: [p] });
+                });
+            }, 500);
+        };
+        legend.setMonitorLegend = () => {
+            prepareColorLines();
+            Object.keys(statistics.data.steps).forEach((key) => setColorLine(key));
+        };
+    })(legend = statistics.legend || (statistics.legend = {}));
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    let legend;
+    (function (legend) {
+        const { byQ, inner } = dom;
+        const colNames = ['good', 'bad', 'unused'];
+        const rowNames = ['all', 'allPercent', 'moreOne', 'moreOnePercent', 'one', 'onePercent'];
+        const createTableData = () => {
+            const data = {};
+            for (const row of rowNames) {
+                const rowObj = {};
+                for (const col of colNames) {
+                    rowObj[col] = 0;
+                }
+                data[row] = rowObj;
+            }
+            return data;
+        };
+        const setValues = (row, answer) => {
+            if (answer.rating?.type === rating.bad) {
+                row.bad++;
+            }
+            else if (answer.rating?.type === rating.good) {
+                row.good += (answer.rating.scale + 1) / 3;
+            }
+            else {
+                row.unused++;
+            }
+        };
+        const countPercent = (numRow, percRow, sum) => {
+            Object.keys(numRow).forEach((key) => {
+                const num = numRow[key];
+                percRow[key] = Math.round(sum === 0 ? 0 : (num / sum) * 1000) / 10;
+            });
+        };
+        const getElement = (row, col) => byQ(statistics.elements.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
+        const showTableData = (data) => {
+            const percentNames = ['allPercent', 'moreOnePercent', 'onePercent'];
+            for (const row of rowNames) {
+                for (const col of colNames) {
+                    const value = data[row][col];
+                    const suffix = percentNames.some(pn => pn === row) ? '%' : '';
+                    const elem = getElement(row, col);
+                    inner(elem, value.toFixed(1) + suffix);
+                }
+            }
+        };
+        legend.setData = () => {
+            if (engine.params.data.answers === null)
+                return;
+            const tableData = createTableData();
+            const sumeMoreOne = engine.params.data.sume - engine.params.data.quantities[0];
+            engine.params.data.answers.forEach(answer => {
+                if (answer.used > 1) {
+                    setValues(tableData.moreOne, answer);
+                }
+                else {
+                    setValues(tableData.one, answer);
+                }
+                setValues(tableData.all, answer);
+            });
+            countPercent(tableData.all, tableData.allPercent, engine.params.data.sume);
+            countPercent(tableData.moreOne, tableData.moreOnePercent, sumeMoreOne);
+            countPercent(tableData.one, tableData.onePercent, engine.params.data.quantities[0]);
+            showTableData(tableData);
+        };
+    })(legend = statistics.legend || (statistics.legend = {}));
+})(statistics || (statistics = {}));
+var statistics;
+(function (statistics) {
+    const { prepare, byId, byQ, getPx, setStyle, inner } = dom;
+    statistics.elements = {
+        sheet: null,
+        monitor: null,
+        ctx: null,
+        legend: null,
+        table: null,
+        bottom: null,
+    };
+    statistics.init = () => {
+        statistics.elements.sheet = byId('statistics-sheet');
+        statistics.elements.monitor = byId('statistics-monitor');
+        statistics.elements.ctx = statistics.elements.monitor.getContext('2d');
+        statistics.elements.table = byId('statistics-table');
+        statistics.elements.legend = byId('statistics-colors-legend');
+        statistics.elements.bottom = byId('statistics-bottom');
+        utils.areNotNull(statistics.elements, ['screens', 'drawing']);
+        engine.params.updateAnswers();
+        statistics.draw.init();
+        utils.waitFor(() => engine.params.data.answers.length !== 0 && statistics.data.steps.used.length !== 0 && statistics.elements.legend !== null, statistics.legend.setMonitorLegend)();
+    };
+    statistics.resize = (w, h) => {
+        statistics.data.monitor.width = w - 40 - (core.isMobile ? 0 : 200);
+        const menuH = core.isMobile ? (121 / 701) * w : 0;
+        setStyle(statistics.elements.sheet, 'height', `calc(${getPx(h)})`);
+        setStyle(statistics.elements.bottom, 'height', getPx(menuH));
+        statistics.draw.resize(w, h);
+    };
+    statistics.active = () => {
+        statistics.draw.cells();
+        utils.waitFor(() => engine.params.data.sume !== 0, statistics.legend.setData)();
+    };
+    statistics.deactivate = () => { };
 })(statistics || (statistics = {}));
 var learning;
 (function (learning) {
@@ -1916,6 +2142,7 @@ var learning;
         };
         preparation.setQuestion = async () => {
             const item = await engine.getItem();
+            console.log('%c item:', 'background:rgb(132, 255, 0); color: #003300', item);
             learning.data.answers.origin = item;
             learning.evaluation.mark(-1)();
             setStyle(learning.elements.sheet, 'opacity', `0`);
@@ -1932,16 +2159,21 @@ var learning;
             const answers = [{
                     content: item.question.answer,
                     correct: true,
+                    number: -1
                 }];
-            item.question.falseAnswers.forEach(falseAnswer => {
+            item.question.falseAnswers.forEach((falseAnswer, index) => {
                 answers.push({
                     content: falseAnswer,
                     correct: false,
+                    number: index
                 });
             });
             learning.data.answers.shuffled = shuffle(answers);
             learning.elements.answers.forEach((a, i) => {
                 inner(a, learning.data.answers.shuffled[i].content);
+            });
+            learning.elements.answersFields.forEach((a, i) => {
+                setStyle(a, 'color', 'var(--prime_color)');
             });
             preparation.setSheetHight();
         };
@@ -1986,7 +2218,64 @@ var learning;
             learning.elements.checkbox.forEach((a, i) => a.checked = (i === num));
             learning.elements.answersFields.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
         };
-        const showResult = () => {
+        const setResult = (result, history) => {
+            history.forEach(h => {
+                if (h.result) {
+                    result.good++;
+                }
+                else {
+                    result.bad++;
+                }
+            });
+            return result;
+        };
+        const rateHistory = () => {
+            const getResult = () => ({ good: 0, bad: 0, });
+            const sortedHistory = learning.data.answers.origin.answer.history
+                .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+            const lastThree = sortedHistory.slice(-engine.params.determinants.numLastRequiredQuestions);
+            const resultOne = setResult(getResult(), lastThree);
+            if (resultOne.bad > 0) {
+                learning.data.answers.origin.answer.rating = {
+                    type: rating.bad,
+                    scale: resultOne.bad - 1
+                };
+            }
+            else {
+                const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions);
+                const resultTwo = setResult(getResult(), lastSix);
+                learning.data.answers.origin.answer.rating = {
+                    type: rating.good,
+                    scale: resultTwo.good - 1
+                };
+            }
+        };
+        const sumAndMemo = async () => {
+            const answer = learning.data.answers.shuffled[learning.data.mark];
+            const timestamp = Date.now();
+            learning.data.answers.origin.answer.history.push({
+                timestamp,
+                result: answer.correct,
+            });
+            rateHistory();
+            const { drawn, index, ...answerDb } = learning.data.answers.origin.answer;
+            core.idb.answers.update(index, (old) => old = answerDb);
+            const log = {
+                action: learning.data.answers.origin.answer.id,
+                result: answer.correct,
+                status: answer.number,
+            };
+            core.idb.logs.set(timestamp, log);
+        };
+        const setGreen = (field) => {
+            setStyle(field, 'backgroundColor', 'var(--on_prime_color)');
+            const theme = settings.theme.get();
+            console.log('%c theme:', 'background: #ffcc00; color: #003300', theme);
+            if (theme === settings.theme.theme.dark) {
+                setStyle(field, 'color', 'var(--last_color)');
+            }
+        };
+        const showResult = async () => {
             learning.data.confirm = true;
             inner(learning.elements.confirm, 'Następne');
             disable(learning.elements.confirm);
@@ -1995,7 +2284,7 @@ var learning;
             }, 1000);
             const markedAnswer = learning.data.answers.shuffled[learning.data.mark];
             if (markedAnswer.correct) {
-                setStyle(learning.elements.answersFields[learning.data.mark], 'backgroundColor', 'var(--on_prime_color)');
+                setGreen(learning.elements.answersFields[learning.data.mark]);
             }
             else {
                 learning.elements.answersFields.forEach((field, index) => {
@@ -2004,10 +2293,11 @@ var learning;
                     }
                     const correct = learning.data.answers.shuffled[index].correct;
                     if (correct) {
-                        setStyle(field, 'backgroundColor', 'var(--on_prime_color)');
+                        setGreen(field);
                     }
                 });
             }
+            await sumAndMemo();
         };
         const clearResults = () => {
             learning.data.confirm = false;
@@ -2022,12 +2312,12 @@ var learning;
                 }
             });
         };
-        evaluation.confirmClick = () => {
+        evaluation.confirmClick = async () => {
             if (learning.data.confirm) {
                 clearResults();
             }
             else {
-                showResult();
+                await showResult();
             }
         };
     })(evaluation = learning.evaluation || (learning.evaluation = {}));
@@ -2110,7 +2400,10 @@ var learning;
 })(learning || (learning = {}));
 var answers;
 (function (answers) {
-    answers.init = () => { };
+    const { byId, prepare, setStyle } = dom;
+    const elements = {};
+    answers.init = () => {
+    };
     answers.active = () => { };
     answers.deactivate = () => { };
 })(answers || (answers = {}));
@@ -2284,6 +2577,7 @@ var settings;
         const set = (saved) => {
             if (saved === theme_1.theme.dark || saved === theme_1.theme.light) {
                 apply(saved);
+                memo.theme = saved;
                 return saved;
             }
             if (saved === theme_1.themeMode.system) {
@@ -2301,7 +2595,10 @@ var settings;
             nameList: themeNames,
             clickList: themeNames.map((name, i) => () => {
                 set(name);
-                setTimeout(() => statistics.draw.themeChange(), 100);
+                setTimeout(() => {
+                    statistics.draw.themeChange();
+                    statistics.legend.setMonitorLegend();
+                }, 100);
             }),
             init: set,
         };
@@ -2882,7 +3179,7 @@ const serviceWorker = () => {
             resize.run();
             await starter.run();
             setTimeout(async () => {
-                tab.getGoTo(2)();
+                tab.getGoTo(0)();
                 await engine.params.init();
             }, 100);
         });
