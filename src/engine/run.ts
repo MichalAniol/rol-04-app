@@ -2,16 +2,27 @@ namespace engine {
 
 
     export const getTensors = async () => {
-        const answersTensors = await analize.getTensors(params.data.normalizedWeights.repeatable)
+        await params.updateAnswers()
 
-        const repeatableTensors = select.selectByTemperature(answersTensors, params.repeatable.temperature, params.data.numOfQuestions.repeatable)
+        const repeatableTensors = await analize.getTensors(
+            params.data.normalizedWeights.repeatable,
+            params.data.repeatableAnswers)
 
-        const newAnswersTensors = answersTensors
-            .filter(answer => !repeatableTensors.some(a => a.index === answer.index))
+        const selectedRepeatableTensors = select.selectByTemperature(
+            repeatableTensors,
+            params.repeatable.temperature,
+            params.data.numOfQuestions.repeatable)
 
-        const singleTensors = select.selectByTemperature(newAnswersTensors, params.single.temperature, params.data.numOfQuestions.single)
+        const singleTensors = await analize.getTensors(
+            params.data.normalizedWeights.single,
+            params.data.singleAnswers)
 
-        const result = shuffle([...repeatableTensors, ...singleTensors])
+        const selectedSingleTensors = select.selectByTemperature(
+            singleTensors,
+            params.single.temperature,
+            params.data.numOfQuestions.single)
+
+        const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors])
         console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result)
 
         return result

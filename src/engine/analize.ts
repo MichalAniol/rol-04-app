@@ -12,7 +12,7 @@ namespace engine {
             return 0
         }
 
-        const prepareData = (reverseLastUse: boolean) => {
+        const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             const now = helpers.getDateAtNoonInXDays(1)
 
             let maxLastUse = now
@@ -20,8 +20,8 @@ namespace engine {
             let maxImportance = 1
             let maxUsed = 0
 
-            const preData: TensorDataT[] = params.data.answers.map((answer, index) => {
-                // const answer = params.data.answers.find(a => a.id === question.id)
+            const preData: TensorDataT[] = answers.map((answer, index) => {
+                // const answer = answers.find(a => a.id === question.id)
                 let lastUsed = 0
                 let nextUse = 0
                 let rating = 0
@@ -132,13 +132,11 @@ namespace engine {
         }
 
 
-        export const getTensors = async (normalizedWeights: WeightsT) => {
-            await params.updateAnswers()
-            const data = prepareData(false)
+        export const getTensors = async (normalizedWeights: WeightsT, answers: AnswersT[]) => {
+            const data = prepareData(false, answers)
 
             const result = scoringData(data, normalizedWeights)
             return result
         }
-
     }
 }

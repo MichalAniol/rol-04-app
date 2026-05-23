@@ -36,27 +36,31 @@ namespace engine {
         } as const
 
         type DataT = {
-            weights: WeightsT | null,
-            questions: QuestionDbT[] | null,
-            answers: AnswersT[] | null,
-            quantities: number[],
+            weights: WeightsT | null
+            questions: QuestionDbT[]
+            answers: AnswersT[]
+            repeatableAnswers: AnswersT[]
+            singleAnswers: AnswersT[]
+            quantities: number[]
             sume: number,
             normalizedWeights: {
-                repeatable: WeightsT | null,
-                single: WeightsT | null,
-            },
+                repeatable: WeightsT | null
+                single: WeightsT | null
+            }
             numOfQuestions: {
-                repeatable: number,
-                single: number,
-            },
-            session: TensorDataT[],
-            index: number,
+                repeatable: number
+                single: number
+            }
+            session: TensorDataT[]
+            index: number
         }
 
         export const data: DataT = {
             weights: null,
-            questions: null,
-            answers: null,
+            questions: [],
+            answers: [],
+            repeatableAnswers: [],
+            singleAnswers: [],
             quantities: [],
             sume: 0,
             normalizedWeights: {
@@ -120,19 +124,35 @@ namespace engine {
 
         export const updateAnswers = async () => {
             const answersDb = await core.idb.answers.getAllData()
-            const answers = answersDb
-                .sort((a, b) => b[1].used - a[1].used)
-            data.answers = []
 
-            answers.forEach((answer, i) => {
+            // mapowanie z indeksem
+            const newAnswers = answersDb.map((answer, i) => {
                 const index = answer[0]
                 const item = answer[1] as AnswersT
 
                 item.drawn = false
                 item.index = index
 
+                return item
+            }) // as AnswersT[]
 
-                data.answers[i] = item
+            // sortowanie
+            const answers = newAnswers
+                .sort((a, b) => b.used - a.used)
+
+            // zapis do danych silnika
+            data.answers = []
+            data.repeatableAnswers = []
+            data.singleAnswers = []
+
+            answers.forEach((answer, i) => {
+                data.answers[i] = answer
+
+                if (answer.used === 1) {
+                    data.singleAnswers.push(answer)
+                } else {
+                    data.repeatableAnswers.push(answer)
+                }
             })
         }
     }

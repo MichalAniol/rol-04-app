@@ -32,17 +32,21 @@ namespace statistics {
             return result
         }
 
-        export const getColor = (answer: AnswersDbT) => {
-            // if (answer.rating) {
-            //     const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp)
-            //     const lastRequiredHistory = sortedHistory.slice(0, engine.params.determinants.numLastRequiredQuestions)
-
-            //     const lastHighlyRatedHistory = sortedHistory.slice(engine.params.determinants.numLastRequiredQuestions, engine.params.determinants.numLastHighlyRatedQuestions)
-
-            //     return data.steps.bad[0]
-            // }
+        export const getColor = (answer: AnswersT) => {
+            if (answer.rating) {
+                if (answer.rating.type === rating.bad) {
+                    return data.steps.bad[answer.rating.scale]
+                }
+                if (answer.rating.type === rating.good) {
+                    return data.steps.good[answer.rating.scale]
+                }
+            }
 
             return data.steps.used[answer.used - 1]
         }
+
+        export const getOnThisSession = (answer: AnswersT) =>
+            engine.params.data.session.some(item => item.id === answer.id)
+
     }
 }

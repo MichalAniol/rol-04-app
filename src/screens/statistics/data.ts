@@ -17,30 +17,32 @@ namespace statistics {
         good: ColorsRangeT | null
     }
 
-    type GradientStepsT = {
+    export type GradientStepsT = {
         used: dom.RgbColorT[]
         bad: dom.RgbColorT[]
         good: dom.RgbColorT[]
     }
 
     type DataT = {
-        base: BaseHexColorsT,
-        steps: GradientStepsT,
+        background: dom.HexColorT
+        base: BaseHexColorsT
+        steps: GradientStepsT
         monitor: {
-            size: number,
-            width: number,
+            size: number
+            width: number
         },
         cell: {
-            size: number,
-            space: number,
+            size: number
+            space: number
         }
     }
 
     export const data: DataT = {
+        background: null,
         base: {
-            used: {min: null, max: null},
-            bad: {min: null, max: null},
-            good: {min: null, max: null},
+            used: { min: null, max: null },
+            bad: { min: null, max: null },
+            good: { min: null, max: null },
         },
         steps: {
             used: [],
@@ -63,6 +65,4 @@ namespace statistics {
             space: 2,
         }
     } as const
-
-
 }

@@ -1,0 +1,13 @@
+.list-item-content .title {
+    font-size: var(--font_title_size);
+    margin-bottom: 20px;
+}
+
+.list-item-content .section {
+    font-size: var(--font_big_size);
+    margin-bottom: 16px;
+}
+
+.list-item-content p {
+    margin-bottom: 12px;
+}

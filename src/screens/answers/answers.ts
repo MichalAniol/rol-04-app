@@ -1,7 +1,19 @@
 namespace answers {
-    export const init = () => {}
+    const { byId, prepare, setStyle } = dom
 
-    export const active = () => {}
+    type ElementsT = {
 
-    export const deactivate = () => {}
+    }
+
+    const elements: ElementsT = {
+
+    }
+
+    export const init = () => {
+
+    }
+
+    export const active = () => { }
+
+    export const deactivate = () => { }
 }

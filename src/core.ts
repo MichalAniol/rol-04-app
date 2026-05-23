@@ -6,7 +6,7 @@ type CoreT = {
         images: Idb<ImageDbSchemaT> | null
         answers: Idb<AnswersDbSchemaT> | null
         statistics: Idb<any> | null
-        logs: Idb<any> | null
+        logs: Idb<LogDbSchemaT> | null
     }
 }
 namespace core {

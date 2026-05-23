@@ -9,6 +9,7 @@ namespace learning {
             shuffled: {
                 content: string,
                 correct: boolean,
+                number: number,
             }[]
         }
     }
@@ -50,6 +51,7 @@ namespace learning {
 
         export const setQuestion = async () => {
             const item = await engine.getItem()
+            console.log('%c item:', 'background:rgb(132, 255, 0); color: #003300', item)
             data.answers.origin = item
             evaluation.mark(-1)()
             setStyle(elements.sheet, 'opacity', `0`)
@@ -71,16 +73,21 @@ namespace learning {
             const answers = [{
                 content: item.question.answer,
                 correct: true,
+                number: -1
             }]
-            item.question.falseAnswers.forEach(falseAnswer => {
+            item.question.falseAnswers.forEach((falseAnswer, index) => {
                 answers.push({
                     content: falseAnswer,
                     correct: false,
+                    number: index
                 })
             })
             data.answers.shuffled = shuffle(answers)
             elements.answers.forEach((a, i) => {
                 inner(a, data.answers.shuffled[i].content)
+            })
+            elements.answersFields.forEach((a, i) => {
+                setStyle(a, 'color', 'var(--prime_color)')
             })
 
             setSheetHight()

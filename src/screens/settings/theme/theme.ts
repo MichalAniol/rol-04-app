@@ -46,6 +46,7 @@ namespace settings {
         const set = (saved: string) => {
             if (saved === theme.dark || saved === theme.light) {
                 apply(saved)
+                memo.theme = saved
                 return saved
             }
             if (saved === themeMode.system) {
@@ -55,7 +56,6 @@ namespace settings {
 
             core.store.set(storageNames.theme, themeMode.system)
             setSystemTheme()
-
 
             return themeMode.system
         }
@@ -67,7 +67,10 @@ namespace settings {
             nameList: themeNames,
             clickList: themeNames.map((name, i) => () => {
                 set(name)
-                setTimeout(() => statistics.draw.themeChange(), 100)
+                setTimeout(() => {
+                    statistics.draw.themeChange()
+                    statistics.legend.setMonitorLegend()
+                }, 100)
             }),
             init: set,
         }
