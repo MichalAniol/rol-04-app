@@ -35,7 +35,7 @@ type ImageDbSchemaT = {
     [key: string]: ImageDbT
 }
 
-const rating= {
+const rating = {
     bad: 'bad',
     good: 'good'
 } as const
@@ -52,10 +52,13 @@ type HistoryT = {
     result: boolean
 }
 
-type AnswersDbT = {
+type AnswersMemoT = {
     id: string // zgodne z pytaniem
     history: HistoryT[]
-    expectedUse: number
+}
+
+type AnswersDbT = AnswersMemoT & {
+    // expectedUse: number
     used: number
     rating?: RatingT | null // ocena do wyświetlania koloru na statystykach
 }
@@ -78,9 +81,12 @@ type LearningT = {
 type LogT = {
     action: string
     result: boolean
-    status: number
 }
 
 type LogDbSchemaT = {
     [key: number]: LogT
+}
+
+type LogMemoT = LogT & {
+    timestamp: number
 }

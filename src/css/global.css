@@ -286,6 +286,7 @@
     --third_from_end_color: #222;
     --penultimate_color: #181818;
     --last_color: #121212;
+    --last_color_opacity: #121212dd;
 
     --outline_color: #ff0000;
 
@@ -319,6 +320,7 @@
     --third_from_end_color: #e3dede;
     --penultimate_color: #efe8e8;
     --last_color: #ffffff;
+    --last_color_opacity: #ffffffdd;
 
     --outline_color: #ff0000;
 

@@ -23,7 +23,6 @@ namespace engine {
             params.data.numOfQuestions.single)
 
         const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors])
-        console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result)
 
         return result
     }
@@ -77,4 +76,6 @@ namespace engine {
 
         return result
     }
+
+    export const endSession = () => { params.data.session = [] }
 }

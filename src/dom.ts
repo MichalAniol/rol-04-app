@@ -134,10 +134,10 @@ namespace dom {
         off2: 'var(--off_second_color)',
     } as const
 
-    export type EventNamesT = 'click' | 'input' | 'did-finish-load' | 'console-message' | 'keydown' | 'touchstart' | 'touchmove' | 'touchend' | 'DOMContentLoaded' | 'change'
-    export const add = (elem: Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.addEventListener(name, fn)
+    export type EventNamesT = 'click' | 'input' | 'did-finish-load' | 'console-message' | 'keydown' | 'touchstart' | 'touchmove' | 'touchend' | 'DOMContentLoaded' | 'change' | 'beforeinstallprompt'
+    export const add = (elem: Window | Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.addEventListener(name, fn)
 
-    export const remove = (elem: Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.removeEventListener(name, fn)
+    export const remove = (elem: Window | Document | HTMLElement | HTMLInputElement | HTMLButtonElement, name: EventNamesT, fn: EventListenerOrEventListenerObject) => elem.removeEventListener(name, fn)
 
     export const xmlns = 'http://www.w3.org/2000/svg'
     export type NsNamesT = 'rect'

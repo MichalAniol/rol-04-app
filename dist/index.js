@@ -84,7 +84,15 @@ const idb = (storeName) => (function () {
         }
         return defaultGetStoreFunc;
     };
-    const get = (key, customStore = defaultGetStore()) => customStore('readonly', (store) => promisifyRequest(store.get(key)));
+    const get = (key, customStore = defaultGetStore()) => {
+        if (key === null || key === undefined) {
+            return Promise.resolve(null);
+        }
+        return customStore('readonly', async (store) => {
+            const result = await promisifyRequest(store.get(key));
+            return result ?? null;
+        });
+    };
     const set = (key, value, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
         store.put(value, key);
         return promisifyRequest(store.transaction);
@@ -195,7 +203,8 @@ const storageNames = {
     version: 'version',
     configTests: 'config-tests',
     menuLeft: 'menu-left',
-    questionsRatio: 'questions-ratio'
+    questionsRatio: 'questions-ratio',
+    sessionStarted: 'session-started',
 };
 const configData = {
     tests: 'null',
@@ -213,6 +222,7 @@ const defaultData = {
     configTests: 'null',
     menuLeft: checked.no,
     questionsRatio: null,
+    sessionStarted: checked.no,
 };
 const getStorage = async () => {
     const isValidJSONStringify = (value) => {
@@ -880,12 +890,12 @@ var engine;
             temperature: 0.1,
         };
         params.single = {
-            lastUsed: 0.2,
-            nextUse: 0.5,
-            appearance: 0.1,
+            lastUsed: 0,
+            nextUse: 0,
+            appearance: 0,
             rating: 2,
-            littleUsed: 2,
-            temperature: 1,
+            littleUsed: 0,
+            temperature: 0.1,
         };
         params.data = {
             weights: null,
@@ -930,12 +940,6 @@ var engine;
             params.data.normalizedWeights.single = getNormalizedWeights(params.single);
             const now = engine.helpers.getDateAtNoonInXDays(1);
             const answers = await core.idb.answers.getAllData();
-            await answers.forEach(async (answer, i) => {
-                if (answer[1].expectedUse < now) {
-                    answer[1].expectedUse = engine.helpers.getDateAtNoonInXDays(0, now);
-                    await core.idb.answers.set(...answer);
-                }
-            });
             const questionRatio = Number(core.store.get(storageNames.questionsRatio));
             const questionNum = params.determinants.questionInSession;
             params.data.numOfQuestions.repeatable = questionRatio;
@@ -992,11 +996,6 @@ var engine;
                 let rating = 0;
                 if (answer !== null) {
                     let theLastOne = 0;
-                    const history = answer.history;
-                    const last = answer.history.forEach(a => {
-                        if (a.timestamp > theLastOne)
-                            theLastOne = a.timestamp;
-                    });
                     lastUsed = now - theLastOne;
                     nextUse = nextUse - now;
                     if (maxNextUse < nextUse)
@@ -1119,7 +1118,6 @@ var engine;
         const singleTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.single, engine.params.data.singleAnswers);
         const selectedSingleTensors = engine.select.selectByTemperature(singleTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
         const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors]);
-        console.log('%c result:', 'background:rgb(255, 0, 179); color: #003300', result);
         return result;
     };
     const createTensorGenerator = async () => {
@@ -1154,6 +1152,7 @@ var engine;
         };
         return result;
     };
+    engine.endSession = () => { engine.params.data.session = []; };
 })(engine || (engine = {}));
 var queries;
 (function (queries) {
@@ -1176,6 +1175,13 @@ var queries;
             no: 'noUser',
             noId: 'noId',
             qr: 'qr',
+        },
+        statistics: {
+            answersMemoried: 'answersMemoried',
+            noAnswers: 'noAnswers',
+            logsMemoried: 'logsMemoried',
+            lastLogTimestamp: 'lastLogTimestamp',
+            noLogs: 'noLogs',
         }
     };
 })(queries || (queries = {}));
@@ -1207,6 +1213,12 @@ var queries;
                 config: `${rol04}get-config`,
                 questions: `${rol04}get-questions`,
                 images: `${rol04}get-images`,
+            },
+            statistics: {
+                memoAnswers: `${rol04}memo-answers`,
+                getAnswers: `${rol04}get-answers`,
+                getLastLogTimestamp: `${rol04}get-last-log-timestamp`,
+                memoLogs: `${rol04}memo-logs`,
             },
         };
     }());
@@ -1470,11 +1482,91 @@ var queries;
         };
     })(data = queries.data || (queries.data = {}));
 })(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let statistics;
+    (function (statistics) {
+        statistics.memoAnswers = async () => {
+            const answersDb = await core.idb.answers.getAllData();
+            const answers = [];
+            answersDb.forEach(answer => {
+                const history = answer[1].history;
+                const sortedHistory = history
+                    .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+                const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions);
+                if (history.length > 0) {
+                    answers.push({
+                        id: answer[1].id,
+                        history: lastSix,
+                    });
+                }
+            });
+            if (answers.length > 0) {
+                const result = await queries.api.post(queries.url.statistics.memoAnswers, { answers: answers }, { withCredentials: true, });
+                return result.data;
+            }
+            return null;
+        };
+    })(statistics = queries.statistics || (queries.statistics = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let statistics;
+    (function (statistics) {
+        statistics.getAnswers = async () => {
+            const result = await queries.api.get(queries.url.statistics.getAnswers, { withCredentials: true, });
+            return result.data;
+        };
+    })(statistics = queries.statistics || (queries.statistics = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let statistics;
+    (function (statistics) {
+        statistics.getLastLogTimestamp = async () => {
+            const result = await queries.api.get(queries.url.statistics.getLastLogTimestamp, { withCredentials: true, });
+            return result.data;
+        };
+    })(statistics = queries.statistics || (queries.statistics = {}));
+})(queries || (queries = {}));
+var queries;
+(function (queries) {
+    let statistics;
+    (function (statistics) {
+        statistics.memoLogs = async () => {
+            const convertLog = (log) => ({
+                action: log[1].action,
+                result: log[1].result,
+                timestamp: log[0],
+            });
+            const sentAndGetData = async (logs) => {
+                const result = await queries.api.post(queries.url.statistics.memoLogs, { logs }, { withCredentials: true, });
+                return result.data;
+            };
+            const logsDb = await core.idb.logs.getAllData();
+            const timestampLog = await queries.statistics.getLastLogTimestamp();
+            if (timestampLog.command === queries.responseCommand.statistics.noLogs) {
+                const logs = logsDb.map(log => convertLog(log));
+                await sentAndGetData(logs);
+            }
+            else {
+                const logs = logsDb
+                    .filter(log => log[0] > Number(timestampLog.timestamp))
+                    .map(log => convertLog(log));
+                if (logs.length > 0) {
+                    await sentAndGetData(logs);
+                }
+                else {
+                    return null;
+                }
+            }
+        };
+    })(statistics = queries.statistics || (queries.statistics = {}));
+})(queries || (queries = {}));
 var controllers;
 (function (controllers) {
     const { add } = dom;
     const keysListener = (event) => {
-        console.log('%c event.code:', 'background: #ffcc00; color: #003300', event.code);
         switch (event.code) {
             case 'Tab':
                 {
@@ -1608,61 +1700,68 @@ var starter;
         const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
         const regex = new RegExp(`^[${ALPHABET}]{21}$`);
         user.init = async (dataCheck) => {
-            const go = async () => {
+            const go = async (getAnswersFromMemo = false) => {
                 await queries.secure.getSecure();
-                setTimeout(dataCheck, 100);
+                setTimeout(() => dataCheck(getAnswersFromMemo), 100);
             };
             const secure = await queries.secure.getSecure();
             console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
-            if (secure.command === queries.responseCommand.secure.generateUserId) {
-                const setNewUser = async () => {
-                    const userIdSet = await queries.user.set();
-                    memoUserId(userIdSet.userId);
-                    go();
-                };
-                const getNo = (info, btn) => (text) => {
-                    inner(info, text);
-                    setStyle(info, 'color', 'var(--off_prime_color)');
-                    disable(btn);
-                };
-                const validateUserId = (info, btn) => (event) => {
-                    const value = event.target.value;
-                    const no = getNo(info, btn);
-                    if (value.length < 21) {
-                        no('Za krótki min 21 znaków');
-                        return;
-                    }
-                    if (value.length > 21) {
-                        no('Za długi max 21 znaków');
-                        return;
-                    }
-                    if (!regex.test(value)) {
-                        no('String zawiera niedozwolone znaki');
-                        return;
-                    }
-                    inner(info, 'jest OK.');
-                    setStyle(info, 'color', 'var(--on_second_color)');
-                    enable(btn);
-                };
-                const checkUserId = (info, btn, input, hide) => async () => {
-                    const userIdSet = await queries.user.checkId(input.value);
-                    console.log('%c userIdSet:', 'background: #ffcc00; color: #003300', userIdSet);
-                    const state = userIdSet.command;
-                    const no = getNo(info, btn);
-                    if (state === queries.responseCommand.user.ok) {
-                        memoUserId(input.value);
-                        hide();
+            const startApp = () => {
+                if (secure.command === queries.responseCommand.secure.generateUserId) {
+                    const setNewUser = async () => {
+                        const userIdSet = await queries.user.set();
+                        memoUserId(userIdSet.userId);
                         go();
-                    }
-                    else {
-                        no('Niema takiego użytkownika');
-                    }
-                };
-                modal.user.show(setNewUser, validateUserId, checkUserId);
+                    };
+                    const getNo = (info, btn) => (text) => {
+                        inner(info, text);
+                        setStyle(info, 'color', 'var(--off_prime_color)');
+                        disable(btn);
+                    };
+                    const validateUserId = (info, btn) => (event) => {
+                        const value = event.target.value;
+                        const no = getNo(info, btn);
+                        if (value.length < 21) {
+                            no('Za krótki min 21 znaków');
+                            return;
+                        }
+                        if (value.length > 21) {
+                            no('Za długi max 21 znaków');
+                            return;
+                        }
+                        if (!regex.test(value)) {
+                            no('String zawiera niedozwolone znaki');
+                            return;
+                        }
+                        inner(info, 'jest OK.');
+                        setStyle(info, 'color', 'var(--on_second_color)');
+                        enable(btn);
+                    };
+                    const checkUserId = (info, btn, input, hide) => async () => {
+                        const userIdSet = await queries.user.checkId(input.value);
+                        const state = userIdSet.command;
+                        const no = getNo(info, btn);
+                        if (state === queries.responseCommand.user.ok) {
+                            memoUserId(input.value);
+                            hide();
+                            go(true);
+                        }
+                        else {
+                            no('Niema takiego użytkownika');
+                        }
+                    };
+                    modal.user.showUserModal(setNewUser, validateUserId, checkUserId);
+                }
+                else if (secure.command === queries.responseCommand.secure.go) {
+                    memoUserId(secure.userId);
+                    go();
+                }
+            };
+            if (!modal.installer.isAppInstalled()) {
+                modal.installer.showInstallerModal(startApp);
             }
-            else if (secure.command === queries.responseCommand.secure.go) {
-                memoUserId(secure.userId);
-                go();
+            else {
+                startApp();
             }
         };
     })(user = starter.user || (starter.user = {}));
@@ -1671,7 +1770,7 @@ var starter;
 (function (starter) {
     let data;
     (function (data) {
-        data.check = async () => {
+        data.check = async (getAnswersFromMemo = false) => {
             const { setStyle, inner } = dom;
             const waitForIntervalClear = (intervalFn, time) => {
                 return new Promise((resolve) => {
@@ -1688,6 +1787,7 @@ var starter;
             const response = await queries.data.getVersion(versionDb);
             const versionRes = response.version;
             if (versionRes !== versionDb) {
+                await core.store.set(storageNames.imgAvailable, checked.no);
                 setStyle(starter.elements.statusAction, 'display', 'initial');
                 inner(starter.elements.statusAction, 'wczytywanie pytań');
                 const configRes = await queries.data.getConfig();
@@ -1719,43 +1819,39 @@ var starter;
                     if (core.isMobile)
                         tab.simpleMenu.showMenu();
                 }
-                const imgAvailable = await core.store.get(storageNames.imgAvailable);
-                if (imgAvailable === checked.no) {
-                    inner(starter.elements.statusAction, `wczytywanie obrazów`);
-                    const imgSToAdd = [];
-                    await configRes.img.forEach(async (img) => {
-                        const imgDb = await core.idb.images.get(img.name);
-                        if (!imgDb || imgDb.version !== img.version)
-                            imgSToAdd.push(img);
-                    });
-                    let index = 0;
-                    const imageInterval = (clear) => async () => {
-                        const imageDataRes = imgSToAdd[index];
-                        console.log('%c imageDataRes:', 'background: #ffcc00; color: #003300', imageDataRes);
-                        if (!imageDataRes) {
-                            await core.store.set(storageNames.imgAvailable, checked.yes);
-                            setStyle(starter.elements.statusNow, 'display', 'none');
-                            setStyle(starter.elements.statusAction, 'display', 'none');
-                            await core.store.set(storageNames.version, versionRes);
-                            clear();
-                            return;
-                        }
-                        inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`);
-                        index++;
-                        const image = await queries.data.getImage(imageDataRes.name);
-                        if (image) {
-                            await core.idb.images.set(imageDataRes.name, {
-                                version: imageDataRes.version,
-                                data: await utils.blob.toString(image),
-                            });
-                        }
-                    };
-                    waitForIntervalClear(imageInterval, 1000);
-                }
+                inner(starter.elements.statusAction, `wczytywanie obrazów`);
+                const imgSToAdd = [];
+                await configRes.img.forEach(async (img) => {
+                    const imgDb = await core.idb.images.get(img.name);
+                    if (!imgDb || imgDb.version !== img.version)
+                        imgSToAdd.push(img);
+                });
+                let index = 0;
+                const imageInterval = (clear) => async () => {
+                    const imageDataRes = imgSToAdd[index];
+                    if (!imageDataRes) {
+                        await core.store.set(storageNames.imgAvailable, checked.yes);
+                        setStyle(starter.elements.statusNow, 'display', 'none');
+                        setStyle(starter.elements.statusAction, 'display', 'none');
+                        await core.store.set(storageNames.version, versionRes);
+                        clear();
+                        return;
+                    }
+                    inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`);
+                    index++;
+                    const image = await queries.data.getImage(imageDataRes.name);
+                    if (image) {
+                        await core.idb.images.set(imageDataRes.name, {
+                            version: imageDataRes.version,
+                            data: await utils.blob.toString(image),
+                        });
+                    }
+                };
+                waitForIntervalClear(imageInterval, 1000);
             }
             const questions = await core.idb.questions.getAllData();
             let maxUsed = 0;
-            questions.forEach(async (question, index) => {
+            await questions.forEach(async (question, index) => {
                 const key = question[0];
                 const q = question[1];
                 if (maxUsed < q.used.length + 1)
@@ -1765,7 +1861,6 @@ var starter;
                     await core.idb.answers.set(index, {
                         id: q.id,
                         history: [],
-                        expectedUse: 0,
                         used: q.used.length + 1
                     });
                 }
@@ -1777,6 +1872,19 @@ var starter;
                 engine.params.data.sume++;
             });
             statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)));
+            await engine.params.updateAnswers();
+            if (getAnswersFromMemo) {
+                const answers = await queries.statistics.getAnswers();
+                if (answers !== null) {
+                    answers.forEach(async (answer) => {
+                        const question = questions.find(q => q[1].id = answer.id);
+                        const index = question[0];
+                        const oldAnswer = await core.idb.answers.get(index);
+                        oldAnswer.history = answer.history;
+                        oldAnswer.rating = learning.evaluation.getRateHistory(answer.history);
+                    });
+                }
+            }
             if (core.isMobile)
                 tab.simpleMenu.showMenu();
         };
@@ -1785,6 +1893,15 @@ var starter;
 var starter;
 (function (starter) {
     starter.run = async () => {
+        utils.waitFor(() => engine.params.data.sume !== 0, async () => {
+            const started = await core.store.get(storageNames.sessionStarted);
+            if (started === checked.yes) {
+                await queries.statistics.memoAnswers();
+                await queries.statistics.memoLogs();
+                await core.store.set(storageNames.sessionStarted, checked.no);
+                learning.resize(window.visualViewport.width, window.visualViewport.height);
+            }
+        })();
         await starter.user.init(starter.data.check);
     };
 })(starter || (starter = {}));
@@ -1868,7 +1985,7 @@ var statistics;
 (function (statistics) {
     let draw;
     (function (draw) {
-        const { byId, prepare, getColorFromStyle } = dom;
+        const { getColorFromStyle } = dom;
         const getMetrics = () => {
             const halfSpace = statistics.data.cell.space / 2;
             const offset = statistics.data.cell.space + halfSpace;
@@ -1928,10 +2045,10 @@ var statistics;
             });
         };
         draw.init = () => {
-            setTimeout(() => {
+            utils.waitFor(() => engine.params.data.sume !== 0, () => {
                 draw.themeChange();
                 draw.resize(window.visualViewport.width, window.visualViewport.height);
-            }, 300);
+            })();
         };
         draw.resize = (w, h) => {
             const bit = statistics.data.monitor.width / ((statistics.determinants.cell.size * statistics.data.monitor.size) + (statistics.determinants.cell.space * (statistics.data.monitor.size - 1)));
@@ -1984,7 +2101,6 @@ var statistics;
             });
         };
         const setColorLine = (key) => {
-            console.log('%c key:', 'background: #ffcc00; color: #003300', key);
             const colors = statistics.data.steps[key];
             const parent = listElements[key];
             setTimeout(() => {
@@ -2077,7 +2193,7 @@ var statistics;
 })(statistics || (statistics = {}));
 var statistics;
 (function (statistics) {
-    const { prepare, byId, byQ, getPx, setStyle, inner } = dom;
+    const { byId, getPx, setStyle } = dom;
     statistics.elements = {
         sheet: null,
         monitor: null,
@@ -2106,7 +2222,7 @@ var statistics;
         statistics.draw.resize(w, h);
     };
     statistics.active = () => {
-        statistics.draw.cells();
+        utils.waitFor(() => engine.params.data.sume !== 0, statistics.draw.cells)();
         utils.waitFor(() => engine.params.data.sume !== 0, statistics.legend.setData)();
     };
     statistics.deactivate = () => { };
@@ -2115,7 +2231,6 @@ var learning;
 (function (learning) {
     learning.data = {
         mark: 0,
-        started: false,
         confirm: false,
         tabH: 0,
         answers: {
@@ -2125,7 +2240,7 @@ var learning;
     };
     let preparation;
     (function (preparation) {
-        const { setStyle, add, remove, display, getPx, inner, disable, enable } = dom;
+        const { setStyle, display, getPx, inner, } = dom;
         preparation.setSheetHight = () => {
             setStyle(learning.elements.separator, 'height', ``);
             setStyle(learning.elements.sheet, 'height', ``);
@@ -2133,20 +2248,52 @@ var learning;
             setTimeout(() => {
                 const menuH = core.isMobile ? (121 / 701) * window.visualViewport.width : 0;
                 const sheetH = learning.elements.measure.getBoundingClientRect().height - menuH;
-                const condition = sheetH < learning.data.tabH;
+                const condition = sheetH < learning.data.tabH - menuH;
                 setStyle(learning.elements.bottom, 'height', getPx(menuH + (condition ? 0 : 40)));
                 const separatorH = condition ? getPx(learning.data.tabH - sheetH - 80) : '';
                 setStyle(learning.elements.separator, 'height', separatorH);
                 setStyle(learning.elements.sheet, 'opacity', `1`);
             }, 300);
         };
+        const getMonth = (key) => {
+            const idToMonth = {
+                paz: 'pazdziernik',
+                cze: 'czerwiec',
+                sty: 'styczeń',
+                lut: 'styczeń',
+                wrz: 'wrzesień',
+            };
+            return idToMonth[key];
+        };
+        const idToDate = (id) => {
+            const splittedId = id.split('-');
+            const year = splittedId[0];
+            const month = getMonth(splittedId[1]);
+            return `${month} ${year}`;
+        };
+        const idsToDate = (ids) => {
+            let result = '';
+            ids.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? '' : ', '));
+            return result;
+        };
         preparation.setQuestion = async () => {
             const item = await engine.getItem();
-            console.log('%c item:', 'background:rgb(132, 255, 0); color: #003300', item);
+            if (!item.question.img) {
+                preparation.setQuestion();
+                return;
+            }
+            if (item.question.img) {
+                const imgData = await core.idb.images.get(item.question.img);
+                if (imgData === null) {
+                    preparation.setQuestion();
+                    return;
+                }
+            }
             learning.data.answers.origin = item;
             learning.evaluation.mark(-1)();
             setStyle(learning.elements.sheet, 'opacity', `0`);
-            inner(learning.elements.info, `pytanie: ${item.question.id}, wystąpiło: ${item.question.used.length + 1}x`);
+            const usedList = [item.question.id, ...item.question.used];
+            inner(learning.elements.info, `wystąpiło <b>${usedList.length}x</b> w: ${idsToDate(usedList)}.`);
             if (item.question.img) {
                 display(learning.elements.img, 'block');
                 const imgData = await core.idb.images.get(item.question.img);
@@ -2177,29 +2324,6 @@ var learning;
             });
             preparation.setSheetHight();
         };
-        preparation.start = async () => {
-            learning.data.started = true;
-            setStyle(learning.elements.sheet, 'opacity', `0`);
-            learning.resize(window.visualViewport.width, window.visualViewport.height);
-            inner(learning.elements.startEndBtn, 'Zakończ');
-            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
-            remove(learning.elements.startEndBtn, 'click', preparation.start);
-            add(learning.elements.startEndBtn, 'click', preparation.end);
-            await engine.init();
-            setTimeout(() => {
-                display(learning.elements.sheet, 'block');
-                preparation.setQuestion();
-            }, 500);
-        };
-        preparation.end = () => {
-            learning.data.started = false;
-            display(learning.elements.sheet, 'none');
-            learning.resize(window.visualViewport.width, window.visualViewport.height);
-            inner(learning.elements.startEndBtn, 'Rozpocznij');
-            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
-            remove(learning.elements.startEndBtn, 'click', preparation.end);
-            add(learning.elements.startEndBtn, 'click', preparation.start);
-        };
     })(preparation = learning.preparation || (learning.preparation = {}));
 })(learning || (learning = {}));
 var learning;
@@ -2229,14 +2353,14 @@ var learning;
             });
             return result;
         };
-        const rateHistory = () => {
+        evaluation.getRateHistory = (history) => {
             const getResult = () => ({ good: 0, bad: 0, });
-            const sortedHistory = learning.data.answers.origin.answer.history
+            const sortedHistory = history
                 .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
             const lastThree = sortedHistory.slice(-engine.params.determinants.numLastRequiredQuestions);
             const resultOne = setResult(getResult(), lastThree);
             if (resultOne.bad > 0) {
-                learning.data.answers.origin.answer.rating = {
+                return {
                     type: rating.bad,
                     scale: resultOne.bad - 1
                 };
@@ -2244,7 +2368,7 @@ var learning;
             else {
                 const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions);
                 const resultTwo = setResult(getResult(), lastSix);
-                learning.data.answers.origin.answer.rating = {
+                return {
                     type: rating.good,
                     scale: resultTwo.good - 1
                 };
@@ -2257,20 +2381,19 @@ var learning;
                 timestamp,
                 result: answer.correct,
             });
-            rateHistory();
+            const rate = evaluation.getRateHistory(learning.data.answers.origin.answer.history);
+            learning.data.answers.origin.answer.rating = rate;
             const { drawn, index, ...answerDb } = learning.data.answers.origin.answer;
             core.idb.answers.update(index, (old) => old = answerDb);
             const log = {
                 action: learning.data.answers.origin.answer.id,
                 result: answer.correct,
-                status: answer.number,
             };
             core.idb.logs.set(timestamp, log);
         };
         const setGreen = (field) => {
             setStyle(field, 'backgroundColor', 'var(--on_prime_color)');
             const theme = settings.theme.get();
-            console.log('%c theme:', 'background: #ffcc00; color: #003300', theme);
             if (theme === settings.theme.theme.dark) {
                 setStyle(field, 'color', 'var(--last_color)');
             }
@@ -2324,6 +2447,40 @@ var learning;
 })(learning || (learning = {}));
 var learning;
 (function (learning) {
+    let startEnd;
+    (function (startEnd) {
+        const { setStyle, add, remove, display, inner } = dom;
+        startEnd.start = async () => {
+            await core.store.set(storageNames.sessionStarted, checked.yes);
+            setStyle(learning.elements.sheet, 'opacity', `0`);
+            learning.resize(window.visualViewport.width, window.visualViewport.height);
+            inner(learning.elements.startEndBtn, 'Zakończ');
+            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
+            remove(learning.elements.startEndBtn, 'click', startEnd.start);
+            add(learning.elements.startEndBtn, 'click', startEnd.end);
+            await engine.init();
+            setTimeout(() => {
+                display(learning.elements.sheet, 'block');
+                learning.preparation.setQuestion();
+            }, 500);
+        };
+        startEnd.end = async () => {
+            await core.store.set(storageNames.sessionStarted, checked.no);
+            display(learning.elements.sheet, 'none');
+            learning.resize(window.visualViewport.width, window.visualViewport.height);
+            inner(learning.elements.startEndBtn, 'Rozpocznij');
+            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
+            remove(learning.elements.startEndBtn, 'click', startEnd.end);
+            add(learning.elements.startEndBtn, 'click', startEnd.start);
+            queries.statistics.memoAnswers();
+            queries.statistics.memoLogs();
+            engine.endSession();
+            learning.data.answers.origin = null;
+        };
+    })(startEnd = learning.startEnd || (learning.startEnd = {}));
+})(learning || (learning = {}));
+var learning;
+(function (learning) {
     const { byId, byQueryAll, setStyle, add, remove, display, getPx } = dom;
     learning.elements = {
         startEnd: null,
@@ -2366,16 +2523,16 @@ var learning;
         display(learning.elements.sheet, 'none');
     };
     const LOW_START_END_BTN = 12 + 28 + 12;
-    const HIGH_START_END_BTN = 24 + 28 + 24;
     learning.resize = (w, h) => {
         const menuH = core.isMobile ? (121 / 701) * w : 0;
         learning.data.tabH = h - 30 - menuH - 20;
         const tabW = w - (core.isMobile ? 0 : 200);
-        setStyle(learning.elements.imgBig, 'height', getPx(h - menuH));
+        setStyle(learning.elements.imgBig, 'height', getPx(h));
         setStyle(learning.elements.imgBig, 'width', getPx(tabW));
         setStyle(learning.elements.bottom, 'height', getPx(menuH));
         learning.elements.drawImage.setWidth(tabW - 80);
-        if (learning.data.started) {
+        const started = core.store.get(storageNames.sessionStarted);
+        if (started === checked.yes) {
             setStyle(learning.elements.startEnd, 'height', getPx(LOW_START_END_BTN));
             setStyle(learning.elements.startEndBtn, 'padding', '12px 0');
             learning.preparation.setSheetHight();
@@ -2386,16 +2543,23 @@ var learning;
             setStyle(learning.elements.startEndBtn, 'padding', '24px 0');
         }
     };
+    const showBigImg = () => display(learning.elements.imgBig, 'flex');
+    const hideBigImg = () => display(learning.elements.imgBig, 'none');
     learning.active = () => {
         learning.elements.answersFields.forEach((a, i) => add(a, 'click', learning.evaluation.mark(i)));
-        add(learning.elements.startEndBtn, 'click', learning.data.started ? learning.preparation.end : learning.preparation.start);
+        const started = core.store.get(storageNames.sessionStarted);
+        add(learning.elements.startEndBtn, 'click', started === checked.yes ? learning.startEnd.end : learning.startEnd.start);
         add(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
+        add(learning.elements.img, 'click', showBigImg);
+        add(learning.elements.imgBig, 'click', hideBigImg);
     };
     learning.deactivate = () => {
         learning.elements.answersFields.forEach((a, i) => remove(a, 'click', learning.evaluation.mark(i)));
-        remove(learning.elements.startEndBtn, 'click', learning.preparation.start);
-        remove(learning.elements.startEndBtn, 'click', learning.preparation.end);
+        remove(learning.elements.startEndBtn, 'click', learning.startEnd.start);
+        remove(learning.elements.startEndBtn, 'click', learning.startEnd.end);
         remove(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
+        remove(learning.elements.img, 'click', showBigImg);
+        remove(learning.elements.imgBig, 'click', hideBigImg);
     };
 })(learning || (learning = {}));
 var answers;
@@ -2987,7 +3151,6 @@ var tab;
                 const t = e.changedTouches[0];
                 const x = t.clientX;
                 const y = t.clientY;
-                console.log(x, y);
             };
             touch.init = () => {
                 add(simpleMenu.elements.menu, 'touchstart', touchstart);
@@ -2998,44 +3161,109 @@ var tab;
     })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
 })(tab || (tab = {}));
 var modal;
+(function (modal) {
+    let installer;
+    (function (installer) {
+        const { byId, inner, setStyle, add, remove } = dom;
+        const elements = {
+            modal: null,
+            installBtn: null,
+            noInstallBtn: null,
+        };
+        let deferredPrompt = null;
+        const beforeInstallPrompt = (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'block';
+            }
+        };
+        const instalClick = async () => {
+            if (!deferredPrompt)
+                return;
+            deferredPrompt.prompt();
+            const choiceResult = await deferredPrompt.userChoice;
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Użytkownik zainstalował aplikację');
+            }
+            else {
+                console.log('Użytkownik odrzucił instalację');
+            }
+            deferredPrompt = null;
+        };
+        installer.isAppInstalled = () => {
+            const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            return isInstalled;
+        };
+        installer.init = () => {
+            elements.modal = byId('modal-installer');
+            elements.installBtn = byId('modal-installer-btn');
+            elements.noInstallBtn = byId('modal-installer-btn-no');
+            utils.areNotNull(elements, ['modal', 'user']);
+            setStyle(elements.modal, 'display', 'none');
+        };
+        const data = {
+            hideFn: null,
+        };
+        installer.showInstallerModal = (hideFn) => {
+            modal.show();
+            setStyle(elements.modal, 'display', 'flex');
+            add(window, 'beforeinstallprompt', beforeInstallPrompt);
+            add(elements.installBtn, 'click', instalClick);
+            add(elements.noInstallBtn, 'click', installer.hideInstallerModal);
+            data.hideFn = hideFn;
+        };
+        installer.hideInstallerModal = () => {
+            modal.hide();
+            setStyle(elements.modal, 'display', 'none');
+            remove(window, 'beforeinstallprompt', beforeInstallPrompt);
+            remove(elements.installBtn, 'click', instalClick);
+            remove(elements.noInstallBtn, 'click', installer.hideInstallerModal);
+            data.hideFn();
+        };
+    })(installer = modal.installer || (modal.installer = {}));
+})(modal || (modal = {}));
+var modal;
 (function (modal_1) {
-    const { byId, inner, setStyle, add, remove } = dom;
-    const elements = {
-        modal: null,
-        btnNewUser: null,
-        idInfo: null,
-        idInput: null,
-        btnOldUser: null,
-    };
-    const hideUserModal = () => {
-        modal_1.hide();
-        setStyle(elements.modal, 'display', 'none');
-    };
-    modal_1.user = {
-        init: () => {
+    let user;
+    (function (user) {
+        const { byId, inner, setStyle, add, remove } = dom;
+        const elements = {
+            modal: null,
+            btnNewUser: null,
+            idInfo: null,
+            idInput: null,
+            btnOldUser: null,
+        };
+        user.init = () => {
             elements.btnNewUser = byId('modal-user-btn-new-user');
             elements.modal = byId('modal-user');
             elements.idInfo = byId('modal-user-id-info');
             elements.idInput = byId('modal-user-id-input');
             elements.btnOldUser = byId('modal-user-btn-old-user');
             utils.areNotNull(elements, ['modal', 'user']);
-        },
-        show: (setNewUser, getValidateUserId, getCheckUserId) => {
+        };
+        user.showUserModal = (setNewUser, getValidateUserId, getCheckUserId) => {
             modal_1.show();
             const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements;
             setStyle(modal, 'display', 'flex');
             btnOldUser.disabled = true;
             add(btnNewUser, 'click', async () => {
                 await setNewUser();
-                hideUserModal();
+                user.hideUserModal();
             });
             const validateUserId = getValidateUserId(idInfo, btnOldUser);
             add(idInput, 'input', validateUserId);
-            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal);
+            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, user.hideUserModal);
             add(btnOldUser, 'click', checkUserId);
-        },
-        hide: hideUserModal
-    };
+        };
+        user.hideUserModal = () => {
+            modal_1.hide();
+            setStyle(elements.modal, 'display', 'none');
+        };
+    })(user = modal_1.user || (modal_1.user = {}));
 })(modal || (modal = {}));
 var modal;
 (function (modal) {
@@ -3097,6 +3325,7 @@ var modal;
         utils.areNotNull(elements, ['modal']);
         modal.error.init();
         modal.user.init();
+        modal.installer.init();
     };
     modal.resize = (w, h) => {
         setStyle(elements.back, 'width', getPx(w));

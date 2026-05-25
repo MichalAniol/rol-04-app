@@ -121,13 +121,25 @@ const idb = <Schema extends DBShape>(
     }
 
     const get = <T = any>(
-        key: IDBValidKey,
+        key: IDBValidKey | null | undefined,
         customStore = defaultGetStore(),
-    ): Promise<T | undefined> =>
-        customStore(
+    ): Promise<T | null> => {
+
+        if (key === null || key === undefined) {
+            return Promise.resolve(null)
+        }
+
+        return customStore(
             'readonly',
-            (store) => promisifyRequest(store.get(key)),
+            async (store) => {
+                const result = await promisifyRequest<T | undefined>(
+                    store.get(key),
+                )
+
+                return result ?? null
+            },
         )
+    }
 
     const set = (
         key: IDBValidKey,

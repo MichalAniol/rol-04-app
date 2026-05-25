@@ -1,5 +1,5 @@
 namespace statistics {
-    const { prepare, byId, byQ, getPx, setStyle, inner } = dom
+    const { byId, getPx, setStyle } = dom
 
     type ElementsT = {
         sheet: HTMLElement | null
@@ -47,8 +47,7 @@ namespace statistics {
     }
 
     export const active = () => {
-        draw.cells()
-
+        utils.waitFor(() => engine.params.data.sume !== 0, draw.cells)()
         utils.waitFor(() => engine.params.data.sume !== 0, legend.setData)()
     }
 

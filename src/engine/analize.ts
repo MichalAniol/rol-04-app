@@ -28,10 +28,6 @@ namespace engine {
 
                 if (answer !== null) {
                     let theLastOne = 0
-                    const history = answer.history
-                    const last = answer.history.forEach(a => {
-                        if (a.timestamp > theLastOne) theLastOne = a.timestamp
-                    })
                     lastUsed = now - theLastOne
 
                     nextUse = nextUse - now
@@ -93,7 +89,6 @@ namespace engine {
             params.data.answers.forEach(a => {
                 if (countLastFewTrue(a)) sume++
             })
-            // console.log('%c sume:', 'background: #ffcc00; color: #003300', sume)
             return sume
         }
 

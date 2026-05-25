@@ -1,27 +1,4 @@
 namespace modal {
-    const { byId, inner, setStyle, add, remove } = dom
-
-    type ElementsT = {
-        modal: HTMLElement | null
-        btnNewUser: HTMLButtonElement | null
-        idInfo: HTMLElement | null
-        idInput: HTMLInputElement | null
-        // qrCodeBtn: HTMLElement | null
-        // qrCodeInput: HTMLInputElement | null
-        btnOldUser: HTMLButtonElement | null
-    }
-
-    const elements: ElementsT = {
-        modal: null,
-        btnNewUser: null,
-        idInfo: null,
-        idInput: null,
-        // qrCodeBtn: null,
-        // qrCodeInput: null,
-        btnOldUser: null,
-    }
-
-
     // const fileAdded = () => {
     //     if (elements.qrCodeInput.files.length === 0) {
     //         inner(elements.qrCodeBtn, 'Brak pliku')
@@ -31,15 +8,30 @@ namespace modal {
     //         elements.btnOldUser.disabled = false
     //     }
     // }
+    export namespace user {
+        const { byId, inner, setStyle, add, remove } = dom
 
-    const hideUserModal = () => {
-        hide()
-        setStyle(elements.modal, 'display', 'none')
-        // remove(elements.qrCodeInput, 'change', fileAdded)
-    }
+        type ElementsT = {
+            modal: HTMLElement | null
+            btnNewUser: HTMLButtonElement | null
+            idInfo: HTMLElement | null
+            idInput: HTMLInputElement | null
+            // qrCodeBtn: HTMLElement | null
+            // qrCodeInput: HTMLInputElement | null
+            btnOldUser: HTMLButtonElement | null
+        }
 
-    export const user = {
-        init: () => {
+        const elements: ElementsT = {
+            modal: null,
+            btnNewUser: null,
+            idInfo: null,
+            idInput: null,
+            // qrCodeBtn: null,
+            // qrCodeInput: null,
+            btnOldUser: null,
+        }
+
+        export const init = () => {
             elements.btnNewUser = byId('modal-user-btn-new-user') as HTMLButtonElement
             elements.modal = byId('modal-user') as HTMLElement
             elements.idInfo = byId('modal-user-id-info') as HTMLElement
@@ -49,9 +41,9 @@ namespace modal {
             elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
 
             utils.areNotNull(elements, ['modal', 'user'])
-        },
+        }
 
-        show: (
+        export const showUserModal = (
             setNewUser: () => void,
             getValidateUserId: (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => void,
             getCheckUserId: (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => EventListenerOrEventListenerObject
@@ -74,8 +66,13 @@ namespace modal {
 
             const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal)
             add(btnOldUser, 'click', checkUserId)
-        },
-        hide: hideUserModal
+        }
+
+        export const hideUserModal = () => {
+            hide()
+            setStyle(elements.modal, 'display', 'none')
+            // remove(elements.qrCodeInput, 'change', fileAdded)
+        }
     }
 
     // setTimeout(user.show, 100)

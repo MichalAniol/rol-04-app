@@ -53,7 +53,6 @@ namespace statistics {
         }
 
         const setColorLine = (key: keyof GradientStepsT) => {
-        console.log('%c key:', 'background: #ffcc00; color: #003300', key)
             const colors = statistics.data.steps[key]
             const parent = listElements[key]
 

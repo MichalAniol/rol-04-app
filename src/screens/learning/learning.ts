@@ -70,19 +70,20 @@ namespace learning {
     }
 
     const LOW_START_END_BTN = 12 + 28 + 12
-    const HIGH_START_END_BTN = 24 + 28 + 24
+    // const HIGH_START_END_BTN = 24 + 28 + 24
 
     export const resize = (w: number, h: number) => {
         const menuH = core.isMobile ? (121 / 701) * w : 0
         data.tabH = h - 30 - menuH - 20
         const tabW = w - (core.isMobile ? 0 : 200)
-        setStyle(elements.imgBig, 'height', getPx(h - menuH))
+        setStyle(elements.imgBig, 'height', getPx(h))
         setStyle(elements.imgBig, 'width', getPx(tabW))
         setStyle(elements.bottom, 'height', getPx(menuH))
 
         elements.drawImage.setWidth(tabW - 80)
 
-        if (data.started) {
+        const started = core.store.get(storageNames.sessionStarted)
+        if (started === checked.yes) {
             setStyle(elements.startEnd, 'height', getPx(LOW_START_END_BTN))
             setStyle(elements.startEndBtn, 'padding', '12px 0')
             preparation.setSheetHight()
@@ -93,16 +94,27 @@ namespace learning {
         }
     }
 
+    const showBigImg = () => display(elements.imgBig, 'flex')
+
+    const hideBigImg = () => display(elements.imgBig, 'none')
+
     export const active = () => {
         elements.answersFields.forEach((a, i) => add(a, 'click', evaluation.mark(i)))
-        add(elements.startEndBtn, 'click', data.started ? preparation.end : preparation.start)
+        const started = core.store.get(storageNames.sessionStarted)
+        add(elements.startEndBtn, 'click', started === checked.yes ? startEnd.end : startEnd.start)
         add(elements.confirm, 'click', evaluation.confirmClick)
+
+        add(elements.img, 'click', showBigImg)
+        add(elements.imgBig, 'click', hideBigImg)
     }
 
     export const deactivate = () => {
         elements.answersFields.forEach((a, i) => remove(a, 'click', evaluation.mark(i)))
-        remove(elements.startEndBtn, 'click', preparation.start)
-        remove(elements.startEndBtn, 'click', preparation.end)
+        remove(elements.startEndBtn, 'click', startEnd.start)
+        remove(elements.startEndBtn, 'click', startEnd.end)
         remove(elements.confirm, 'click', evaluation.confirmClick)
+
+        remove(elements.img, 'click', showBigImg)
+        remove(elements.imgBig, 'click', hideBigImg)
     }
 }

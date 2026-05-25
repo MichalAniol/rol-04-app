@@ -116,7 +116,13 @@ const FONT_URLS = [
   '/fonts/Inter-900-BlackItalic.svg',
   '/fonts/Inter-900-BlackItalic.ttf',
   '/fonts/Inter-900-BlackItalic.woff',
-  '/fonts/Inter-900-BlackItalic.woff2'
+  '/fonts/Inter-900-BlackItalic.woff2',
+
+  '/fonts/consolas.otf',
+  '/fonts/consolas.svg',
+  '/fonts/consolas.ttf',
+  '/fonts/consolas.woff',
+  '/fonts/consolas.woff2'
 ];
 
 const CACHE_NAME = "pwa-cache-v1";

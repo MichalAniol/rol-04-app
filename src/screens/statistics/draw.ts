@@ -1,6 +1,6 @@
 namespace statistics {
     export namespace draw {
-        const { byId, prepare, getColorFromStyle } = dom
+        const { getColorFromStyle } = dom
 
         const getMetrics = () => {
             const halfSpace = data.cell.space / 2
@@ -90,16 +90,14 @@ namespace statistics {
                         elements.ctx.fill()
                     }
                 }
-
-                
             })
         }
 
         export const init = () => {
-            setTimeout(() => {
+            utils.waitFor(() => engine.params.data.sume !== 0, () => {
                 themeChange()
                 resize(window.visualViewport.width, window.visualViewport.height)
-            }, 300)
+            })()
         }
 
         export const resize = (w: number, h: number) => {

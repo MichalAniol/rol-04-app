@@ -1,7 +1,6 @@
 namespace learning {
     type DataT = {
         mark: number,
-        started: boolean,
         confirm: boolean,
         tabH: number,
         answers: {
@@ -16,7 +15,6 @@ namespace learning {
 
     export const data: DataT = {
         mark: 0,
-        started: false,
         confirm: false,
         tabH: 0,
         answers: {
@@ -26,7 +24,7 @@ namespace learning {
     }
 
     export namespace preparation {
-        const { setStyle, add, remove, display, getPx, inner, disable, enable } = dom
+        const { setStyle, display, getPx, inner, } = dom
 
         export const setSheetHight = () => {
             setStyle(elements.separator, 'height', ``)
@@ -37,7 +35,7 @@ namespace learning {
                 const menuH = core.isMobile ? (121 / 701) * window.visualViewport.width : 0
                 const sheetH = elements.measure.getBoundingClientRect().height - menuH
 
-                const condition = sheetH < data.tabH
+                const condition = sheetH < data.tabH - menuH
                 setStyle(elements.bottom, 'height', getPx(menuH + (condition ? 0 : 40)))
 
                 // const scroll = window.visualViewport.height * .2
@@ -49,15 +47,59 @@ namespace learning {
             }, 300)
         }
 
+        type MonthKeys = 'paz' | 'cze' | 'sty' | 'wrz' | 'lut'
+        const getMonth = (key: MonthKeys) => {
+            const idToMonth = {
+                paz: 'pazdziernik',
+                cze: 'czerwiec',
+                sty: 'styczeń',
+                lut: 'styczeń',
+                wrz: 'wrzesień',
+            }
+
+            return idToMonth[key]
+        }
+
+        const idToDate = (id: string) => {
+            const splittedId = id.split('-')
+            const year = splittedId[0]
+            const month = getMonth(splittedId[1] as MonthKeys)
+
+            return `${month} ${year}`
+        }
+
+        const idsToDate = (ids: string[]) => {
+            let result = ''
+            ids.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? '' : ', '))
+            return result
+        }
+
         export const setQuestion = async () => {
             const item = await engine.getItem()
-            console.log('%c item:', 'background:rgb(132, 255, 0); color: #003300', item)
+
+            //FIXME - 
+            if (!item.question.img) {
+                setQuestion()
+                return
+            }
+            //FIXME - 
+
+            if (item.question.img) {
+                const imgData = await core.idb.images.get(item.question.img)
+
+                if (imgData === null) {
+                    setQuestion()
+                    return
+                }
+            }
+
             data.answers.origin = item
             evaluation.mark(-1)()
             setStyle(elements.sheet, 'opacity', `0`)
 
-            // pytanie
-            inner(elements.info, `pytanie: ${item.question.id}, wystąpiło: ${item.question.used.length + 1}x`)
+            // pytanie info
+            const usedList = [item.question.id, ...item.question.used]
+            inner(elements.info, `wystąpiło <b>${usedList.length}x</b> w: ${idsToDate(usedList)}.`)
 
             // obrazek
             if (item.question.img) {
@@ -91,34 +133,6 @@ namespace learning {
             })
 
             setSheetHight()
-        }
-
-        export const start = async () => {
-            data.started = true
-            setStyle(elements.sheet, 'opacity', `0`)
-            resize(window.visualViewport.width, window.visualViewport.height)
-
-            inner(elements.startEndBtn, 'Zakończ')
-            setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)')
-            remove(elements.startEndBtn, 'click', start)
-            add(elements.startEndBtn, 'click', end)
-
-            await engine.init()
-            setTimeout(() => {
-                display(elements.sheet, 'block')
-                setQuestion()
-            }, 500)
-        }
-
-        export const end = () => {
-            data.started = false
-            display(elements.sheet, 'none')
-            resize(window.visualViewport.width, window.visualViewport.height)
-
-            inner(elements.startEndBtn, 'Rozpocznij')
-            setStyle(elements.startEndBtn, 'backgroundColor', 'var(--mine_color)')
-            remove(elements.startEndBtn, 'click', end)
-            add(elements.startEndBtn, 'click', start)
         }
     }
 }
