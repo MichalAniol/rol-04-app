@@ -23,6 +23,7 @@ namespace modal {
 
         error.init()
         user.init()
+        installer.init()
     }
 
     export const resize = (w: number, h: number) => {

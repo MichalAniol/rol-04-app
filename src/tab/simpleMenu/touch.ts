@@ -73,8 +73,6 @@ namespace tab {
                 const t = e.changedTouches[0]
                 const x = t.clientX
                 const y = t.clientY
-
-                console.log(x, y)
             }
 
             export const init = () => {

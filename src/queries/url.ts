@@ -27,6 +27,12 @@ namespace queries {
                 questions: `${rol04}get-questions`,
                 images: `${rol04}get-images`,
             },
+            statistics: {
+                memoAnswers: `${rol04}memo-answers`,
+                getAnswers: `${rol04}get-answers`,
+                getLastLogTimestamp: `${rol04}get-last-log-timestamp`,
+                memoLogs: `${rol04}memo-logs`,
+            },
         }
     }())
 }

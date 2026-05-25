@@ -3,7 +3,6 @@ type ConfigResponseImgT = {
     version: string,
 }
 
-
 type GetConfigResponseT = {
     tests: string,
     img: ConfigResponseImgT[]

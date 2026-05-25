@@ -2,7 +2,7 @@ namespace controllers {
     const { add } = dom
 
     const keysListener = (event: any) => {
-        console.log('%c event.code:', 'background: #ffcc00; color: #003300', event.code)
+        // console.log('%c event.code:', 'background: #ffcc00; color: #003300', event.code)
         switch (event.code) {
             case 'Tab': {
                 event.preventDefault()      // blokuje defaultowe przenoszenie fokusu

@@ -30,26 +30,26 @@ namespace learning {
             return result
         }
 
-        const rateHistory = () => {
+        export const getRateHistory = (history: HistoryT[]) => {
             const getResult = () => ({ good: 0, bad: 0, } as ResultT)
 
-            const sortedHistory = learning.data.answers.origin.answer.history
+            const sortedHistory = history
                 .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
 
             const lastThree = sortedHistory.slice(-engine.params.determinants.numLastRequiredQuestions)
             const resultOne = setResult(getResult(), lastThree)
             if (resultOne.bad > 0) {
-                learning.data.answers.origin.answer.rating = {
+                return {
                     type: rating.bad,
                     scale: resultOne.bad - 1
-                }
+                } as RatingT
             } else {
                 const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions)
                 const resultTwo = setResult(getResult(), lastSix)
-                learning.data.answers.origin.answer.rating = {
+                return {
                     type: rating.good,
                     scale: resultTwo.good - 1
-                }
+                } as RatingT
             }
         }
 
@@ -64,7 +64,8 @@ namespace learning {
             })
 
             // ocena historii
-            rateHistory()
+            const rate = getRateHistory(learning.data.answers.origin.answer.history)
+            learning.data.answers.origin.answer.rating = rate
 
             // zapis w pytaniach
             const { drawn, index, ...answerDb } = learning.data.answers.origin.answer
@@ -73,18 +74,16 @@ namespace learning {
             const log = {
                 action: learning.data.answers.origin.answer.id,
                 result: answer.correct,
-                status: answer.number,
             }
 
             // zapis loga
             core.idb.logs.set(timestamp, log)
         }
 
-        const setGreen = (field:  HTMLElement) => {
+        const setGreen = (field: HTMLElement) => {
             setStyle(field, 'backgroundColor', 'var(--on_prime_color)')
 
             const theme = settings.theme.get()
-            console.log('%c theme:', 'background: #ffcc00; color: #003300', theme)
             if (theme === settings.theme.theme.dark) {
                 setStyle(field, 'color', 'var(--last_color)')
             }

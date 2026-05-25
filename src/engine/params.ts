@@ -27,13 +27,21 @@ namespace engine {
         } as const
 
         export const single: WeightsT = {
-            lastUsed: 0.2, // ostatnie użycie pytania
-            nextUse: 0.5, // następne planowane użycie pytania
-            appearance: 0.1, // w ilu testach pojawiło się pytanie
+            lastUsed: 0, // ostatnie użycie pytania
+            nextUse: 0, // następne planowane użycie pytania
+            appearance: 0, // w ilu testach pojawiło się pytanie
             rating: 2, // poziom nauki pytań
-            littleUsed: 2, // najmniej powtarzalne pytania
-            temperature: 1,
+            littleUsed: 0, // najmniej powtarzalne pytania
+            temperature: 0.1,
         } as const
+        // export const single: WeightsT = {
+        //     lastUsed: 0.2, // ostatnie użycie pytania
+        //     nextUse: 0.5, // następne planowane użycie pytania
+        //     appearance: 0.1, // w ilu testach pojawiło się pytanie
+        //     rating: 2, // poziom nauki pytań
+        //     littleUsed: 0, // najmniej powtarzalne pytania
+        //     temperature: 1,
+        // } as const
 
         type DataT = {
             weights: WeightsT | null
@@ -109,12 +117,12 @@ namespace engine {
             const answers = await core.idb.answers.getAllData()
 
             // wyrównie czasu na opowiedz jeśli minęła
-            await answers.forEach(async (answer, i) => {
-                if (answer[1].expectedUse < now) {
-                    answer[1].expectedUse = helpers.getDateAtNoonInXDays(0, now)
-                    await core.idb.answers.set(...answer)
-                }
-            })
+            // await answers.forEach(async (answer, i) => {
+            //     if (answer[1].expectedUse < now) {
+            //         answer[1].expectedUse = helpers.getDateAtNoonInXDays(0, now)
+            //         await core.idb.answers.set(...answer)
+            //     }
+            // })
             const questionRatio = Number(core.store.get(storageNames.questionsRatio))
             const questionNum = params.determinants.questionInSession
 

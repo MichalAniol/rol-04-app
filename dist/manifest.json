@@ -1,6 +1,6 @@
 {
-    "short_name": "rol04-app",
-    "name": "rol04-knowledge-tests-and-learning",
+    "short_name": "SPL-ROL.04",
+    "name": "Smart Priority Learn ROL.04",
     "icons": [
         {
             "src": "icon/favicon-192x192.png",
@@ -15,6 +15,7 @@
     ],
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#000000",
+    "orientation": "portrait",
+    "theme_color": "#4169e1",
     "background_color": "#ffffff"
 }

@@ -19,6 +19,13 @@ namespace queries {
             no: 'noUser',
             noId: 'noId',
             qr: 'qr',
+        },
+        statistics: {
+            answersMemoried: 'answersMemoried',
+            noAnswers: 'noAnswers',
+            logsMemoried: 'logsMemoried',
+            lastLogTimestamp: 'lastLogTimestamp',
+            noLogs: 'noLogs',
         }
     }
 

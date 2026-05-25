@@ -15,80 +15,87 @@ namespace starter {
         const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig
         const regex = new RegExp(`^[${ALPHABET}]{21}$`)
 
-        export const init = async (dataCheck: () => Promise<void>) => {
-            const go = async () => {
+        export const init = async (dataCheck: (getAnswersFromMemo: boolean) => Promise<void>) => {
+            const go = async (getAnswersFromMemo: boolean = false) => {
                 await queries.secure.getSecure()
-                setTimeout(dataCheck, 100)
+                setTimeout(() => dataCheck(getAnswersFromMemo), 100)
             }
 
             // await queries.secure.getSecure()
             const secure = await queries.secure.getSecure()
             console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure)
 
-            if (secure.command === queries.responseCommand.secure.generateUserId) {
-                // set new user
-                const setNewUser = async () => {
-                    const userIdSet = await queries.user.set()
-                    memoUserId(userIdSet.userId)
+            const startApp = () => {
+                if (secure.command === queries.responseCommand.secure.generateUserId) {
+                    // set new user
+                    const setNewUser = async () => {
+                        const userIdSet = await queries.user.set()
+                        memoUserId(userIdSet.userId)
 
+                        go()
+                    }
+
+                    const getNo = (info: HTMLElement, btn: HTMLButtonElement) => (text: string) => {
+                        inner(info, text)
+                        setStyle(info, 'color', 'var(--off_prime_color)')
+                        disable(btn)
+                    }
+
+                    // regx dla wpisywania user id
+                    const validateUserId = (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => {
+                        const value = (event.target as HTMLInputElement).value
+                        const no = getNo(info, btn)
+
+                        if (value.length < 21) {
+                            no('Za krótki min 21 znaków')
+                            return
+                        }
+
+                        if (value.length > 21) {
+                            no('Za długi max 21 znaków')
+                            return
+                        }
+
+                        if (!regex.test(value)) {
+                            no('String zawiera niedozwolone znaki')
+                            return
+                        }
+
+                        inner(info, 'jest OK.')
+                        setStyle(info, 'color', 'var(--on_second_color)')
+                        enable(btn)
+                    }
+
+                    // sprawdzenie user id w db
+                    const checkUserId = (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => async () => {
+                        const userIdSet = await queries.user.checkId(input.value)
+                        const state = userIdSet.command
+                        const no = getNo(info, btn)
+
+                        if (state === queries.responseCommand.user.ok) {
+                            memoUserId(input.value)
+                            hide()
+                            go(true)
+                        } else {
+                            no('Niema takiego użytkownika')
+                        }
+                    }
+
+                    modal.user.showUserModal(setNewUser, validateUserId, checkUserId)
+                } else if (secure.command === queries.responseCommand.secure.go) {
+                    memoUserId(secure.userId)
                     go()
                 }
+            }
 
-                const getNo = (info: HTMLElement, btn: HTMLButtonElement) => (text: string) => {
-                    inner(info, text)
-                    setStyle(info, 'color', 'var(--off_prime_color)')
-                    disable(btn)
-                }
-
-                // regx dla wpisywania user id
-                const validateUserId = (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => {
-                    const value = (event.target as HTMLInputElement).value
-                    const no = getNo(info, btn)
-
-                    if (value.length < 21) {
-                        no('Za krótki min 21 znaków')
-                        return
-                    }
-
-                    if (value.length > 21) {
-                        no('Za długi max 21 znaków')
-                        return
-                    }
-
-                    if (!regex.test(value)) {
-                        no('String zawiera niedozwolone znaki')
-                        return
-                    }
-
-                    inner(info, 'jest OK.')
-                    setStyle(info, 'color', 'var(--on_second_color)')
-                    enable(btn)
-                }
-
-                // sprawdzenie user id w db
-                const checkUserId = (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => async () => {
-                    const userIdSet = await queries.user.checkId(input.value)
-                    console.log('%c userIdSet:', 'background: #ffcc00; color: #003300', userIdSet)
-                    const state = userIdSet.command
-                    const no = getNo(info, btn)
-
-                    if (state === queries.responseCommand.user.ok) {
-                        memoUserId(input.value)
-                        hide()
-                        go()
-                    } else {
-                        no('Niema takiego użytkownika')
-                    }
-                }
-
-                modal.user.show(setNewUser, validateUserId, checkUserId)
-            } else if (secure.command === queries.responseCommand.secure.go) {
-                memoUserId(secure.userId)
-                go()
+            // sprawdzenie czy appka jest zainstalowana
+            if (!modal.installer.isAppInstalled()) {
+                modal.installer.showInstallerModal(startApp)
+            } else {
+                startApp()
             }
 
             // if (secure === null) {
-
             // }
         }
     }

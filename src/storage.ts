@@ -15,6 +15,7 @@ type NamesValueTypeT = {
     configTests: string
     menuLeft: CheckedValuesT
     questionsRatio: string
+    sessionStarted: CheckedValuesT
 }
 
 const storageNames = {
@@ -26,7 +27,8 @@ const storageNames = {
     version: 'version',
     configTests: 'config-tests',
     menuLeft: 'menu-left',
-    questionsRatio: 'questions-ratio'
+    questionsRatio: 'questions-ratio',
+    sessionStarted: 'session-started',
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -50,6 +52,7 @@ const defaultData: NamesValueTypeT = {
     configTests: 'null',
     menuLeft: checked.no,
     questionsRatio: null,
+    sessionStarted: checked.no,
 }
 
 const getStorage = async () => {
