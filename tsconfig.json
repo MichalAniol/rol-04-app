@@ -5,18 +5,17 @@
         ]
     },
     "compilerOptions": {
-        "module": "AMD",
         "target": "ES2020",
-        "lib": ["esnext", "dom", "webworker"],
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "noImplicitAny": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": false,
+        "lib": [
+            "ES2020",
+            "DOM"
+        ],
         "removeComments": true,
-        "preserveConstEnums": false,
-        "sourceMap": false,
-        "downlevelIteration": false,
-        "outFile": "dist/index.js"
+        "rootDir": "src",
+        "outDir": "dist"
     },
     "files": [
         "src/types.ts",
@@ -35,6 +34,7 @@
         "src/utils/radio.ts",
         "src/utils/blob.ts",
         "src/utils/drawImage.ts",
+        "src/utils/idToDate.ts",
         "src/engine/helpers.ts",
         "src/engine/params.ts",
         "src/engine/analize.ts",
@@ -67,6 +67,7 @@
         "src/screens/starter/run/run.ts",
         "src/screens/statistics/data.ts",
         "src/screens/statistics/helpers.ts",
+        "src/screens/statistics/mouse.ts",
         "src/screens/statistics/draw.ts",
         "src/screens/statistics/legend.ts",
         "src/screens/statistics/table.ts",

@@ -78,6 +78,7 @@ namespace learning {
         const tabW = w - (core.isMobile ? 0 : 200)
         setStyle(elements.imgBig, 'height', getPx(h))
         setStyle(elements.imgBig, 'width', getPx(tabW))
+        setStyle(elements.imgBig, 'left', getPx(core.isMobile ? 0 : 200))
         setStyle(elements.bottom, 'height', getPx(menuH))
 
         elements.drawImage.setWidth(tabW - 80)

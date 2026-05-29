@@ -45,9 +45,9 @@ wezterm.on('gui-startup', function()
 
     -- WYWOŁANIE KOMEND W PANELACH Z OPÓŹNIENIEM
     send_cmd_with_delay(left_pane_1, "npm run t")
-    send_cmd_with_delay(left_pane_2, "npm run s")
+    send_cmd_with_delay(left_pane_2, "npm run app")
 
-    send_cmd_with_delay(right_pane_1, "npm run t")
+    send_cmd_with_delay(right_pane_1, "npm run bw")
     send_cmd_with_delay(right_pane_2, "npm run g")
     send_cmd_with_delay(right_pane_3, "npm run ns")
 end)
