@@ -1,16 +1,15 @@
-namespace queries {
-    export namespace data {
-        export const getImage = async (name: string): Promise<Blob> => {
-            const result = await api.post<Blob>(
-                url.data.images,
-                { name },
-                {
-                    withCredentials: true,
-                    responseType: 'blob',
-                }
-            )
+import { url } from '../url'
+import { api } from '../api'
 
-            return result.data
+export const getImage = async (name: string): Promise<Blob> => {
+    const result = await api.post<Blob>(
+        url.data.images,
+        { name },
+        {
+            withCredentials: true,
+            responseType: 'blob',
         }
-    }
+    )
+
+    return result.data
 }

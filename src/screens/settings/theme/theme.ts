@@ -1,84 +1,87 @@
-namespace settings {
-    const { root, setAttribute, setStyle, removeClass, addClass } = dom
+import { root, setAttribute, setStyle, removeClass, addClass } from '../../../dom'
+import { core } from '../../../core'
+import { themeChange } from '../../statistics/draw'
+import { setMonitorLegend } from '../../statistics/legend'
+import { getRadio, RatioT } from '../../../utils/radio'
+import { storageNames } from '@/storage'
 
-    export namespace theme {
-        export const theme = {
-            dark: 'dark',
-            light: 'light',
-        } as const
 
-        type ThemeT = keyof typeof theme
-        type ThemeValuesT = typeof theme[ThemeT]
+export const theme = {
+    dark: 'dark',
+    light: 'light',
+} as const
 
-        export const themeMode = {
-            ...theme,
-            system: 'system',
-        } as const
+type ThemeT = keyof typeof theme
+type ThemeValuesT = typeof theme[ThemeT]
 
-        // @ts-ignore
-        const themeNames = Object.values(themeMode) as const
+export const themeMode = {
+    ...theme,
+    system: 'system',
+} as const
 
-        type MemoT = { theme: ThemeValuesT | null }
-        const memo: MemoT = {
-            theme: null
-        }
+// @ts-ignore
+const themeNames = Object.values(themeMode) as const
 
-        export const get = () => memo.theme
+type MemoT = { theme: ThemeValuesT | null }
+const memo: MemoT = {
+    theme: null
+}
 
-        const apply = (theme: ThemeValuesT) => {
-            root.setAttribute('data-theme', theme)
-            setAttribute(root, 'data-theme', theme)
+export const get = () => memo.theme
 
-            removeClass(root, themeMode.dark)
-            removeClass(root, themeMode.light)
-            addClass(root, theme)
+const apply = (theme: ThemeValuesT) => {
+    root.setAttribute('data-theme', theme)
+    setAttribute(root, 'data-theme', theme)
 
-            setStyle(root, 'colorScheme', theme)
-        }
+    removeClass(root, themeMode.dark)
+    removeClass(root, themeMode.light)
+    addClass(root, theme)
 
-        const setSystemTheme = () => {
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-            const newTheme = systemPrefersDark ? theme.dark : theme.light
-            apply(newTheme)
-            memo.theme = newTheme
-        }
+    setStyle(root, 'colorScheme', theme)
+}
 
-        const set = (saved: string) => {
-            if (saved === theme.dark || saved === theme.light) {
-                apply(saved)
-                memo.theme = saved
-                return saved
-            }
-            if (saved === themeMode.system) {
-                setSystemTheme()
-                return saved
-            }
+const setSystemTheme = () => {
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const newTheme = systemPrefersDark ? theme.dark : theme.light
+    apply(newTheme)
+    memo.theme = newTheme
+}
 
-            core.store.set(storageNames.theme, themeMode.system)
-            setSystemTheme()
-
-            return themeMode.system
-        }
-
-        const themeData = {
-            prefix: 'setting-theme-',
-            storeName: storageNames.theme,
-            elementList: themeNames,
-            nameList: themeNames,
-            clickList: themeNames.map((name, i) => () => {
-                set(name)
-                setTimeout(() => {
-                    statistics.draw.themeChange()
-                    statistics.legend.setMonitorLegend()
-                }, 100)
-            }),
-            init: set,
-        }
-
-        export let ratio: RatioT
-        export const init = async () => {
-            ratio = utils.getRadio(themeData)
-            ratio.init()
-        }
+const set = (saved: string) => {
+    if (saved === theme.dark || saved === theme.light) {
+        apply(saved)
+        memo.theme = saved
+        return saved
     }
+    if (saved === themeMode.system) {
+        setSystemTheme()
+        return saved
+    }
+
+    core.store.set(storageNames.theme, themeMode.system)
+    setSystemTheme()
+
+    return themeMode.system
+}
+
+const themeData = {
+    prefix: 'setting-theme-',
+    storeName: storageNames.theme,
+    elementList: themeNames,
+    nameList: themeNames,
+    clickList: themeNames.map((name) => () => {
+        set(name)
+        setTimeout(() => {
+            themeChange()
+            setMonitorLegend()
+        }, 100)
+    }),
+    init: set,
+}
+
+export let ratio: RatioT
+
+export const init = async () => {
+    ratio = getRadio(themeData)
+    ratio.init()
 }

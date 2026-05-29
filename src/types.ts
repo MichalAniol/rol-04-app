@@ -1,4 +1,15 @@
-type TensorDataT = {
+export type WeightsT = {
+    lastUsed: number,
+    nextUse: number,
+    appearance: number,
+    rating: number,
+    littleUsed: number,
+    temperature: number,
+}
+
+export type WeightsKeyT = keyof WeightsT
+
+export type TensorDataT = {
     id: string;
     index: number       // index
     used?: number       // ile razy użyto
@@ -9,9 +20,7 @@ type TensorDataT = {
     score?: number
 }
 
-type WeightsKeyT = keyof WeightsT
-
-type QuestionDbT = {
+export type QuestionDbT = {
     id: string
     version: string
     question: string
@@ -22,71 +31,71 @@ type QuestionDbT = {
     img?: string
 }
 
-type QuestionDbSchemaT = {
+export type QuestionDbSchemaT = {
     [key: number]: QuestionDbT
 }
 
-type ImageDbT = {
+export type ImageDbT = {
     version: string
     data: string
 }
 
-type ImageDbSchemaT = {
+export type ImageDbSchemaT = {
     [key: string]: ImageDbT
 }
 
-const rating = {
+export const rating = {
     bad: 'bad',
     good: 'good'
 } as const
 const ratingNames = Object.values(rating)
 type RatingNameT = typeof ratingNames[number]
 
-type RatingT = {
+export type RatingT = {
     type: RatingNameT
     scale: number
 }
 
-type HistoryT = {
+export type HistoryT = {
     timestamp: number
     result: boolean
 }
 
-type AnswersMemoT = {
+export type AnswersMemoT = {
     id: string // zgodne z pytaniem
     history: HistoryT[]
 }
 
-type AnswersDbT = AnswersMemoT & {
+export type AnswersDbT = AnswersMemoT & {
     // expectedUse: number
     used: number
     rating?: RatingT | null // ocena do wyświetlania koloru na statystykach
 }
 
-type AnswersT = AnswersDbT & {
+export type AnswersT = AnswersDbT & {
     drawn: boolean // do usuwania już wylogowany w następnych turach tej samej sesji
     index: number  // zgodny z pytaniem
 }
 
-type AnswersDbSchemaT = {
+export type AnswersDbSchemaT = {
     [key: number]: AnswersDbT
 }
 
-type LearningT = {
+export type LearningT = {
     question: QuestionDbT
     answer: AnswersT
     index: number
 }
 
-type LogT = {
+export type LogT = {
     action: string
     result: boolean
 }
 
-type LogDbSchemaT = {
+export type LogDbSchemaT = {
     [key: number]: LogT
 }
 
-type LogMemoT = LogT & {
+export type LogMemoT = LogT & {
     timestamp: number
 }

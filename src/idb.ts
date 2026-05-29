@@ -1,6 +1,6 @@
 type DBShape = Record<string, unknown>
 
-type Idb<Schema extends DBShape> = {
+export type Idb<Schema extends DBShape> = {
     get<K extends keyof Schema>(key: K): Promise<Schema[K] | undefined>
     set<K extends keyof Schema>(key: K, value: Schema[K]): Promise<void>
     setMany<K extends keyof Schema>(entries: [K, Schema[K]][]): Promise<void>
@@ -13,9 +13,7 @@ type Idb<Schema extends DBShape> = {
     delMany<K extends keyof Schema>(keys: K[]): Promise<void>
     keys(): Promise<(keyof Schema)[]>
     values(): Promise<Schema[keyof Schema][]>
-    getAllData(): Promise<
-        { [K in keyof Schema]: [K, Schema[K]] }[keyof Schema][]
-    >
+    getAllData(): Promise<Array<{ [K in keyof Schema]: [K, Schema[K]] }[keyof Schema]>>
     clear(): Promise<void>
 }
 
@@ -33,7 +31,7 @@ const STORES = [
     'questions',
     'images',
     'answers',
-    'statistics',
+    // 'statistics',
     'logs',
 ] as const
 
@@ -105,7 +103,7 @@ const createStore = (
     }
 }
 
-const idb = <Schema extends DBShape>(
+export const idb = <Schema extends DBShape>(
     storeName: string,
 ) => (function () {
 
@@ -286,7 +284,7 @@ const idb = <Schema extends DBShape>(
         ValueType = any,
     >(
         customStore = defaultGetStore(),
-    ): Promise<[KeyType, ValueType][]> =>
+    ): Promise<[KeyType, ValueType | undefined][]> =>
         customStore('readonly', async (store) => {
             if (store.getAll && store.getAllKeys) {
 

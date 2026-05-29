@@ -1,9 +1,11 @@
-const checked = {
+import { determinants } from './engine/params'
+
+export const checked = {
     yes: 'yes',
     no: 'no',
 } as const
 
-type CheckedValuesT = typeof checked[keyof typeof checked]
+export type CheckedValuesT = typeof checked[keyof typeof checked]
 
 type NamesValueTypeT = {
     theme: string
@@ -18,7 +20,7 @@ type NamesValueTypeT = {
     sessionStarted: CheckedValuesT
 }
 
-const storageNames = {
+export const storageNames = {
     theme: 'theme',
     questionsData: 'questions-data',
     imgData: 'img-data',
@@ -31,16 +33,11 @@ const storageNames = {
     sessionStarted: 'session-started',
 } as const
 
-type DataNamesKeysT = keyof typeof storageNames
-type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
-
-const configData: GetConfigResponseT = {
-    tests: 'null',
-    img: [],
-}
+type DataNamesKeysT = keyof typeof storageNames 
+export type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
 
 const START_QUESTIONS_RATIO = .85
-const getQuestionsRatio = () => Math.floor(engine.params.determinants.questionInSession * START_QUESTIONS_RATIO).toString()
+const getQuestionsRatio = () => Math.floor(determinants.questionInSession * START_QUESTIONS_RATIO).toString()
 
 const defaultData: NamesValueTypeT = {
     theme: '',
@@ -51,12 +48,11 @@ const defaultData: NamesValueTypeT = {
     version: 'null',
     configTests: 'null',
     menuLeft: checked.no,
-    questionsRatio: null,
+    questionsRatio: 'null',
     sessionStarted: checked.no,
 }
 
-const getStorage = async () => {
-
+export const getStorage = async () => {
     const isValidJSONStringify = (value: unknown): boolean => {
         try {
             const result = JSON.stringify(value)

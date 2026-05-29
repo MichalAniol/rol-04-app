@@ -1,4 +1,4 @@
-const serviceWorker = async () => {
+export const serviceWorker = async () => {
     if (!('serviceWorker' in navigator)) {
         return;
     }

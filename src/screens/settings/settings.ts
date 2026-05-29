@@ -1,42 +1,43 @@
-namespace settings {
-    type ElementsT = {
-        scrollBox: HTMLElement | null
-    }
+import { byQuery, getPx, setStyle } from '../../dom'
+import { init as infoInit, active as initActive, deactivate as infoDeactivate } from './info/info'
+import { init as themeInit, ratio } from './theme/theme'
+import { init as menuInit } from './menu/menu'
+import { areNotNull } from '../../utils/isNotNull'
 
-    const { byQuery, getPx, setStyle } = dom
+type ElementsT = {
+    scrollBox: HTMLElement
+}
 
-    const elements: ElementsT = {
-        scrollBox: null,
-    }
+const elements = {} as ElementsT
 
-    export const resize = (w: number, h: number) => {
-        setStyle(elements.scrollBox, 'height', `calc(${getPx(h)} - 32px - var(--font_title_size))`)
-    }
+// @ts-ignore
+export const resize = (w: number, h: number) => {
+    setStyle(elements.scrollBox, 'height', `calc(${getPx(h)} - 32px - var(--font_title_size))`)
+}
 
-    export const init = () => {
-        elements.scrollBox = byQuery('#settings-tab-box .scroll-box') as HTMLElement
-        utils.areNotNull(elements, ['settings'])
+export const init = () => {
+    elements.scrollBox = byQuery('#settings-tab-box .scroll-box') as HTMLElement
+    areNotNull(elements, ['settings'])
 
-        info.init()
-        theme.init()
-        ratio.init()
-        // dataControl.init()
-        menu.init()
-    }
+    infoInit()
+    themeInit()
+    ratio.init()
+    // dataControl.init()
+    menuInit()
+}
 
-    export const active = () => {
-        info.active()
-        theme.ratio.active()
-        ratio.active()
-        // dataControl.questionsRatio.active()
-        // dataControl.imgRatio.active()
-    }
+export const active = () => {
+    initActive()
+    ratio.active()
+    ratio.active()
+    // dataControl.questionsRatio.active()
+    // dataControl.imgRatio.active()
+}
 
-    export const deactivate = () => {
-        info.deactivate()
-        theme.ratio.deactivate()
-        ratio.deactivate()
-        // dataControl.questionsRatio.deactivate()
-        // dataControl.imgRatio.deactivate()
-    }
+export const deactivate = () => {
+    infoDeactivate()
+    ratio.deactivate()
+    ratio.deactivate()
+    // dataControl.questionsRatio.deactivate()
+    // dataControl.imgRatio.deactivate()
 }

@@ -1,56 +1,57 @@
-namespace modal {
-    const { byId, getPx, setStyle, add } = dom
 
-    type ElementsT = {
-        modal: HTMLElement | null
-        back: HTMLElement | null
-    }
+import { byId, getPx, setStyle } from '../dom'
+import { error } from './error/error'
+import { init as userInit } from './user/user'
+import { init as installerInit } from './installer/installer'
+import { areNotNull } from '@/utils/isNotNull'
+import { blur, unBlur } from '@/tab/tab'
 
-    const elements: ElementsT = {
-        modal: null,
-        back: null,
-    }
+type ElementsT = {
+    modal: HTMLElement
+    back: HTMLElement
+}
 
-    export const init = () => {
-        elements.modal = byId('modal') as HTMLElement
-        elements.back = byId('modal-back') as HTMLElement
-        utils.areNotNull(elements, ['modal'])
+const elements = {} as ElementsT
 
-        // const testBtn = byId('test-btn')
-        // add(testBtn, 'click', () => {
-        //     user.show()
-        // })
+export const init = () => {
+    elements.modal = byId('modal') as HTMLElement
+    elements.back = byId('modal-back') as HTMLElement
+    areNotNull(elements, ['modal'])
 
-        error.init()
-        user.init()
-        installer.init()
-    }
+    // const testBtn = byId('test-btn')
+    // add(testBtn, 'click', () => {
+    //     user.show()
+    // })
 
-    export const resize = (w: number, h: number) => {
-        setStyle(elements.back, 'width', getPx(w))
-        setStyle(elements.back, 'height', getPx(h))
-    }
+    error.init()
+    userInit()
+    installerInit()
+}
 
-    let visible = false
+export const resize = (w: number, h: number) => {
+    setStyle(elements.back, 'width', getPx(w))
+    setStyle(elements.back, 'height', getPx(h))
+}
 
-    export const show = () => {
-        visible = true
-        setStyle(elements.modal, 'opacity', '0')
-        setStyle(elements.modal, 'display', 'flex')
-        setTimeout(() => {
-            setStyle(elements.modal, 'opacity', '1')
-        }, 30)
-        tab.blur()
-    }
+let visible = false
 
-    export const hide = () => {
-        visible = false
-        setStyle(elements.modal, 'opacity', '0')
-        setTimeout(() => {
-            if (!visible) {
-                setStyle(elements.modal, 'display', 'none')
-            }
-        }, 330)
-        tab.unBlur()
-    }
+export const show = () => {
+    visible = true
+    setStyle(elements.modal, 'opacity', '0')
+    setStyle(elements.modal, 'display', 'flex')
+    setTimeout(() => {
+        setStyle(elements.modal, 'opacity', '1')
+    }, 30)
+    blur()
+}
+
+export const hide = () => {
+    visible = false
+    setStyle(elements.modal, 'opacity', '0')
+    setTimeout(() => {
+        if (!visible) {
+            setStyle(elements.modal, 'display', 'none')
+        }
+    }, 330)
+    unBlur()
 }
