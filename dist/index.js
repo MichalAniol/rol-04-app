@@ -1,3418 +1,5957 @@
-const rating = {
-    bad: 'bad',
-    good: 'good'
-};
-const ratingNames = Object.values(rating);
-var cookie;
-(function (cookie_1) {
-    cookie_1.names = {
-        userId: 'user-id',
-        test: 'test',
+"use strict";
+(() => {
+  var __defProp = Object.defineProperty;
+  var __export = (target, all3) => {
+    for (var name in all3)
+      __defProp(target, name, { get: all3[name], enumerable: true });
+  };
+
+  // node_modules/axios/lib/helpers/bind.js
+  function bind(fn, thisArg) {
+    return function wrap() {
+      return fn.apply(thisArg, arguments);
     };
-    const namesValues = Object.values(cookie_1.names);
-    cookie_1.get = (name) => {
-        const nameIsOk = namesValues.some((n) => n === name);
-        if (nameIsOk) {
-            const cookies = document.cookie.split('; ');
-            console.log('%c cookies:', 'background: #ffcc00; color: #003300', cookies);
-            for (const cookie of cookies) {
-                const [key, value] = cookie.split('=');
-                if (key === name) {
-                    return decodeURIComponent(value);
-                }
+  }
+
+  // node_modules/axios/lib/utils.js
+  var { toString } = Object.prototype;
+  var { getPrototypeOf } = Object;
+  var { iterator, toStringTag } = Symbol;
+  var kindOf = /* @__PURE__ */ ((cache) => (thing) => {
+    const str = toString.call(thing);
+    return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
+  })(/* @__PURE__ */ Object.create(null));
+  var kindOfTest = (type) => {
+    type = type.toLowerCase();
+    return (thing) => kindOf(thing) === type;
+  };
+  var typeOfTest = (type) => (thing) => typeof thing === type;
+  var { isArray } = Array;
+  var isUndefined = typeOfTest("undefined");
+  function isBuffer(val) {
+    return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
+  }
+  var isArrayBuffer = kindOfTest("ArrayBuffer");
+  function isArrayBufferView(val) {
+    let result;
+    if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView) {
+      result = ArrayBuffer.isView(val);
+    } else {
+      result = val && val.buffer && isArrayBuffer(val.buffer);
+    }
+    return result;
+  }
+  var isString = typeOfTest("string");
+  var isFunction = typeOfTest("function");
+  var isNumber = typeOfTest("number");
+  var isObject = (thing) => thing !== null && typeof thing === "object";
+  var isBoolean = (thing) => thing === true || thing === false;
+  var isPlainObject = (val) => {
+    if (kindOf(val) !== "object") {
+      return false;
+    }
+    const prototype2 = getPrototypeOf(val);
+    return (prototype2 === null || prototype2 === Object.prototype || Object.getPrototypeOf(prototype2) === null) && !(toStringTag in val) && !(iterator in val);
+  };
+  var isEmptyObject = (val) => {
+    if (!isObject(val) || isBuffer(val)) {
+      return false;
+    }
+    try {
+      return Object.keys(val).length === 0 && Object.getPrototypeOf(val) === Object.prototype;
+    } catch (e) {
+      return false;
+    }
+  };
+  var isDate = kindOfTest("Date");
+  var isFile = kindOfTest("File");
+  var isReactNativeBlob = (value) => {
+    return !!(value && typeof value.uri !== "undefined");
+  };
+  var isReactNative = (formData) => formData && typeof formData.getParts !== "undefined";
+  var isBlob = kindOfTest("Blob");
+  var isFileList = kindOfTest("FileList");
+  var isStream = (val) => isObject(val) && isFunction(val.pipe);
+  function getGlobal() {
+    if (typeof globalThis !== "undefined") return globalThis;
+    if (typeof self !== "undefined") return self;
+    if (typeof window !== "undefined") return window;
+    if (typeof global !== "undefined") return global;
+    return {};
+  }
+  var G = getGlobal();
+  var FormDataCtor = typeof G.FormData !== "undefined" ? G.FormData : void 0;
+  var isFormData = (thing) => {
+    if (!thing) return false;
+    if (FormDataCtor && thing instanceof FormDataCtor) return true;
+    const proto = getPrototypeOf(thing);
+    if (!proto || proto === Object.prototype) return false;
+    if (!isFunction(thing.append)) return false;
+    const kind = kindOf(thing);
+    return kind === "formdata" || // detect form-data instance
+    kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]";
+  };
+  var isURLSearchParams = kindOfTest("URLSearchParams");
+  var [isReadableStream, isRequest, isResponse, isHeaders] = [
+    "ReadableStream",
+    "Request",
+    "Response",
+    "Headers"
+  ].map(kindOfTest);
+  var trim = (str) => {
+    return str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+  };
+  function forEach(obj, fn, { allOwnKeys = false } = {}) {
+    if (obj === null || typeof obj === "undefined") {
+      return;
+    }
+    let i;
+    let l;
+    if (typeof obj !== "object") {
+      obj = [obj];
+    }
+    if (isArray(obj)) {
+      for (i = 0, l = obj.length; i < l; i++) {
+        fn.call(null, obj[i], i, obj);
+      }
+    } else {
+      if (isBuffer(obj)) {
+        return;
+      }
+      const keys = allOwnKeys ? Object.getOwnPropertyNames(obj) : Object.keys(obj);
+      const len = keys.length;
+      let key;
+      for (i = 0; i < len; i++) {
+        key = keys[i];
+        fn.call(null, obj[key], key, obj);
+      }
+    }
+  }
+  function findKey(obj, key) {
+    if (isBuffer(obj)) {
+      return null;
+    }
+    key = key.toLowerCase();
+    const keys = Object.keys(obj);
+    let i = keys.length;
+    let _key;
+    while (i-- > 0) {
+      _key = keys[i];
+      if (key === _key.toLowerCase()) {
+        return _key;
+      }
+    }
+    return null;
+  }
+  var _global = (() => {
+    if (typeof globalThis !== "undefined") return globalThis;
+    return typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
+  })();
+  var isContextDefined = (context) => !isUndefined(context) && context !== _global;
+  function merge(...objs) {
+    const { caseless, skipUndefined } = isContextDefined(this) && this || {};
+    const result = {};
+    const assignValue = (val, key) => {
+      if (key === "__proto__" || key === "constructor" || key === "prototype") {
+        return;
+      }
+      const targetKey = caseless && findKey(result, key) || key;
+      const existing = hasOwnProperty(result, targetKey) ? result[targetKey] : void 0;
+      if (isPlainObject(existing) && isPlainObject(val)) {
+        result[targetKey] = merge(existing, val);
+      } else if (isPlainObject(val)) {
+        result[targetKey] = merge({}, val);
+      } else if (isArray(val)) {
+        result[targetKey] = val.slice();
+      } else if (!skipUndefined || !isUndefined(val)) {
+        result[targetKey] = val;
+      }
+    };
+    for (let i = 0, l = objs.length; i < l; i++) {
+      objs[i] && forEach(objs[i], assignValue);
+    }
+    return result;
+  }
+  var extend = (a, b, thisArg, { allOwnKeys } = {}) => {
+    forEach(
+      b,
+      (val, key) => {
+        if (thisArg && isFunction(val)) {
+          Object.defineProperty(a, key, {
+            // Null-proto descriptor so a polluted Object.prototype.get cannot
+            // hijack defineProperty's accessor-vs-data resolution.
+            __proto__: null,
+            value: bind(val, thisArg),
+            writable: true,
+            enumerable: true,
+            configurable: true
+          });
+        } else {
+          Object.defineProperty(a, key, {
+            __proto__: null,
+            value: val,
+            writable: true,
+            enumerable: true,
+            configurable: true
+          });
+        }
+      },
+      { allOwnKeys }
+    );
+    return a;
+  };
+  var stripBOM = (content) => {
+    if (content.charCodeAt(0) === 65279) {
+      content = content.slice(1);
+    }
+    return content;
+  };
+  var inherits = (constructor, superConstructor, props, descriptors) => {
+    constructor.prototype = Object.create(superConstructor.prototype, descriptors);
+    Object.defineProperty(constructor.prototype, "constructor", {
+      __proto__: null,
+      value: constructor,
+      writable: true,
+      enumerable: false,
+      configurable: true
+    });
+    Object.defineProperty(constructor, "super", {
+      __proto__: null,
+      value: superConstructor.prototype
+    });
+    props && Object.assign(constructor.prototype, props);
+  };
+  var toFlatObject = (sourceObj, destObj, filter2, propFilter) => {
+    let props;
+    let i;
+    let prop;
+    const merged = {};
+    destObj = destObj || {};
+    if (sourceObj == null) return destObj;
+    do {
+      props = Object.getOwnPropertyNames(sourceObj);
+      i = props.length;
+      while (i-- > 0) {
+        prop = props[i];
+        if ((!propFilter || propFilter(prop, sourceObj, destObj)) && !merged[prop]) {
+          destObj[prop] = sourceObj[prop];
+          merged[prop] = true;
+        }
+      }
+      sourceObj = filter2 !== false && getPrototypeOf(sourceObj);
+    } while (sourceObj && (!filter2 || filter2(sourceObj, destObj)) && sourceObj !== Object.prototype);
+    return destObj;
+  };
+  var endsWith = (str, searchString, position) => {
+    str = String(str);
+    if (position === void 0 || position > str.length) {
+      position = str.length;
+    }
+    position -= searchString.length;
+    const lastIndex = str.indexOf(searchString, position);
+    return lastIndex !== -1 && lastIndex === position;
+  };
+  var toArray = (thing) => {
+    if (!thing) return null;
+    if (isArray(thing)) return thing;
+    let i = thing.length;
+    if (!isNumber(i)) return null;
+    const arr = new Array(i);
+    while (i-- > 0) {
+      arr[i] = thing[i];
+    }
+    return arr;
+  };
+  var isTypedArray = /* @__PURE__ */ ((TypedArray) => {
+    return (thing) => {
+      return TypedArray && thing instanceof TypedArray;
+    };
+  })(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
+  var forEachEntry = (obj, fn) => {
+    const generator = obj && obj[iterator];
+    const _iterator = generator.call(obj);
+    let result;
+    while ((result = _iterator.next()) && !result.done) {
+      const pair = result.value;
+      fn.call(obj, pair[0], pair[1]);
+    }
+  };
+  var matchAll = (regExp, str) => {
+    let matches;
+    const arr = [];
+    while ((matches = regExp.exec(str)) !== null) {
+      arr.push(matches);
+    }
+    return arr;
+  };
+  var isHTMLForm = kindOfTest("HTMLFormElement");
+  var toCamelCase = (str) => {
+    return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
+      return p1.toUpperCase() + p2;
+    });
+  };
+  var hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj, prop) => hasOwnProperty2.call(obj, prop))(Object.prototype);
+  var isRegExp = kindOfTest("RegExp");
+  var reduceDescriptors = (obj, reducer) => {
+    const descriptors = Object.getOwnPropertyDescriptors(obj);
+    const reducedDescriptors = {};
+    forEach(descriptors, (descriptor, name) => {
+      let ret;
+      if ((ret = reducer(descriptor, name, obj)) !== false) {
+        reducedDescriptors[name] = ret || descriptor;
+      }
+    });
+    Object.defineProperties(obj, reducedDescriptors);
+  };
+  var freezeMethods = (obj) => {
+    reduceDescriptors(obj, (descriptor, name) => {
+      if (isFunction(obj) && ["arguments", "caller", "callee"].includes(name)) {
+        return false;
+      }
+      const value = obj[name];
+      if (!isFunction(value)) return;
+      descriptor.enumerable = false;
+      if ("writable" in descriptor) {
+        descriptor.writable = false;
+        return;
+      }
+      if (!descriptor.set) {
+        descriptor.set = () => {
+          throw Error("Can not rewrite read-only method '" + name + "'");
+        };
+      }
+    });
+  };
+  var toObjectSet = (arrayOrString, delimiter) => {
+    const obj = {};
+    const define = (arr) => {
+      arr.forEach((value) => {
+        obj[value] = true;
+      });
+    };
+    isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
+    return obj;
+  };
+  var noop = () => {
+  };
+  var toFiniteNumber = (value, defaultValue) => {
+    return value != null && Number.isFinite(value = +value) ? value : defaultValue;
+  };
+  function isSpecCompliantForm(thing) {
+    return !!(thing && isFunction(thing.append) && thing[toStringTag] === "FormData" && thing[iterator]);
+  }
+  var toJSONObject = (obj) => {
+    const visited = /* @__PURE__ */ new WeakSet();
+    const visit = (source) => {
+      if (isObject(source)) {
+        if (visited.has(source)) {
+          return;
+        }
+        if (isBuffer(source)) {
+          return source;
+        }
+        if (!("toJSON" in source)) {
+          visited.add(source);
+          const target = isArray(source) ? [] : {};
+          forEach(source, (value, key) => {
+            const reducedValue = visit(value);
+            !isUndefined(reducedValue) && (target[key] = reducedValue);
+          });
+          visited.delete(source);
+          return target;
+        }
+      }
+      return source;
+    };
+    return visit(obj);
+  };
+  var isAsyncFn = kindOfTest("AsyncFunction");
+  var isThenable = (thing) => thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing.catch);
+  var _setImmediate = ((setImmediateSupported, postMessageSupported) => {
+    if (setImmediateSupported) {
+      return setImmediate;
+    }
+    return postMessageSupported ? ((token, callbacks) => {
+      _global.addEventListener(
+        "message",
+        ({ source, data: data6 }) => {
+          if (source === _global && data6 === token) {
+            callbacks.length && callbacks.shift()();
+          }
+        },
+        false
+      );
+      return (cb) => {
+        callbacks.push(cb);
+        _global.postMessage(token, "*");
+      };
+    })(`axios@${Math.random()}`, []) : (cb) => setTimeout(cb);
+  })(typeof setImmediate === "function", isFunction(_global.postMessage));
+  var asap = typeof queueMicrotask !== "undefined" ? queueMicrotask.bind(_global) : typeof process !== "undefined" && process.nextTick || _setImmediate;
+  var isIterable = (thing) => thing != null && isFunction(thing[iterator]);
+  var utils_default = {
+    isArray,
+    isArrayBuffer,
+    isBuffer,
+    isFormData,
+    isArrayBufferView,
+    isString,
+    isNumber,
+    isBoolean,
+    isObject,
+    isPlainObject,
+    isEmptyObject,
+    isReadableStream,
+    isRequest,
+    isResponse,
+    isHeaders,
+    isUndefined,
+    isDate,
+    isFile,
+    isReactNativeBlob,
+    isReactNative,
+    isBlob,
+    isRegExp,
+    isFunction,
+    isStream,
+    isURLSearchParams,
+    isTypedArray,
+    isFileList,
+    forEach,
+    merge,
+    extend,
+    trim,
+    stripBOM,
+    inherits,
+    toFlatObject,
+    kindOf,
+    kindOfTest,
+    endsWith,
+    toArray,
+    forEachEntry,
+    matchAll,
+    isHTMLForm,
+    hasOwnProperty,
+    hasOwnProp: hasOwnProperty,
+    // an alias to avoid ESLint no-prototype-builtins detection
+    reduceDescriptors,
+    freezeMethods,
+    toObjectSet,
+    toCamelCase,
+    noop,
+    toFiniteNumber,
+    findKey,
+    global: _global,
+    isContextDefined,
+    isSpecCompliantForm,
+    toJSONObject,
+    isAsyncFn,
+    isThenable,
+    setImmediate: _setImmediate,
+    asap,
+    isIterable
+  };
+
+  // node_modules/axios/lib/helpers/parseHeaders.js
+  var ignoreDuplicateOf = utils_default.toObjectSet([
+    "age",
+    "authorization",
+    "content-length",
+    "content-type",
+    "etag",
+    "expires",
+    "from",
+    "host",
+    "if-modified-since",
+    "if-unmodified-since",
+    "last-modified",
+    "location",
+    "max-forwards",
+    "proxy-authorization",
+    "referer",
+    "retry-after",
+    "user-agent"
+  ]);
+  var parseHeaders_default = (rawHeaders) => {
+    const parsed = {};
+    let key;
+    let val;
+    let i;
+    rawHeaders && rawHeaders.split("\n").forEach(function parser(line) {
+      i = line.indexOf(":");
+      key = line.substring(0, i).trim().toLowerCase();
+      val = line.substring(i + 1).trim();
+      if (!key || parsed[key] && ignoreDuplicateOf[key]) {
+        return;
+      }
+      if (key === "set-cookie") {
+        if (parsed[key]) {
+          parsed[key].push(val);
+        } else {
+          parsed[key] = [val];
+        }
+      } else {
+        parsed[key] = parsed[key] ? parsed[key] + ", " + val : val;
+      }
+    });
+    return parsed;
+  };
+
+  // node_modules/axios/lib/helpers/sanitizeHeaderValue.js
+  function trimSPorHTAB(str) {
+    let start2 = 0;
+    let end2 = str.length;
+    while (start2 < end2) {
+      const code = str.charCodeAt(start2);
+      if (code !== 9 && code !== 32) {
+        break;
+      }
+      start2 += 1;
+    }
+    while (end2 > start2) {
+      const code = str.charCodeAt(end2 - 1);
+      if (code !== 9 && code !== 32) {
+        break;
+      }
+      end2 -= 1;
+    }
+    return start2 === 0 && end2 === str.length ? str : str.slice(start2, end2);
+  }
+  var INVALID_UNICODE_HEADER_VALUE_CHARS = new RegExp("[\\u0000-\\u0008\\u000a-\\u001f\\u007f]+", "g");
+  var INVALID_BYTE_STRING_HEADER_VALUE_CHARS = new RegExp("[^\\u0009\\u0020-\\u007e\\u0080-\\u00ff]+", "g");
+  function sanitizeValue(value, invalidChars) {
+    if (utils_default.isArray(value)) {
+      return value.map((item) => sanitizeValue(item, invalidChars));
+    }
+    return trimSPorHTAB(String(value).replace(invalidChars, ""));
+  }
+  var sanitizeHeaderValue = (value) => sanitizeValue(value, INVALID_UNICODE_HEADER_VALUE_CHARS);
+  var sanitizeByteStringHeaderValue = (value) => sanitizeValue(value, INVALID_BYTE_STRING_HEADER_VALUE_CHARS);
+  function toByteStringHeaderObject(headers) {
+    const byteStringHeaders = /* @__PURE__ */ Object.create(null);
+    utils_default.forEach(headers.toJSON(), (value, header) => {
+      byteStringHeaders[header] = sanitizeByteStringHeaderValue(value);
+    });
+    return byteStringHeaders;
+  }
+
+  // node_modules/axios/lib/core/AxiosHeaders.js
+  var $internals = Symbol("internals");
+  function normalizeHeader(header) {
+    return header && String(header).trim().toLowerCase();
+  }
+  function normalizeValue(value) {
+    if (value === false || value == null) {
+      return value;
+    }
+    return utils_default.isArray(value) ? value.map(normalizeValue) : sanitizeHeaderValue(String(value));
+  }
+  function parseTokens(str) {
+    const tokens = /* @__PURE__ */ Object.create(null);
+    const tokensRE = /([^\s,;=]+)\s*(?:=\s*([^,;]+))?/g;
+    let match;
+    while (match = tokensRE.exec(str)) {
+      tokens[match[1]] = match[2];
+    }
+    return tokens;
+  }
+  var isValidHeaderName = (str) => /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(str.trim());
+  function matchHeaderValue(context, value, header, filter2, isHeaderNameFilter) {
+    if (utils_default.isFunction(filter2)) {
+      return filter2.call(this, value, header);
+    }
+    if (isHeaderNameFilter) {
+      value = header;
+    }
+    if (!utils_default.isString(value)) return;
+    if (utils_default.isString(filter2)) {
+      return value.indexOf(filter2) !== -1;
+    }
+    if (utils_default.isRegExp(filter2)) {
+      return filter2.test(value);
+    }
+  }
+  function formatHeader(header) {
+    return header.trim().toLowerCase().replace(/([a-z\d])(\w*)/g, (w, char, str) => {
+      return char.toUpperCase() + str;
+    });
+  }
+  function buildAccessors(obj, header) {
+    const accessorName = utils_default.toCamelCase(" " + header);
+    ["get", "set", "has"].forEach((methodName) => {
+      Object.defineProperty(obj, methodName + accessorName, {
+        // Null-proto descriptor so a polluted Object.prototype.get cannot turn
+        // this data descriptor into an accessor descriptor on the way in.
+        __proto__: null,
+        value: function(arg1, arg2, arg3) {
+          return this[methodName].call(this, header, arg1, arg2, arg3);
+        },
+        configurable: true
+      });
+    });
+  }
+  var AxiosHeaders = class {
+    constructor(headers) {
+      headers && this.set(headers);
+    }
+    set(header, valueOrRewrite, rewrite) {
+      const self2 = this;
+      function setHeader(_value, _header, _rewrite) {
+        const lHeader = normalizeHeader(_header);
+        if (!lHeader) {
+          throw new Error("header name must be a non-empty string");
+        }
+        const key = utils_default.findKey(self2, lHeader);
+        if (!key || self2[key] === void 0 || _rewrite === true || _rewrite === void 0 && self2[key] !== false) {
+          self2[key || _header] = normalizeValue(_value);
+        }
+      }
+      const setHeaders = (headers, _rewrite) => utils_default.forEach(headers, (_value, _header) => setHeader(_value, _header, _rewrite));
+      if (utils_default.isPlainObject(header) || header instanceof this.constructor) {
+        setHeaders(header, valueOrRewrite);
+      } else if (utils_default.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
+        setHeaders(parseHeaders_default(header), valueOrRewrite);
+      } else if (utils_default.isObject(header) && utils_default.isIterable(header)) {
+        let obj = {}, dest, key;
+        for (const entry of header) {
+          if (!utils_default.isArray(entry)) {
+            throw TypeError("Object iterator must return a key-value pair");
+          }
+          obj[key = entry[0]] = (dest = obj[key]) ? utils_default.isArray(dest) ? [...dest, entry[1]] : [dest, entry[1]] : entry[1];
+        }
+        setHeaders(obj, valueOrRewrite);
+      } else {
+        header != null && setHeader(valueOrRewrite, header, rewrite);
+      }
+      return this;
+    }
+    get(header, parser) {
+      header = normalizeHeader(header);
+      if (header) {
+        const key = utils_default.findKey(this, header);
+        if (key) {
+          const value = this[key];
+          if (!parser) {
+            return value;
+          }
+          if (parser === true) {
+            return parseTokens(value);
+          }
+          if (utils_default.isFunction(parser)) {
+            return parser.call(this, value, key);
+          }
+          if (utils_default.isRegExp(parser)) {
+            return parser.exec(value);
+          }
+          throw new TypeError("parser must be boolean|regexp|function");
+        }
+      }
+    }
+    has(header, matcher) {
+      header = normalizeHeader(header);
+      if (header) {
+        const key = utils_default.findKey(this, header);
+        return !!(key && this[key] !== void 0 && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+      }
+      return false;
+    }
+    delete(header, matcher) {
+      const self2 = this;
+      let deleted = false;
+      function deleteHeader(_header) {
+        _header = normalizeHeader(_header);
+        if (_header) {
+          const key = utils_default.findKey(self2, _header);
+          if (key && (!matcher || matchHeaderValue(self2, self2[key], key, matcher))) {
+            delete self2[key];
+            deleted = true;
+          }
+        }
+      }
+      if (utils_default.isArray(header)) {
+        header.forEach(deleteHeader);
+      } else {
+        deleteHeader(header);
+      }
+      return deleted;
+    }
+    clear(matcher) {
+      const keys = Object.keys(this);
+      let i = keys.length;
+      let deleted = false;
+      while (i--) {
+        const key = keys[i];
+        if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+          delete this[key];
+          deleted = true;
+        }
+      }
+      return deleted;
+    }
+    normalize(format) {
+      const self2 = this;
+      const headers = {};
+      utils_default.forEach(this, (value, header) => {
+        const key = utils_default.findKey(headers, header);
+        if (key) {
+          self2[key] = normalizeValue(value);
+          delete self2[header];
+          return;
+        }
+        const normalized = format ? formatHeader(header) : String(header).trim();
+        if (normalized !== header) {
+          delete self2[header];
+        }
+        self2[normalized] = normalizeValue(value);
+        headers[normalized] = true;
+      });
+      return this;
+    }
+    concat(...targets) {
+      return this.constructor.concat(this, ...targets);
+    }
+    toJSON(asStrings) {
+      const obj = /* @__PURE__ */ Object.create(null);
+      utils_default.forEach(this, (value, header) => {
+        value != null && value !== false && (obj[header] = asStrings && utils_default.isArray(value) ? value.join(", ") : value);
+      });
+      return obj;
+    }
+    [Symbol.iterator]() {
+      return Object.entries(this.toJSON())[Symbol.iterator]();
+    }
+    toString() {
+      return Object.entries(this.toJSON()).map(([header, value]) => header + ": " + value).join("\n");
+    }
+    getSetCookie() {
+      return this.get("set-cookie") || [];
+    }
+    get [Symbol.toStringTag]() {
+      return "AxiosHeaders";
+    }
+    static from(thing) {
+      return thing instanceof this ? thing : new this(thing);
+    }
+    static concat(first, ...targets) {
+      const computed = new this(first);
+      targets.forEach((target) => computed.set(target));
+      return computed;
+    }
+    static accessor(header) {
+      const internals = this[$internals] = this[$internals] = {
+        accessors: {}
+      };
+      const accessors = internals.accessors;
+      const prototype2 = this.prototype;
+      function defineAccessor(_header) {
+        const lHeader = normalizeHeader(_header);
+        if (!accessors[lHeader]) {
+          buildAccessors(prototype2, _header);
+          accessors[lHeader] = true;
+        }
+      }
+      utils_default.isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
+      return this;
+    }
+  };
+  AxiosHeaders.accessor([
+    "Content-Type",
+    "Content-Length",
+    "Accept",
+    "Accept-Encoding",
+    "User-Agent",
+    "Authorization"
+  ]);
+  utils_default.reduceDescriptors(AxiosHeaders.prototype, ({ value }, key) => {
+    let mapped = key[0].toUpperCase() + key.slice(1);
+    return {
+      get: () => value,
+      set(headerValue) {
+        this[mapped] = headerValue;
+      }
+    };
+  });
+  utils_default.freezeMethods(AxiosHeaders);
+  var AxiosHeaders_default = AxiosHeaders;
+
+  // node_modules/axios/lib/core/AxiosError.js
+  var REDACTED = "[REDACTED ****]";
+  function hasOwnOrPrototypeToJSON(source) {
+    if (utils_default.hasOwnProp(source, "toJSON")) {
+      return true;
+    }
+    let prototype2 = Object.getPrototypeOf(source);
+    while (prototype2 && prototype2 !== Object.prototype) {
+      if (utils_default.hasOwnProp(prototype2, "toJSON")) {
+        return true;
+      }
+      prototype2 = Object.getPrototypeOf(prototype2);
+    }
+    return false;
+  }
+  function redactConfig(config, redactKeys) {
+    const lowerKeys = new Set(redactKeys.map((k) => String(k).toLowerCase()));
+    const seen = [];
+    const visit = (source) => {
+      if (source === null || typeof source !== "object") return source;
+      if (utils_default.isBuffer(source)) return source;
+      if (seen.indexOf(source) !== -1) return void 0;
+      if (source instanceof AxiosHeaders_default) {
+        source = source.toJSON();
+      }
+      seen.push(source);
+      let result;
+      if (utils_default.isArray(source)) {
+        result = [];
+        source.forEach((v, i) => {
+          const reducedValue = visit(v);
+          if (!utils_default.isUndefined(reducedValue)) {
+            result[i] = reducedValue;
+          }
+        });
+      } else {
+        if (!utils_default.isPlainObject(source) && hasOwnOrPrototypeToJSON(source)) {
+          seen.pop();
+          return source;
+        }
+        result = /* @__PURE__ */ Object.create(null);
+        for (const [key, value] of Object.entries(source)) {
+          const reducedValue = lowerKeys.has(key.toLowerCase()) ? REDACTED : visit(value);
+          if (!utils_default.isUndefined(reducedValue)) {
+            result[key] = reducedValue;
+          }
+        }
+      }
+      seen.pop();
+      return result;
+    };
+    return visit(config);
+  }
+  var AxiosError = class _AxiosError extends Error {
+    static from(error2, code, config, request, response, customProps) {
+      const axiosError = new _AxiosError(error2.message, code || error2.code, config, request, response);
+      axiosError.cause = error2;
+      axiosError.name = error2.name;
+      if (error2.status != null && axiosError.status == null) {
+        axiosError.status = error2.status;
+      }
+      customProps && Object.assign(axiosError, customProps);
+      return axiosError;
+    }
+    /**
+     * Create an Error with the specified message, config, error code, request and response.
+     *
+     * @param {string} message The error message.
+     * @param {string} [code] The error code (for example, 'ECONNABORTED').
+     * @param {Object} [config] The config.
+     * @param {Object} [request] The request.
+     * @param {Object} [response] The response.
+     *
+     * @returns {Error} The created error.
+     */
+    constructor(message, code, config, request, response) {
+      super(message);
+      Object.defineProperty(this, "message", {
+        // Null-proto descriptor so a polluted Object.prototype.get cannot turn
+        // this data descriptor into an accessor descriptor on the way in.
+        __proto__: null,
+        value: message,
+        enumerable: true,
+        writable: true,
+        configurable: true
+      });
+      this.name = "AxiosError";
+      this.isAxiosError = true;
+      code && (this.code = code);
+      config && (this.config = config);
+      request && (this.request = request);
+      if (response) {
+        this.response = response;
+        this.status = response.status;
+      }
+    }
+    toJSON() {
+      const config = this.config;
+      const redactKeys = config && utils_default.hasOwnProp(config, "redact") ? config.redact : void 0;
+      const serializedConfig = utils_default.isArray(redactKeys) && redactKeys.length > 0 ? redactConfig(config, redactKeys) : utils_default.toJSONObject(config);
+      return {
+        // Standard
+        message: this.message,
+        name: this.name,
+        // Microsoft
+        description: this.description,
+        number: this.number,
+        // Mozilla
+        fileName: this.fileName,
+        lineNumber: this.lineNumber,
+        columnNumber: this.columnNumber,
+        stack: this.stack,
+        // Axios
+        config: serializedConfig,
+        code: this.code,
+        status: this.status
+      };
+    }
+  };
+  AxiosError.ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
+  AxiosError.ERR_BAD_OPTION = "ERR_BAD_OPTION";
+  AxiosError.ECONNABORTED = "ECONNABORTED";
+  AxiosError.ETIMEDOUT = "ETIMEDOUT";
+  AxiosError.ECONNREFUSED = "ECONNREFUSED";
+  AxiosError.ERR_NETWORK = "ERR_NETWORK";
+  AxiosError.ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
+  AxiosError.ERR_DEPRECATED = "ERR_DEPRECATED";
+  AxiosError.ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
+  AxiosError.ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
+  AxiosError.ERR_CANCELED = "ERR_CANCELED";
+  AxiosError.ERR_NOT_SUPPORT = "ERR_NOT_SUPPORT";
+  AxiosError.ERR_INVALID_URL = "ERR_INVALID_URL";
+  AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED = "ERR_FORM_DATA_DEPTH_EXCEEDED";
+  var AxiosError_default = AxiosError;
+
+  // node_modules/axios/lib/helpers/null.js
+  var null_default = null;
+
+  // node_modules/axios/lib/helpers/toFormData.js
+  function isVisitable(thing) {
+    return utils_default.isPlainObject(thing) || utils_default.isArray(thing);
+  }
+  function removeBrackets(key) {
+    return utils_default.endsWith(key, "[]") ? key.slice(0, -2) : key;
+  }
+  function renderKey(path, key, dots) {
+    if (!path) return key;
+    return path.concat(key).map(function each(token, i) {
+      token = removeBrackets(token);
+      return !dots && i ? "[" + token + "]" : token;
+    }).join(dots ? "." : "");
+  }
+  function isFlatArray(arr) {
+    return utils_default.isArray(arr) && !arr.some(isVisitable);
+  }
+  var predicates = utils_default.toFlatObject(utils_default, {}, null, function filter(prop) {
+    return /^is[A-Z]/.test(prop);
+  });
+  function toFormData(obj, formData, options) {
+    if (!utils_default.isObject(obj)) {
+      throw new TypeError("target must be an object");
+    }
+    formData = formData || new (null_default || FormData)();
+    options = utils_default.toFlatObject(
+      options,
+      {
+        metaTokens: true,
+        dots: false,
+        indexes: false
+      },
+      false,
+      function defined(option, source) {
+        return !utils_default.isUndefined(source[option]);
+      }
+    );
+    const metaTokens = options.metaTokens;
+    const visitor = options.visitor || defaultVisitor;
+    const dots = options.dots;
+    const indexes = options.indexes;
+    const _Blob = options.Blob || typeof Blob !== "undefined" && Blob;
+    const maxDepth = options.maxDepth === void 0 ? 100 : options.maxDepth;
+    const useBlob = _Blob && utils_default.isSpecCompliantForm(formData);
+    if (!utils_default.isFunction(visitor)) {
+      throw new TypeError("visitor must be a function");
+    }
+    function convertValue(value) {
+      if (value === null) return "";
+      if (utils_default.isDate(value)) {
+        return value.toISOString();
+      }
+      if (utils_default.isBoolean(value)) {
+        return value.toString();
+      }
+      if (!useBlob && utils_default.isBlob(value)) {
+        throw new AxiosError_default("Blob is not supported. Use a Buffer instead.");
+      }
+      if (utils_default.isArrayBuffer(value) || utils_default.isTypedArray(value)) {
+        return useBlob && typeof Blob === "function" ? new Blob([value]) : Buffer.from(value);
+      }
+      return value;
+    }
+    function defaultVisitor(value, key, path) {
+      let arr = value;
+      if (utils_default.isReactNative(formData) && utils_default.isReactNativeBlob(value)) {
+        formData.append(renderKey(path, key, dots), convertValue(value));
+        return false;
+      }
+      if (value && !path && typeof value === "object") {
+        if (utils_default.endsWith(key, "{}")) {
+          key = metaTokens ? key : key.slice(0, -2);
+          value = JSON.stringify(value);
+        } else if (utils_default.isArray(value) && isFlatArray(value) || (utils_default.isFileList(value) || utils_default.endsWith(key, "[]")) && (arr = utils_default.toArray(value))) {
+          key = removeBrackets(key);
+          arr.forEach(function each(el, index) {
+            !(utils_default.isUndefined(el) || el === null) && formData.append(
+              // eslint-disable-next-line no-nested-ternary
+              indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + "[]",
+              convertValue(el)
+            );
+          });
+          return false;
+        }
+      }
+      if (isVisitable(value)) {
+        return true;
+      }
+      formData.append(renderKey(path, key, dots), convertValue(value));
+      return false;
+    }
+    const stack = [];
+    const exposedHelpers = Object.assign(predicates, {
+      defaultVisitor,
+      convertValue,
+      isVisitable
+    });
+    function build(value, path, depth = 0) {
+      if (utils_default.isUndefined(value)) return;
+      if (depth > maxDepth) {
+        throw new AxiosError_default(
+          "Object is too deeply nested (" + depth + " levels). Max depth: " + maxDepth,
+          AxiosError_default.ERR_FORM_DATA_DEPTH_EXCEEDED
+        );
+      }
+      if (stack.indexOf(value) !== -1) {
+        throw Error("Circular reference detected in " + path.join("."));
+      }
+      stack.push(value);
+      utils_default.forEach(value, function each(el, key) {
+        const result = !(utils_default.isUndefined(el) || el === null) && visitor.call(formData, el, utils_default.isString(key) ? key.trim() : key, path, exposedHelpers);
+        if (result === true) {
+          build(el, path ? path.concat(key) : [key], depth + 1);
+        }
+      });
+      stack.pop();
+    }
+    if (!utils_default.isObject(obj)) {
+      throw new TypeError("data must be an object");
+    }
+    build(obj);
+    return formData;
+  }
+  var toFormData_default = toFormData;
+
+  // node_modules/axios/lib/helpers/AxiosURLSearchParams.js
+  function encode(str) {
+    const charMap = {
+      "!": "%21",
+      "'": "%27",
+      "(": "%28",
+      ")": "%29",
+      "~": "%7E",
+      "%20": "+"
+    };
+    return encodeURIComponent(str).replace(/[!'()~]|%20/g, function replacer(match) {
+      return charMap[match];
+    });
+  }
+  function AxiosURLSearchParams(params, options) {
+    this._pairs = [];
+    params && toFormData_default(params, this, options);
+  }
+  var prototype = AxiosURLSearchParams.prototype;
+  prototype.append = function append(name, value) {
+    this._pairs.push([name, value]);
+  };
+  prototype.toString = function toString2(encoder) {
+    const _encode = encoder ? function(value) {
+      return encoder.call(this, value, encode);
+    } : encode;
+    return this._pairs.map(function each(pair) {
+      return _encode(pair[0]) + "=" + _encode(pair[1]);
+    }, "").join("&");
+  };
+  var AxiosURLSearchParams_default = AxiosURLSearchParams;
+
+  // node_modules/axios/lib/helpers/buildURL.js
+  function encode2(val) {
+    return encodeURIComponent(val).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+");
+  }
+  function buildURL(url2, params, options) {
+    if (!params) {
+      return url2;
+    }
+    const _encode = options && options.encode || encode2;
+    const _options = utils_default.isFunction(options) ? {
+      serialize: options
+    } : options;
+    const serializeFn = _options && _options.serialize;
+    let serializedParams;
+    if (serializeFn) {
+      serializedParams = serializeFn(params, _options);
+    } else {
+      serializedParams = utils_default.isURLSearchParams(params) ? params.toString() : new AxiosURLSearchParams_default(params, _options).toString(_encode);
+    }
+    if (serializedParams) {
+      const hashmarkIndex = url2.indexOf("#");
+      if (hashmarkIndex !== -1) {
+        url2 = url2.slice(0, hashmarkIndex);
+      }
+      url2 += (url2.indexOf("?") === -1 ? "?" : "&") + serializedParams;
+    }
+    return url2;
+  }
+
+  // node_modules/axios/lib/core/InterceptorManager.js
+  var InterceptorManager = class {
+    constructor() {
+      this.handlers = [];
+    }
+    /**
+     * Add a new interceptor to the stack
+     *
+     * @param {Function} fulfilled The function to handle `then` for a `Promise`
+     * @param {Function} rejected The function to handle `reject` for a `Promise`
+     * @param {Object} options The options for the interceptor, synchronous and runWhen
+     *
+     * @return {Number} An ID used to remove interceptor later
+     */
+    use(fulfilled, rejected, options) {
+      this.handlers.push({
+        fulfilled,
+        rejected,
+        synchronous: options ? options.synchronous : false,
+        runWhen: options ? options.runWhen : null
+      });
+      return this.handlers.length - 1;
+    }
+    /**
+     * Remove an interceptor from the stack
+     *
+     * @param {Number} id The ID that was returned by `use`
+     *
+     * @returns {void}
+     */
+    eject(id) {
+      if (this.handlers[id]) {
+        this.handlers[id] = null;
+      }
+    }
+    /**
+     * Clear all interceptors from the stack
+     *
+     * @returns {void}
+     */
+    clear() {
+      if (this.handlers) {
+        this.handlers = [];
+      }
+    }
+    /**
+     * Iterate over all the registered interceptors
+     *
+     * This method is particularly useful for skipping over any
+     * interceptors that may have become `null` calling `eject`.
+     *
+     * @param {Function} fn The function to call for each interceptor
+     *
+     * @returns {void}
+     */
+    forEach(fn) {
+      utils_default.forEach(this.handlers, function forEachHandler(h) {
+        if (h !== null) {
+          fn(h);
+        }
+      });
+    }
+  };
+  var InterceptorManager_default = InterceptorManager;
+
+  // node_modules/axios/lib/defaults/transitional.js
+  var transitional_default = {
+    silentJSONParsing: true,
+    forcedJSONParsing: true,
+    clarifyTimeoutError: false,
+    legacyInterceptorReqResOrdering: true
+  };
+
+  // node_modules/axios/lib/platform/browser/classes/URLSearchParams.js
+  var URLSearchParams_default = typeof URLSearchParams !== "undefined" ? URLSearchParams : AxiosURLSearchParams_default;
+
+  // node_modules/axios/lib/platform/browser/classes/FormData.js
+  var FormData_default = typeof FormData !== "undefined" ? FormData : null;
+
+  // node_modules/axios/lib/platform/browser/classes/Blob.js
+  var Blob_default = typeof Blob !== "undefined" ? Blob : null;
+
+  // node_modules/axios/lib/platform/browser/index.js
+  var browser_default = {
+    isBrowser: true,
+    classes: {
+      URLSearchParams: URLSearchParams_default,
+      FormData: FormData_default,
+      Blob: Blob_default
+    },
+    protocols: ["http", "https", "file", "blob", "url", "data"]
+  };
+
+  // node_modules/axios/lib/platform/common/utils.js
+  var utils_exports = {};
+  __export(utils_exports, {
+    hasBrowserEnv: () => hasBrowserEnv,
+    hasStandardBrowserEnv: () => hasStandardBrowserEnv,
+    hasStandardBrowserWebWorkerEnv: () => hasStandardBrowserWebWorkerEnv,
+    navigator: () => _navigator,
+    origin: () => origin
+  });
+  var hasBrowserEnv = typeof window !== "undefined" && typeof document !== "undefined";
+  var _navigator = typeof navigator === "object" && navigator || void 0;
+  var hasStandardBrowserEnv = hasBrowserEnv && (!_navigator || ["ReactNative", "NativeScript", "NS"].indexOf(_navigator.product) < 0);
+  var hasStandardBrowserWebWorkerEnv = (() => {
+    return typeof WorkerGlobalScope !== "undefined" && // eslint-disable-next-line no-undef
+    self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
+  })();
+  var origin = hasBrowserEnv && window.location.href || "http://localhost";
+
+  // node_modules/axios/lib/platform/index.js
+  var platform_default = {
+    ...utils_exports,
+    ...browser_default
+  };
+
+  // node_modules/axios/lib/helpers/toURLEncodedForm.js
+  function toURLEncodedForm(data6, options) {
+    return toFormData_default(data6, new platform_default.classes.URLSearchParams(), {
+      visitor: function(value, key, path, helpers) {
+        if (platform_default.isNode && utils_default.isBuffer(value)) {
+          this.append(key, value.toString("base64"));
+          return false;
+        }
+        return helpers.defaultVisitor.apply(this, arguments);
+      },
+      ...options
+    });
+  }
+
+  // node_modules/axios/lib/helpers/formDataToJSON.js
+  function parsePropPath(name) {
+    return utils_default.matchAll(/\w+|\[(\w*)]/g, name).map((match) => {
+      return match[0] === "[]" ? "" : match[1] || match[0];
+    });
+  }
+  function arrayToObject(arr) {
+    const obj = {};
+    const keys = Object.keys(arr);
+    let i;
+    const len = keys.length;
+    let key;
+    for (i = 0; i < len; i++) {
+      key = keys[i];
+      obj[key] = arr[key];
+    }
+    return obj;
+  }
+  function formDataToJSON(formData) {
+    function buildPath(path, value, target, index) {
+      let name = path[index++];
+      if (name === "__proto__") return true;
+      const isNumericKey = Number.isFinite(+name);
+      const isLast = index >= path.length;
+      name = !name && utils_default.isArray(target) ? target.length : name;
+      if (isLast) {
+        if (utils_default.hasOwnProp(target, name)) {
+          target[name] = utils_default.isArray(target[name]) ? target[name].concat(value) : [target[name], value];
+        } else {
+          target[name] = value;
+        }
+        return !isNumericKey;
+      }
+      if (!utils_default.hasOwnProp(target, name) || !utils_default.isObject(target[name])) {
+        target[name] = [];
+      }
+      const result = buildPath(path, value, target[name], index);
+      if (result && utils_default.isArray(target[name])) {
+        target[name] = arrayToObject(target[name]);
+      }
+      return !isNumericKey;
+    }
+    if (utils_default.isFormData(formData) && utils_default.isFunction(formData.entries)) {
+      const obj = {};
+      utils_default.forEachEntry(formData, (name, value) => {
+        buildPath(parsePropPath(name), value, obj, 0);
+      });
+      return obj;
+    }
+    return null;
+  }
+  var formDataToJSON_default = formDataToJSON;
+
+  // node_modules/axios/lib/defaults/index.js
+  var own = (obj, key) => obj != null && utils_default.hasOwnProp(obj, key) ? obj[key] : void 0;
+  function stringifySafely(rawValue, parser, encoder) {
+    if (utils_default.isString(rawValue)) {
+      try {
+        (parser || JSON.parse)(rawValue);
+        return utils_default.trim(rawValue);
+      } catch (e) {
+        if (e.name !== "SyntaxError") {
+          throw e;
+        }
+      }
+    }
+    return (encoder || JSON.stringify)(rawValue);
+  }
+  var defaults = {
+    transitional: transitional_default,
+    adapter: ["xhr", "http", "fetch"],
+    transformRequest: [
+      function transformRequest(data6, headers) {
+        const contentType = headers.getContentType() || "";
+        const hasJSONContentType = contentType.indexOf("application/json") > -1;
+        const isObjectPayload = utils_default.isObject(data6);
+        if (isObjectPayload && utils_default.isHTMLForm(data6)) {
+          data6 = new FormData(data6);
+        }
+        const isFormData2 = utils_default.isFormData(data6);
+        if (isFormData2) {
+          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data6)) : data6;
+        }
+        if (utils_default.isArrayBuffer(data6) || utils_default.isBuffer(data6) || utils_default.isStream(data6) || utils_default.isFile(data6) || utils_default.isBlob(data6) || utils_default.isReadableStream(data6)) {
+          return data6;
+        }
+        if (utils_default.isArrayBufferView(data6)) {
+          return data6.buffer;
+        }
+        if (utils_default.isURLSearchParams(data6)) {
+          headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
+          return data6.toString();
+        }
+        let isFileList2;
+        if (isObjectPayload) {
+          const formSerializer = own(this, "formSerializer");
+          if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
+            return toURLEncodedForm(data6, formSerializer).toString();
+          }
+          if ((isFileList2 = utils_default.isFileList(data6)) || contentType.indexOf("multipart/form-data") > -1) {
+            const env = own(this, "env");
+            const _FormData = env && env.FormData;
+            return toFormData_default(
+              isFileList2 ? { "files[]": data6 } : data6,
+              _FormData && new _FormData(),
+              formSerializer
+            );
+          }
+        }
+        if (isObjectPayload || hasJSONContentType) {
+          headers.setContentType("application/json", false);
+          return stringifySafely(data6);
+        }
+        return data6;
+      }
+    ],
+    transformResponse: [
+      function transformResponse(data6) {
+        const transitional2 = own(this, "transitional") || defaults.transitional;
+        const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
+        const responseType = own(this, "responseType");
+        const JSONRequested = responseType === "json";
+        if (utils_default.isResponse(data6) || utils_default.isReadableStream(data6)) {
+          return data6;
+        }
+        if (data6 && utils_default.isString(data6) && (forcedJSONParsing && !responseType || JSONRequested)) {
+          const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
+          const strictJSONParsing = !silentJSONParsing && JSONRequested;
+          try {
+            return JSON.parse(data6, own(this, "parseReviver"));
+          } catch (e) {
+            if (strictJSONParsing) {
+              if (e.name === "SyntaxError") {
+                throw AxiosError_default.from(e, AxiosError_default.ERR_BAD_RESPONSE, this, null, own(this, "response"));
+              }
+              throw e;
             }
-            return undefined;
+          }
+        }
+        return data6;
+      }
+    ],
+    /**
+     * A timeout in milliseconds to abort a request. If set to 0 (default) a
+     * timeout is not created.
+     */
+    timeout: 0,
+    xsrfCookieName: "XSRF-TOKEN",
+    xsrfHeaderName: "X-XSRF-TOKEN",
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: {
+      FormData: platform_default.classes.FormData,
+      Blob: platform_default.classes.Blob
+    },
+    validateStatus: function validateStatus(status) {
+      return status >= 200 && status < 300;
+    },
+    headers: {
+      common: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": void 0
+      }
+    }
+  };
+  utils_default.forEach(["delete", "get", "head", "post", "put", "patch", "query"], (method) => {
+    defaults.headers[method] = {};
+  });
+  var defaults_default = defaults;
+
+  // node_modules/axios/lib/core/transformData.js
+  function transformData(fns, response) {
+    const config = this || defaults_default;
+    const context = response || config;
+    const headers = AxiosHeaders_default.from(context.headers);
+    let data6 = context.data;
+    utils_default.forEach(fns, function transform(fn) {
+      data6 = fn.call(config, data6, headers.normalize(), response ? response.status : void 0);
+    });
+    headers.normalize();
+    return data6;
+  }
+
+  // node_modules/axios/lib/cancel/isCancel.js
+  function isCancel(value) {
+    return !!(value && value.__CANCEL__);
+  }
+
+  // node_modules/axios/lib/cancel/CanceledError.js
+  var CanceledError = class extends AxiosError_default {
+    /**
+     * A `CanceledError` is an object that is thrown when an operation is canceled.
+     *
+     * @param {string=} message The message.
+     * @param {Object=} config The config.
+     * @param {Object=} request The request.
+     *
+     * @returns {CanceledError} The created error.
+     */
+    constructor(message, config, request) {
+      super(message == null ? "canceled" : message, AxiosError_default.ERR_CANCELED, config, request);
+      this.name = "CanceledError";
+      this.__CANCEL__ = true;
+    }
+  };
+  var CanceledError_default = CanceledError;
+
+  // node_modules/axios/lib/core/settle.js
+  function settle(resolve, reject, response) {
+    const validateStatus2 = response.config.validateStatus;
+    if (!response.status || !validateStatus2 || validateStatus2(response.status)) {
+      resolve(response);
+    } else {
+      reject(new AxiosError_default(
+        "Request failed with status code " + response.status,
+        response.status >= 400 && response.status < 500 ? AxiosError_default.ERR_BAD_REQUEST : AxiosError_default.ERR_BAD_RESPONSE,
+        response.config,
+        response.request,
+        response
+      ));
+    }
+  }
+
+  // node_modules/axios/lib/helpers/parseProtocol.js
+  function parseProtocol(url2) {
+    const match = /^([-+\w]{1,25}):(?:\/\/)?/.exec(url2);
+    return match && match[1] || "";
+  }
+
+  // node_modules/axios/lib/helpers/speedometer.js
+  function speedometer(samplesCount, min) {
+    samplesCount = samplesCount || 10;
+    const bytes = new Array(samplesCount);
+    const timestamps = new Array(samplesCount);
+    let head = 0;
+    let tail = 0;
+    let firstSampleTS;
+    min = min !== void 0 ? min : 1e3;
+    return function push(chunkLength) {
+      const now = Date.now();
+      const startedAt = timestamps[tail];
+      if (!firstSampleTS) {
+        firstSampleTS = now;
+      }
+      bytes[head] = chunkLength;
+      timestamps[head] = now;
+      let i = tail;
+      let bytesCount = 0;
+      while (i !== head) {
+        bytesCount += bytes[i++];
+        i = i % samplesCount;
+      }
+      head = (head + 1) % samplesCount;
+      if (head === tail) {
+        tail = (tail + 1) % samplesCount;
+      }
+      if (now - firstSampleTS < min) {
+        return;
+      }
+      const passed = startedAt && now - startedAt;
+      return passed ? Math.round(bytesCount * 1e3 / passed) : void 0;
+    };
+  }
+  var speedometer_default = speedometer;
+
+  // node_modules/axios/lib/helpers/throttle.js
+  function throttle(fn, freq) {
+    let timestamp = 0;
+    let threshold = 1e3 / freq;
+    let lastArgs;
+    let timer;
+    const invoke = (args, now = Date.now()) => {
+      timestamp = now;
+      lastArgs = null;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      fn(...args);
+    };
+    const throttled = (...args) => {
+      const now = Date.now();
+      const passed = now - timestamp;
+      if (passed >= threshold) {
+        invoke(args, now);
+      } else {
+        lastArgs = args;
+        if (!timer) {
+          timer = setTimeout(() => {
+            timer = null;
+            invoke(lastArgs);
+          }, threshold - passed);
+        }
+      }
+    };
+    const flush = () => lastArgs && invoke(lastArgs);
+    return [throttled, flush];
+  }
+  var throttle_default = throttle;
+
+  // node_modules/axios/lib/helpers/progressEventReducer.js
+  var progressEventReducer = (listener, isDownloadStream, freq = 3) => {
+    let bytesNotified = 0;
+    const _speedometer = speedometer_default(50, 250);
+    return throttle_default((e) => {
+      if (!e || typeof e.loaded !== "number") {
+        return;
+      }
+      const rawLoaded = e.loaded;
+      const total = e.lengthComputable ? e.total : void 0;
+      const loaded = total != null ? Math.min(rawLoaded, total) : rawLoaded;
+      const progressBytes = Math.max(0, loaded - bytesNotified);
+      const rate = _speedometer(progressBytes);
+      bytesNotified = Math.max(bytesNotified, loaded);
+      const data6 = {
+        loaded,
+        total,
+        progress: total ? loaded / total : void 0,
+        bytes: progressBytes,
+        rate: rate ? rate : void 0,
+        estimated: rate && total ? (total - loaded) / rate : void 0,
+        event: e,
+        lengthComputable: total != null,
+        [isDownloadStream ? "download" : "upload"]: true
+      };
+      listener(data6);
+    }, freq);
+  };
+  var progressEventDecorator = (total, throttled) => {
+    const lengthComputable = total != null;
+    return [
+      (loaded) => throttled[0]({
+        lengthComputable,
+        total,
+        loaded
+      }),
+      throttled[1]
+    ];
+  };
+  var asyncDecorator = (fn) => (...args) => utils_default.asap(() => fn(...args));
+
+  // node_modules/axios/lib/helpers/isURLSameOrigin.js
+  var isURLSameOrigin_default = platform_default.hasStandardBrowserEnv ? /* @__PURE__ */ ((origin2, isMSIE) => (url2) => {
+    url2 = new URL(url2, platform_default.origin);
+    return origin2.protocol === url2.protocol && origin2.host === url2.host && (isMSIE || origin2.port === url2.port);
+  })(
+    new URL(platform_default.origin),
+    platform_default.navigator && /(msie|trident)/i.test(platform_default.navigator.userAgent)
+  ) : () => true;
+
+  // node_modules/axios/lib/helpers/cookies.js
+  var cookies_default = platform_default.hasStandardBrowserEnv ? (
+    // Standard browser envs support document.cookie
+    {
+      write(name, value, expires, path, domain, secure, sameSite) {
+        if (typeof document === "undefined") return;
+        const cookie = [`${name}=${encodeURIComponent(value)}`];
+        if (utils_default.isNumber(expires)) {
+          cookie.push(`expires=${new Date(expires).toUTCString()}`);
+        }
+        if (utils_default.isString(path)) {
+          cookie.push(`path=${path}`);
+        }
+        if (utils_default.isString(domain)) {
+          cookie.push(`domain=${domain}`);
+        }
+        if (secure === true) {
+          cookie.push("secure");
+        }
+        if (utils_default.isString(sameSite)) {
+          cookie.push(`SameSite=${sameSite}`);
+        }
+        document.cookie = cookie.join("; ");
+      },
+      read(name) {
+        if (typeof document === "undefined") return null;
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].replace(/^\s+/, "");
+          const eq = cookie.indexOf("=");
+          if (eq !== -1 && cookie.slice(0, eq) === name) {
+            return decodeURIComponent(cookie.slice(eq + 1));
+          }
         }
         return null;
-    };
-})(cookie || (cookie = {}));
-const DB_NAME = 'rol04';
-const STORES = [
-    'questions',
-    'images',
-    'answers',
-    'statistics',
-    'logs',
-];
-const DB_VERSION = STORES.length;
-let dbPromise = null;
-const promisifyRequest = (request) => new Promise((resolve, reject) => {
-    request.oncomplete = request.onsuccess = () => resolve(request.result);
-    request.onabort = request.onerror = () => reject(request.error);
-});
-const openDb = async () => {
-    if (dbPromise) {
-        return dbPromise;
+      },
+      remove(name) {
+        this.write(name, "", Date.now() - 864e5, "/");
+      }
     }
-    dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = () => {
-            const db = request.result;
-            for (const storeName of STORES) {
-                if (!db.objectStoreNames.contains(storeName)) {
-                    db.createObjectStore(storeName);
-                }
+  ) : (
+    // Non-standard browser env (web workers, react-native) lack needed support.
+    {
+      write() {
+      },
+      read() {
+        return null;
+      },
+      remove() {
+      }
+    }
+  );
+
+  // node_modules/axios/lib/helpers/isAbsoluteURL.js
+  function isAbsoluteURL(url2) {
+    if (typeof url2 !== "string") {
+      return false;
+    }
+    return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url2);
+  }
+
+  // node_modules/axios/lib/helpers/combineURLs.js
+  function combineURLs(baseURL, relativeURL) {
+    return relativeURL ? baseURL.replace(/\/?\/$/, "") + "/" + relativeURL.replace(/^\/+/, "") : baseURL;
+  }
+
+  // node_modules/axios/lib/core/buildFullPath.js
+  function buildFullPath(baseURL, requestedURL, allowAbsoluteUrls) {
+    let isRelativeUrl = !isAbsoluteURL(requestedURL);
+    if (baseURL && (isRelativeUrl || allowAbsoluteUrls === false)) {
+      return combineURLs(baseURL, requestedURL);
+    }
+    return requestedURL;
+  }
+
+  // node_modules/axios/lib/core/mergeConfig.js
+  var headersToObject = (thing) => thing instanceof AxiosHeaders_default ? { ...thing } : thing;
+  function mergeConfig(config1, config2) {
+    config2 = config2 || {};
+    const config = /* @__PURE__ */ Object.create(null);
+    Object.defineProperty(config, "hasOwnProperty", {
+      // Null-proto descriptor so a polluted Object.prototype.get cannot turn
+      // this data descriptor into an accessor descriptor on the way in.
+      __proto__: null,
+      value: Object.prototype.hasOwnProperty,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+    function getMergedValue(target, source, prop, caseless) {
+      if (utils_default.isPlainObject(target) && utils_default.isPlainObject(source)) {
+        return utils_default.merge.call({ caseless }, target, source);
+      } else if (utils_default.isPlainObject(source)) {
+        return utils_default.merge({}, source);
+      } else if (utils_default.isArray(source)) {
+        return source.slice();
+      }
+      return source;
+    }
+    function mergeDeepProperties(a, b, prop, caseless) {
+      if (!utils_default.isUndefined(b)) {
+        return getMergedValue(a, b, prop, caseless);
+      } else if (!utils_default.isUndefined(a)) {
+        return getMergedValue(void 0, a, prop, caseless);
+      }
+    }
+    function valueFromConfig2(a, b) {
+      if (!utils_default.isUndefined(b)) {
+        return getMergedValue(void 0, b);
+      }
+    }
+    function defaultToConfig2(a, b) {
+      if (!utils_default.isUndefined(b)) {
+        return getMergedValue(void 0, b);
+      } else if (!utils_default.isUndefined(a)) {
+        return getMergedValue(void 0, a);
+      }
+    }
+    function mergeDirectKeys(a, b, prop) {
+      if (utils_default.hasOwnProp(config2, prop)) {
+        return getMergedValue(a, b);
+      } else if (utils_default.hasOwnProp(config1, prop)) {
+        return getMergedValue(void 0, a);
+      }
+    }
+    const mergeMap = {
+      url: valueFromConfig2,
+      method: valueFromConfig2,
+      data: valueFromConfig2,
+      baseURL: defaultToConfig2,
+      transformRequest: defaultToConfig2,
+      transformResponse: defaultToConfig2,
+      paramsSerializer: defaultToConfig2,
+      timeout: defaultToConfig2,
+      timeoutMessage: defaultToConfig2,
+      withCredentials: defaultToConfig2,
+      withXSRFToken: defaultToConfig2,
+      adapter: defaultToConfig2,
+      responseType: defaultToConfig2,
+      xsrfCookieName: defaultToConfig2,
+      xsrfHeaderName: defaultToConfig2,
+      onUploadProgress: defaultToConfig2,
+      onDownloadProgress: defaultToConfig2,
+      decompress: defaultToConfig2,
+      maxContentLength: defaultToConfig2,
+      maxBodyLength: defaultToConfig2,
+      beforeRedirect: defaultToConfig2,
+      transport: defaultToConfig2,
+      httpAgent: defaultToConfig2,
+      httpsAgent: defaultToConfig2,
+      cancelToken: defaultToConfig2,
+      socketPath: defaultToConfig2,
+      allowedSocketPaths: defaultToConfig2,
+      responseEncoding: defaultToConfig2,
+      validateStatus: mergeDirectKeys,
+      headers: (a, b, prop) => mergeDeepProperties(headersToObject(a), headersToObject(b), prop, true)
+    };
+    utils_default.forEach(Object.keys({ ...config1, ...config2 }), function computeConfigValue(prop) {
+      if (prop === "__proto__" || prop === "constructor" || prop === "prototype") return;
+      const merge2 = utils_default.hasOwnProp(mergeMap, prop) ? mergeMap[prop] : mergeDeepProperties;
+      const a = utils_default.hasOwnProp(config1, prop) ? config1[prop] : void 0;
+      const b = utils_default.hasOwnProp(config2, prop) ? config2[prop] : void 0;
+      const configValue = merge2(a, b, prop);
+      utils_default.isUndefined(configValue) && merge2 !== mergeDirectKeys || (config[prop] = configValue);
+    });
+    return config;
+  }
+
+  // node_modules/axios/lib/helpers/resolveConfig.js
+  var FORM_DATA_CONTENT_HEADERS = ["content-type", "content-length"];
+  function setFormDataHeaders(headers, formHeaders, policy) {
+    if (policy !== "content-only") {
+      headers.set(formHeaders);
+      return;
+    }
+    Object.entries(formHeaders).forEach(([key, val]) => {
+      if (FORM_DATA_CONTENT_HEADERS.includes(key.toLowerCase())) {
+        headers.set(key, val);
+      }
+    });
+  }
+  var encodeUTF8 = (str) => encodeURIComponent(str).replace(
+    /%([0-9A-F]{2})/gi,
+    (_, hex) => String.fromCharCode(parseInt(hex, 16))
+  );
+  var resolveConfig_default = (config) => {
+    const newConfig = mergeConfig({}, config);
+    const own2 = (key) => utils_default.hasOwnProp(newConfig, key) ? newConfig[key] : void 0;
+    const data6 = own2("data");
+    let withXSRFToken = own2("withXSRFToken");
+    const xsrfHeaderName = own2("xsrfHeaderName");
+    const xsrfCookieName = own2("xsrfCookieName");
+    let headers = own2("headers");
+    const auth = own2("auth");
+    const baseURL = own2("baseURL");
+    const allowAbsoluteUrls = own2("allowAbsoluteUrls");
+    const url2 = own2("url");
+    newConfig.headers = headers = AxiosHeaders_default.from(headers);
+    newConfig.url = buildURL(
+      buildFullPath(baseURL, url2, allowAbsoluteUrls),
+      config.params,
+      config.paramsSerializer
+    );
+    if (auth) {
+      headers.set(
+        "Authorization",
+        "Basic " + btoa((auth.username || "") + ":" + (auth.password ? encodeUTF8(auth.password) : ""))
+      );
+    }
+    if (utils_default.isFormData(data6)) {
+      if (platform_default.hasStandardBrowserEnv || platform_default.hasStandardBrowserWebWorkerEnv) {
+        headers.setContentType(void 0);
+      } else if (utils_default.isFunction(data6.getHeaders)) {
+        setFormDataHeaders(headers, data6.getHeaders(), own2("formDataHeaderPolicy"));
+      }
+    }
+    if (platform_default.hasStandardBrowserEnv) {
+      if (utils_default.isFunction(withXSRFToken)) {
+        withXSRFToken = withXSRFToken(newConfig);
+      }
+      const shouldSendXSRF = withXSRFToken === true || withXSRFToken == null && isURLSameOrigin_default(newConfig.url);
+      if (shouldSendXSRF) {
+        const xsrfValue = xsrfHeaderName && xsrfCookieName && cookies_default.read(xsrfCookieName);
+        if (xsrfValue) {
+          headers.set(xsrfHeaderName, xsrfValue);
+        }
+      }
+    }
+    return newConfig;
+  };
+
+  // node_modules/axios/lib/adapters/xhr.js
+  var isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
+  var xhr_default = isXHRAdapterSupported && function(config) {
+    return new Promise(function dispatchXhrRequest(resolve, reject) {
+      const _config = resolveConfig_default(config);
+      let requestData = _config.data;
+      const requestHeaders = AxiosHeaders_default.from(_config.headers).normalize();
+      let { responseType, onUploadProgress, onDownloadProgress } = _config;
+      let onCanceled;
+      let uploadThrottled, downloadThrottled;
+      let flushUpload, flushDownload;
+      function done() {
+        flushUpload && flushUpload();
+        flushDownload && flushDownload();
+        _config.cancelToken && _config.cancelToken.unsubscribe(onCanceled);
+        _config.signal && _config.signal.removeEventListener("abort", onCanceled);
+      }
+      let request = new XMLHttpRequest();
+      request.open(_config.method.toUpperCase(), _config.url, true);
+      request.timeout = _config.timeout;
+      function onloadend() {
+        if (!request) {
+          return;
+        }
+        const responseHeaders = AxiosHeaders_default.from(
+          "getAllResponseHeaders" in request && request.getAllResponseHeaders()
+        );
+        const responseData = !responseType || responseType === "text" || responseType === "json" ? request.responseText : request.response;
+        const response = {
+          data: responseData,
+          status: request.status,
+          statusText: request.statusText,
+          headers: responseHeaders,
+          config,
+          request
+        };
+        settle(
+          function _resolve(value) {
+            resolve(value);
+            done();
+          },
+          function _reject(err) {
+            reject(err);
+            done();
+          },
+          response
+        );
+        request = null;
+      }
+      if ("onloadend" in request) {
+        request.onloadend = onloadend;
+      } else {
+        request.onreadystatechange = function handleLoad() {
+          if (!request || request.readyState !== 4) {
+            return;
+          }
+          if (request.status === 0 && !(request.responseURL && request.responseURL.startsWith("file:"))) {
+            return;
+          }
+          setTimeout(onloadend);
+        };
+      }
+      request.onabort = function handleAbort() {
+        if (!request) {
+          return;
+        }
+        reject(new AxiosError_default("Request aborted", AxiosError_default.ECONNABORTED, config, request));
+        done();
+        request = null;
+      };
+      request.onerror = function handleError(event) {
+        const msg = event && event.message ? event.message : "Network Error";
+        const err = new AxiosError_default(msg, AxiosError_default.ERR_NETWORK, config, request);
+        err.event = event || null;
+        reject(err);
+        done();
+        request = null;
+      };
+      request.ontimeout = function handleTimeout() {
+        let timeoutErrorMessage = _config.timeout ? "timeout of " + _config.timeout + "ms exceeded" : "timeout exceeded";
+        const transitional2 = _config.transitional || transitional_default;
+        if (_config.timeoutErrorMessage) {
+          timeoutErrorMessage = _config.timeoutErrorMessage;
+        }
+        reject(
+          new AxiosError_default(
+            timeoutErrorMessage,
+            transitional2.clarifyTimeoutError ? AxiosError_default.ETIMEDOUT : AxiosError_default.ECONNABORTED,
+            config,
+            request
+          )
+        );
+        done();
+        request = null;
+      };
+      requestData === void 0 && requestHeaders.setContentType(null);
+      if ("setRequestHeader" in request) {
+        utils_default.forEach(toByteStringHeaderObject(requestHeaders), function setRequestHeader(val, key) {
+          request.setRequestHeader(key, val);
+        });
+      }
+      if (!utils_default.isUndefined(_config.withCredentials)) {
+        request.withCredentials = !!_config.withCredentials;
+      }
+      if (responseType && responseType !== "json") {
+        request.responseType = _config.responseType;
+      }
+      if (onDownloadProgress) {
+        [downloadThrottled, flushDownload] = progressEventReducer(onDownloadProgress, true);
+        request.addEventListener("progress", downloadThrottled);
+      }
+      if (onUploadProgress && request.upload) {
+        [uploadThrottled, flushUpload] = progressEventReducer(onUploadProgress);
+        request.upload.addEventListener("progress", uploadThrottled);
+        request.upload.addEventListener("loadend", flushUpload);
+      }
+      if (_config.cancelToken || _config.signal) {
+        onCanceled = (cancel) => {
+          if (!request) {
+            return;
+          }
+          reject(!cancel || cancel.type ? new CanceledError_default(null, config, request) : cancel);
+          request.abort();
+          done();
+          request = null;
+        };
+        _config.cancelToken && _config.cancelToken.subscribe(onCanceled);
+        if (_config.signal) {
+          _config.signal.aborted ? onCanceled() : _config.signal.addEventListener("abort", onCanceled);
+        }
+      }
+      const protocol = parseProtocol(_config.url);
+      if (protocol && !platform_default.protocols.includes(protocol)) {
+        reject(
+          new AxiosError_default(
+            "Unsupported protocol " + protocol + ":",
+            AxiosError_default.ERR_BAD_REQUEST,
+            config
+          )
+        );
+        return;
+      }
+      request.send(requestData || null);
+    });
+  };
+
+  // node_modules/axios/lib/helpers/composeSignals.js
+  var composeSignals = (signals, timeout) => {
+    signals = signals ? signals.filter(Boolean) : [];
+    if (!timeout && !signals.length) {
+      return;
+    }
+    const controller = new AbortController();
+    let aborted = false;
+    const onabort = function(reason) {
+      if (!aborted) {
+        aborted = true;
+        unsubscribe();
+        const err = reason instanceof Error ? reason : this.reason;
+        controller.abort(
+          err instanceof AxiosError_default ? err : new CanceledError_default(err instanceof Error ? err.message : err)
+        );
+      }
+    };
+    let timer = timeout && setTimeout(() => {
+      timer = null;
+      onabort(new AxiosError_default(`timeout of ${timeout}ms exceeded`, AxiosError_default.ETIMEDOUT));
+    }, timeout);
+    const unsubscribe = () => {
+      if (!signals) {
+        return;
+      }
+      timer && clearTimeout(timer);
+      timer = null;
+      signals.forEach((signal2) => {
+        signal2.unsubscribe ? signal2.unsubscribe(onabort) : signal2.removeEventListener("abort", onabort);
+      });
+      signals = null;
+    };
+    signals.forEach((signal2) => signal2.addEventListener("abort", onabort));
+    const { signal } = controller;
+    signal.unsubscribe = () => utils_default.asap(unsubscribe);
+    return signal;
+  };
+  var composeSignals_default = composeSignals;
+
+  // node_modules/axios/lib/helpers/trackStream.js
+  var streamChunk = function* (chunk, chunkSize) {
+    let len = chunk.byteLength;
+    if (!chunkSize || len < chunkSize) {
+      yield chunk;
+      return;
+    }
+    let pos = 0;
+    let end2;
+    while (pos < len) {
+      end2 = pos + chunkSize;
+      yield chunk.slice(pos, end2);
+      pos = end2;
+    }
+  };
+  var readBytes = async function* (iterable, chunkSize) {
+    for await (const chunk of readStream(iterable)) {
+      yield* streamChunk(chunk, chunkSize);
+    }
+  };
+  var readStream = async function* (stream) {
+    if (stream[Symbol.asyncIterator]) {
+      yield* stream;
+      return;
+    }
+    const reader = stream.getReader();
+    try {
+      for (; ; ) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        yield value;
+      }
+    } finally {
+      await reader.cancel();
+    }
+  };
+  var trackStream = (stream, chunkSize, onProgress, onFinish) => {
+    const iterator2 = readBytes(stream, chunkSize);
+    let bytes = 0;
+    let done;
+    let _onFinish = (e) => {
+      if (!done) {
+        done = true;
+        onFinish && onFinish(e);
+      }
+    };
+    return new ReadableStream(
+      {
+        async pull(controller) {
+          try {
+            const { done: done2, value } = await iterator2.next();
+            if (done2) {
+              _onFinish();
+              controller.close();
+              return;
             }
-        };
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
-        request.onerror = () => {
-            reject(request.error);
-        };
-    });
-    return dbPromise;
-};
-const createStore = (storeName) => {
-    if (!STORES.includes(storeName)) {
-        throw new Error(`Unknown IndexedDB store "${storeName}". Add it to STORES.`);
+            let len = value.byteLength;
+            if (onProgress) {
+              let loadedBytes = bytes += len;
+              onProgress(loadedBytes);
+            }
+            controller.enqueue(new Uint8Array(value));
+          } catch (err) {
+            _onFinish(err);
+            throw err;
+          }
+        },
+        cancel(reason) {
+          _onFinish(reason);
+          return iterator2.return();
+        }
+      },
+      {
+        highWaterMark: 2
+      }
+    );
+  };
+
+  // node_modules/axios/lib/helpers/estimateDataURLDecodedBytes.js
+  function estimateDataURLDecodedBytes(url2) {
+    if (!url2 || typeof url2 !== "string") return 0;
+    if (!url2.startsWith("data:")) return 0;
+    const comma = url2.indexOf(",");
+    if (comma < 0) return 0;
+    const meta = url2.slice(5, comma);
+    const body = url2.slice(comma + 1);
+    const isBase64 = /;base64/i.test(meta);
+    if (isBase64) {
+      let effectiveLen = body.length;
+      const len = body.length;
+      for (let i = 0; i < len; i++) {
+        if (body.charCodeAt(i) === 37 && i + 2 < len) {
+          const a = body.charCodeAt(i + 1);
+          const b = body.charCodeAt(i + 2);
+          const isHex = (a >= 48 && a <= 57 || a >= 65 && a <= 70 || a >= 97 && a <= 102) && (b >= 48 && b <= 57 || b >= 65 && b <= 70 || b >= 97 && b <= 102);
+          if (isHex) {
+            effectiveLen -= 2;
+            i += 2;
+          }
+        }
+      }
+      let pad = 0;
+      let idx = len - 1;
+      const tailIsPct3D = (j) => j >= 2 && body.charCodeAt(j - 2) === 37 && // '%'
+      body.charCodeAt(j - 1) === 51 && // '3'
+      (body.charCodeAt(j) === 68 || body.charCodeAt(j) === 100);
+      if (idx >= 0) {
+        if (body.charCodeAt(idx) === 61) {
+          pad++;
+          idx--;
+        } else if (tailIsPct3D(idx)) {
+          pad++;
+          idx -= 3;
+        }
+      }
+      if (pad === 1 && idx >= 0) {
+        if (body.charCodeAt(idx) === 61) {
+          pad++;
+        } else if (tailIsPct3D(idx)) {
+          pad++;
+        }
+      }
+      const groups = Math.floor(effectiveLen / 4);
+      const bytes2 = groups * 3 - (pad || 0);
+      return bytes2 > 0 ? bytes2 : 0;
     }
-    return async (txMode, callback) => {
-        const db = await openDb();
-        const tx = db.transaction(storeName, txMode);
-        const store = tx.objectStore(storeName);
-        const result = await callback(store);
-        await promisifyRequest(tx);
-        return result;
-    };
-};
-const idb = (storeName) => (function () {
-    let defaultGetStoreFunc;
-    const defaultGetStore = () => {
-        if (!defaultGetStoreFunc) {
-            defaultGetStoreFunc = createStore(storeName);
+    if (typeof Buffer !== "undefined" && typeof Buffer.byteLength === "function") {
+      return Buffer.byteLength(body, "utf8");
+    }
+    let bytes = 0;
+    for (let i = 0, len = body.length; i < len; i++) {
+      const c = body.charCodeAt(i);
+      if (c < 128) {
+        bytes += 1;
+      } else if (c < 2048) {
+        bytes += 2;
+      } else if (c >= 55296 && c <= 56319 && i + 1 < len) {
+        const next = body.charCodeAt(i + 1);
+        if (next >= 56320 && next <= 57343) {
+          bytes += 4;
+          i++;
+        } else {
+          bytes += 3;
         }
-        return defaultGetStoreFunc;
-    };
-    const get = (key, customStore = defaultGetStore()) => {
-        if (key === null || key === undefined) {
-            return Promise.resolve(null);
+      } else {
+        bytes += 3;
+      }
+    }
+    return bytes;
+  }
+
+  // node_modules/axios/lib/env/data.js
+  var VERSION = "1.16.1";
+
+  // node_modules/axios/lib/adapters/fetch.js
+  var DEFAULT_CHUNK_SIZE = 64 * 1024;
+  var { isFunction: isFunction2 } = utils_default;
+  var test = (fn, ...args) => {
+    try {
+      return !!fn(...args);
+    } catch (e) {
+      return false;
+    }
+  };
+  var factory = (env) => {
+    const globalObject = utils_default.global !== void 0 && utils_default.global !== null ? utils_default.global : globalThis;
+    const { ReadableStream: ReadableStream2, TextEncoder } = globalObject;
+    env = utils_default.merge.call(
+      {
+        skipUndefined: true
+      },
+      {
+        Request: globalObject.Request,
+        Response: globalObject.Response
+      },
+      env
+    );
+    const { fetch: envFetch, Request, Response } = env;
+    const isFetchSupported = envFetch ? isFunction2(envFetch) : typeof fetch === "function";
+    const isRequestSupported = isFunction2(Request);
+    const isResponseSupported = isFunction2(Response);
+    if (!isFetchSupported) {
+      return false;
+    }
+    const isReadableStreamSupported = isFetchSupported && isFunction2(ReadableStream2);
+    const encodeText = isFetchSupported && (typeof TextEncoder === "function" ? /* @__PURE__ */ ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) : async (str) => new Uint8Array(await new Request(str).arrayBuffer()));
+    const supportsRequestStream = isRequestSupported && isReadableStreamSupported && test(() => {
+      let duplexAccessed = false;
+      const request = new Request(platform_default.origin, {
+        body: new ReadableStream2(),
+        method: "POST",
+        get duplex() {
+          duplexAccessed = true;
+          return "half";
         }
-        return customStore('readonly', async (store) => {
-            const result = await promisifyRequest(store.get(key));
-            return result ?? null;
-        });
+      });
+      const hasContentType = request.headers.has("Content-Type");
+      if (request.body != null) {
+        request.body.cancel();
+      }
+      return duplexAccessed && !hasContentType;
+    });
+    const supportsResponseStream = isResponseSupported && isReadableStreamSupported && test(() => utils_default.isReadableStream(new Response("").body));
+    const resolvers = {
+      stream: supportsResponseStream && ((res) => res.body)
     };
-    const set = (key, value, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        store.put(value, key);
-        return promisifyRequest(store.transaction);
-    });
-    const setMany = (entries, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        entries.forEach(([key, value]) => {
-            store.put(value, key);
+    isFetchSupported && (() => {
+      ["text", "arrayBuffer", "blob", "formData", "stream"].forEach((type) => {
+        !resolvers[type] && (resolvers[type] = (res, config) => {
+          let method = res && res[type];
+          if (method) {
+            return method.call(res);
+          }
+          throw new AxiosError_default(
+            `Response type '${type}' is not supported`,
+            AxiosError_default.ERR_NOT_SUPPORT,
+            config
+          );
         });
-        return promisifyRequest(store.transaction);
-    });
-    const getMany = (keys, customStore = defaultGetStore()) => customStore('readonly', (store) => Promise.all(keys.map((key) => promisifyRequest(store.get(key)))));
-    const update = (key, updater, customStore = defaultGetStore()) => customStore('readwrite', (store) => new Promise((resolve, reject) => {
-        const request = store.get(key);
-        request.onsuccess = () => {
+      });
+    })();
+    const getBodyLength = async (body) => {
+      if (body == null) {
+        return 0;
+      }
+      if (utils_default.isBlob(body)) {
+        return body.size;
+      }
+      if (utils_default.isSpecCompliantForm(body)) {
+        const _request = new Request(platform_default.origin, {
+          method: "POST",
+          body
+        });
+        return (await _request.arrayBuffer()).byteLength;
+      }
+      if (utils_default.isArrayBufferView(body) || utils_default.isArrayBuffer(body)) {
+        return body.byteLength;
+      }
+      if (utils_default.isURLSearchParams(body)) {
+        body = body + "";
+      }
+      if (utils_default.isString(body)) {
+        return (await encodeText(body)).byteLength;
+      }
+    };
+    const resolveBodyLength = async (headers, body) => {
+      const length = utils_default.toFiniteNumber(headers.getContentLength());
+      return length == null ? getBodyLength(body) : length;
+    };
+    return async (config) => {
+      let {
+        url: url2,
+        method,
+        data: data6,
+        signal,
+        cancelToken,
+        timeout,
+        onDownloadProgress,
+        onUploadProgress,
+        responseType,
+        headers,
+        withCredentials = "same-origin",
+        fetchOptions,
+        maxContentLength,
+        maxBodyLength
+      } = resolveConfig_default(config);
+      const hasMaxContentLength = utils_default.isNumber(maxContentLength) && maxContentLength > -1;
+      const hasMaxBodyLength = utils_default.isNumber(maxBodyLength) && maxBodyLength > -1;
+      let _fetch = envFetch || fetch;
+      responseType = responseType ? (responseType + "").toLowerCase() : "text";
+      let composedSignal = composeSignals_default(
+        [signal, cancelToken && cancelToken.toAbortSignal()],
+        timeout
+      );
+      let request = null;
+      const unsubscribe = composedSignal && composedSignal.unsubscribe && (() => {
+        composedSignal.unsubscribe();
+      });
+      let requestContentLength;
+      try {
+        if (hasMaxContentLength && typeof url2 === "string" && url2.startsWith("data:")) {
+          const estimated = estimateDataURLDecodedBytes(url2);
+          if (estimated > maxContentLength) {
+            throw new AxiosError_default(
+              "maxContentLength size of " + maxContentLength + " exceeded",
+              AxiosError_default.ERR_BAD_RESPONSE,
+              config,
+              request
+            );
+          }
+        }
+        if (hasMaxBodyLength && method !== "get" && method !== "head") {
+          const outboundLength = await resolveBodyLength(headers, data6);
+          if (typeof outboundLength === "number" && isFinite(outboundLength) && outboundLength > maxBodyLength) {
+            throw new AxiosError_default(
+              "Request body larger than maxBodyLength limit",
+              AxiosError_default.ERR_BAD_REQUEST,
+              config,
+              request
+            );
+          }
+        }
+        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data6)) !== 0) {
+          let _request = new Request(url2, {
+            method: "POST",
+            body: data6,
+            duplex: "half"
+          });
+          let contentTypeHeader;
+          if (utils_default.isFormData(data6) && (contentTypeHeader = _request.headers.get("content-type"))) {
+            headers.setContentType(contentTypeHeader);
+          }
+          if (_request.body) {
+            const [onProgress, flush] = progressEventDecorator(
+              requestContentLength,
+              progressEventReducer(asyncDecorator(onUploadProgress))
+            );
+            data6 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
+          }
+        }
+        if (!utils_default.isString(withCredentials)) {
+          withCredentials = withCredentials ? "include" : "omit";
+        }
+        const isCredentialsSupported = isRequestSupported && "credentials" in Request.prototype;
+        if (utils_default.isFormData(data6)) {
+          const contentType = headers.getContentType();
+          if (contentType && /^multipart\/form-data/i.test(contentType) && !/boundary=/i.test(contentType)) {
+            headers.delete("content-type");
+          }
+        }
+        headers.set("User-Agent", "axios/" + VERSION, false);
+        const resolvedOptions = {
+          ...fetchOptions,
+          signal: composedSignal,
+          method: method.toUpperCase(),
+          headers: toByteStringHeaderObject(headers.normalize()),
+          body: data6,
+          duplex: "half",
+          credentials: isCredentialsSupported ? withCredentials : void 0
+        };
+        request = isRequestSupported && new Request(url2, resolvedOptions);
+        let response = await (isRequestSupported ? _fetch(request, fetchOptions) : _fetch(url2, resolvedOptions));
+        if (hasMaxContentLength) {
+          const declaredLength = utils_default.toFiniteNumber(response.headers.get("content-length"));
+          if (declaredLength != null && declaredLength > maxContentLength) {
+            throw new AxiosError_default(
+              "maxContentLength size of " + maxContentLength + " exceeded",
+              AxiosError_default.ERR_BAD_RESPONSE,
+              config,
+              request
+            );
+          }
+        }
+        const isStreamResponse = supportsResponseStream && (responseType === "stream" || responseType === "response");
+        if (supportsResponseStream && response.body && (onDownloadProgress || hasMaxContentLength || isStreamResponse && unsubscribe)) {
+          const options = {};
+          ["status", "statusText", "headers"].forEach((prop) => {
+            options[prop] = response[prop];
+          });
+          const responseContentLength = utils_default.toFiniteNumber(response.headers.get("content-length"));
+          const [onProgress, flush] = onDownloadProgress && progressEventDecorator(
+            responseContentLength,
+            progressEventReducer(asyncDecorator(onDownloadProgress), true)
+          ) || [];
+          let bytesRead = 0;
+          const onChunkProgress = (loadedBytes) => {
+            if (hasMaxContentLength) {
+              bytesRead = loadedBytes;
+              if (bytesRead > maxContentLength) {
+                throw new AxiosError_default(
+                  "maxContentLength size of " + maxContentLength + " exceeded",
+                  AxiosError_default.ERR_BAD_RESPONSE,
+                  config,
+                  request
+                );
+              }
+            }
+            onProgress && onProgress(loadedBytes);
+          };
+          response = new Response(
+            trackStream(response.body, DEFAULT_CHUNK_SIZE, onChunkProgress, () => {
+              flush && flush();
+              unsubscribe && unsubscribe();
+            }),
+            options
+          );
+        }
+        responseType = responseType || "text";
+        let responseData = await resolvers[utils_default.findKey(resolvers, responseType) || "text"](
+          response,
+          config
+        );
+        if (hasMaxContentLength && !supportsResponseStream && !isStreamResponse) {
+          let materializedSize;
+          if (responseData != null) {
+            if (typeof responseData.byteLength === "number") {
+              materializedSize = responseData.byteLength;
+            } else if (typeof responseData.size === "number") {
+              materializedSize = responseData.size;
+            } else if (typeof responseData === "string") {
+              materializedSize = typeof TextEncoder === "function" ? new TextEncoder().encode(responseData).byteLength : responseData.length;
+            }
+          }
+          if (typeof materializedSize === "number" && materializedSize > maxContentLength) {
+            throw new AxiosError_default(
+              "maxContentLength size of " + maxContentLength + " exceeded",
+              AxiosError_default.ERR_BAD_RESPONSE,
+              config,
+              request
+            );
+          }
+        }
+        !isStreamResponse && unsubscribe && unsubscribe();
+        return await new Promise((resolve, reject) => {
+          settle(resolve, reject, {
+            data: responseData,
+            headers: AxiosHeaders_default.from(response.headers),
+            status: response.status,
+            statusText: response.statusText,
+            config,
+            request
+          });
+        });
+      } catch (err) {
+        unsubscribe && unsubscribe();
+        if (composedSignal && composedSignal.aborted && composedSignal.reason instanceof AxiosError_default) {
+          const canceledError = composedSignal.reason;
+          canceledError.config = config;
+          request && (canceledError.request = request);
+          err !== canceledError && (canceledError.cause = err);
+          throw canceledError;
+        }
+        if (err && err.name === "TypeError" && /Load failed|fetch/i.test(err.message)) {
+          throw Object.assign(
+            new AxiosError_default(
+              "Network Error",
+              AxiosError_default.ERR_NETWORK,
+              config,
+              request,
+              err && err.response
+            ),
+            {
+              cause: err.cause || err
+            }
+          );
+        }
+        throw AxiosError_default.from(err, err && err.code, config, request, err && err.response);
+      }
+    };
+  };
+  var seedCache = /* @__PURE__ */ new Map();
+  var getFetch = (config) => {
+    let env = config && config.env || {};
+    const { fetch: fetch2, Request, Response } = env;
+    const seeds = [Request, Response, fetch2];
+    let len = seeds.length, i = len, seed, target, map = seedCache;
+    while (i--) {
+      seed = seeds[i];
+      target = map.get(seed);
+      target === void 0 && map.set(seed, target = i ? /* @__PURE__ */ new Map() : factory(env));
+      map = target;
+    }
+    return target;
+  };
+  var adapter = getFetch();
+
+  // node_modules/axios/lib/adapters/adapters.js
+  var knownAdapters = {
+    http: null_default,
+    xhr: xhr_default,
+    fetch: {
+      get: getFetch
+    }
+  };
+  utils_default.forEach(knownAdapters, (fn, value) => {
+    if (fn) {
+      try {
+        Object.defineProperty(fn, "name", { __proto__: null, value });
+      } catch (e) {
+      }
+      Object.defineProperty(fn, "adapterName", { __proto__: null, value });
+    }
+  });
+  var renderReason = (reason) => `- ${reason}`;
+  var isResolvedHandle = (adapter2) => utils_default.isFunction(adapter2) || adapter2 === null || adapter2 === false;
+  function getAdapter(adapters, config) {
+    adapters = utils_default.isArray(adapters) ? adapters : [adapters];
+    const { length } = adapters;
+    let nameOrAdapter;
+    let adapter2;
+    const rejectedReasons = {};
+    for (let i = 0; i < length; i++) {
+      nameOrAdapter = adapters[i];
+      let id;
+      adapter2 = nameOrAdapter;
+      if (!isResolvedHandle(nameOrAdapter)) {
+        adapter2 = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
+        if (adapter2 === void 0) {
+          throw new AxiosError_default(`Unknown adapter '${id}'`);
+        }
+      }
+      if (adapter2 && (utils_default.isFunction(adapter2) || (adapter2 = adapter2.get(config)))) {
+        break;
+      }
+      rejectedReasons[id || "#" + i] = adapter2;
+    }
+    if (!adapter2) {
+      const reasons = Object.entries(rejectedReasons).map(
+        ([id, state3]) => `adapter ${id} ` + (state3 === false ? "is not supported by the environment" : "is not available in the build")
+      );
+      let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
+      throw new AxiosError_default(
+        `There is no suitable adapter to dispatch the request ` + s,
+        "ERR_NOT_SUPPORT"
+      );
+    }
+    return adapter2;
+  }
+  var adapters_default = {
+    /**
+     * Resolve an adapter from a list of adapter names or functions.
+     * @type {Function}
+     */
+    getAdapter,
+    /**
+     * Exposes all known adapters
+     * @type {Object<string, Function|Object>}
+     */
+    adapters: knownAdapters
+  };
+
+  // node_modules/axios/lib/core/dispatchRequest.js
+  function throwIfCancellationRequested(config) {
+    if (config.cancelToken) {
+      config.cancelToken.throwIfRequested();
+    }
+    if (config.signal && config.signal.aborted) {
+      throw new CanceledError_default(null, config);
+    }
+  }
+  function dispatchRequest(config) {
+    throwIfCancellationRequested(config);
+    config.headers = AxiosHeaders_default.from(config.headers);
+    config.data = transformData.call(config, config.transformRequest);
+    if (["post", "put", "patch"].indexOf(config.method) !== -1) {
+      config.headers.setContentType("application/x-www-form-urlencoded", false);
+    }
+    const adapter2 = adapters_default.getAdapter(config.adapter || defaults_default.adapter, config);
+    return adapter2(config).then(
+      function onAdapterResolution(response) {
+        throwIfCancellationRequested(config);
+        config.response = response;
+        try {
+          response.data = transformData.call(config, config.transformResponse, response);
+        } finally {
+          delete config.response;
+        }
+        response.headers = AxiosHeaders_default.from(response.headers);
+        return response;
+      },
+      function onAdapterRejection(reason) {
+        if (!isCancel(reason)) {
+          throwIfCancellationRequested(config);
+          if (reason && reason.response) {
+            config.response = reason.response;
             try {
-                store.put(updater(request.result), key);
-                resolve(promisifyRequest(store.transaction));
+              reason.response.data = transformData.call(
+                config,
+                config.transformResponse,
+                reason.response
+              );
+            } finally {
+              delete config.response;
             }
-            catch (err) {
-                reject(err);
-            }
-        };
-        request.onerror = () => {
-            reject(request.error);
-        };
-    }));
-    const del = (key, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        store.delete(key);
-        return promisifyRequest(store.transaction);
-    });
-    const delMany = (keys, customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        keys.forEach((key) => {
-            store.delete(key);
-        });
-        return promisifyRequest(store.transaction);
-    });
-    const eachCursor = (store, callback) => {
-        store.openCursor().onsuccess = function () {
-            if (!this.result) {
-                return;
-            }
-            callback(this.result);
-            this.result.continue();
-        };
-        return promisifyRequest(store.transaction);
+            reason.response.headers = AxiosHeaders_default.from(reason.response.headers);
+          }
+        }
+        return Promise.reject(reason);
+      }
+    );
+  }
+
+  // node_modules/axios/lib/helpers/validator.js
+  var validators = {};
+  ["object", "boolean", "number", "function", "string", "symbol"].forEach((type, i) => {
+    validators[type] = function validator(thing) {
+      return typeof thing === type || "a" + (i < 1 ? "n " : " ") + type;
     };
-    const keys = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
-        if (store.getAllKeys) {
-            return promisifyRequest(store.getAllKeys());
-        }
-        const items = [];
-        return eachCursor(store, (cursor) => items.push(cursor.key)).then(() => items);
-    });
-    const values = (customStore = defaultGetStore()) => customStore('readonly', (store) => {
-        if (store.getAll) {
-            return promisifyRequest(store.getAll());
-        }
-        const items = [];
-        return eachCursor(store, (cursor) => items.push(cursor.value)).then(() => items);
-    });
-    const getAllData = (customStore = defaultGetStore()) => customStore('readonly', async (store) => {
-        if (store.getAll && store.getAllKeys) {
-            const [keys, values] = await Promise.all([
-                promisifyRequest(store.getAllKeys()),
-                promisifyRequest(store.getAll()),
-            ]);
-            return keys.map((key, i) => [
-                key,
-                values[i],
-            ]);
-        }
-        const items = [];
-        return eachCursor(store, (cursor) => {
-            items.push([
-                cursor.key,
-                cursor.value,
-            ]);
-        }).then(() => items);
-    });
-    const clear = (customStore = defaultGetStore()) => customStore('readwrite', (store) => {
-        store.clear();
-        return promisifyRequest(store.transaction);
-    });
-    return {
-        get,
-        set,
-        setMany,
-        getMany,
-        update,
-        del,
-        delMany,
-        keys,
-        values,
-        getAllData,
-        clear,
+  });
+  var deprecatedWarnings = {};
+  validators.transitional = function transitional(validator, version, message) {
+    function formatMessage(opt, desc) {
+      return "[Axios v" + VERSION + "] Transitional option '" + opt + "'" + desc + (message ? ". " + message : "");
+    }
+    return (value, opt, opts) => {
+      if (validator === false) {
+        throw new AxiosError_default(
+          formatMessage(opt, " has been removed" + (version ? " in " + version : "")),
+          AxiosError_default.ERR_DEPRECATED
+        );
+      }
+      if (version && !deprecatedWarnings[opt]) {
+        deprecatedWarnings[opt] = true;
+        console.warn(
+          formatMessage(
+            opt,
+            " has been deprecated since v" + version + " and will be removed in the near future"
+          )
+        );
+      }
+      return validator ? validator(value, opt, opts) : true;
     };
-}());
-const checked = {
-    yes: 'yes',
-    no: 'no',
-};
-const storageNames = {
-    theme: 'theme',
-    questionsData: 'questions-data',
-    imgData: 'img-data',
-    imgAvailable: 'img-available',
-    userId: 'user-id',
-    version: 'version',
-    configTests: 'config-tests',
-    menuLeft: 'menu-left',
-    questionsRatio: 'questions-ratio',
-    sessionStarted: 'session-started',
-};
-const configData = {
-    tests: 'null',
-    img: [],
-};
-const START_QUESTIONS_RATIO = .85;
-const getQuestionsRatio = () => Math.floor(engine.params.determinants.questionInSession * START_QUESTIONS_RATIO).toString();
-const defaultData = {
-    theme: '',
+  };
+  validators.spelling = function spelling(correctSpelling) {
+    return (value, opt) => {
+      console.warn(`${opt} is likely a misspelling of ${correctSpelling}`);
+      return true;
+    };
+  };
+  function assertOptions(options, schema, allowUnknown) {
+    if (typeof options !== "object") {
+      throw new AxiosError_default("options must be an object", AxiosError_default.ERR_BAD_OPTION_VALUE);
+    }
+    const keys = Object.keys(options);
+    let i = keys.length;
+    while (i-- > 0) {
+      const opt = keys[i];
+      const validator = Object.prototype.hasOwnProperty.call(schema, opt) ? schema[opt] : void 0;
+      if (validator) {
+        const value = options[opt];
+        const result = value === void 0 || validator(value, opt, options);
+        if (result !== true) {
+          throw new AxiosError_default(
+            "option " + opt + " must be " + result,
+            AxiosError_default.ERR_BAD_OPTION_VALUE
+          );
+        }
+        continue;
+      }
+      if (allowUnknown !== true) {
+        throw new AxiosError_default("Unknown option " + opt, AxiosError_default.ERR_BAD_OPTION);
+      }
+    }
+  }
+  var validator_default = {
+    assertOptions,
+    validators
+  };
+
+  // node_modules/axios/lib/core/Axios.js
+  var validators2 = validator_default.validators;
+  var Axios = class {
+    constructor(instanceConfig) {
+      this.defaults = instanceConfig || {};
+      this.interceptors = {
+        request: new InterceptorManager_default(),
+        response: new InterceptorManager_default()
+      };
+    }
+    /**
+     * Dispatch a request
+     *
+     * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
+     * @param {?Object} config
+     *
+     * @returns {Promise} The Promise to be fulfilled
+     */
+    async request(configOrUrl, config) {
+      try {
+        return await this._request(configOrUrl, config);
+      } catch (err) {
+        if (err instanceof Error) {
+          let dummy = {};
+          Error.captureStackTrace ? Error.captureStackTrace(dummy) : dummy = new Error();
+          const stack = (() => {
+            if (!dummy.stack) {
+              return "";
+            }
+            const firstNewlineIndex = dummy.stack.indexOf("\n");
+            return firstNewlineIndex === -1 ? "" : dummy.stack.slice(firstNewlineIndex + 1);
+          })();
+          try {
+            if (!err.stack) {
+              err.stack = stack;
+            } else if (stack) {
+              const firstNewlineIndex = stack.indexOf("\n");
+              const secondNewlineIndex = firstNewlineIndex === -1 ? -1 : stack.indexOf("\n", firstNewlineIndex + 1);
+              const stackWithoutTwoTopLines = secondNewlineIndex === -1 ? "" : stack.slice(secondNewlineIndex + 1);
+              if (!String(err.stack).endsWith(stackWithoutTwoTopLines)) {
+                err.stack += "\n" + stack;
+              }
+            }
+          } catch (e) {
+          }
+        }
+        throw err;
+      }
+    }
+    _request(configOrUrl, config) {
+      if (typeof configOrUrl === "string") {
+        config = config || {};
+        config.url = configOrUrl;
+      } else {
+        config = configOrUrl || {};
+      }
+      config = mergeConfig(this.defaults, config);
+      const { transitional: transitional2, paramsSerializer, headers } = config;
+      if (transitional2 !== void 0) {
+        validator_default.assertOptions(
+          transitional2,
+          {
+            silentJSONParsing: validators2.transitional(validators2.boolean),
+            forcedJSONParsing: validators2.transitional(validators2.boolean),
+            clarifyTimeoutError: validators2.transitional(validators2.boolean),
+            legacyInterceptorReqResOrdering: validators2.transitional(validators2.boolean)
+          },
+          false
+        );
+      }
+      if (paramsSerializer != null) {
+        if (utils_default.isFunction(paramsSerializer)) {
+          config.paramsSerializer = {
+            serialize: paramsSerializer
+          };
+        } else {
+          validator_default.assertOptions(
+            paramsSerializer,
+            {
+              encode: validators2.function,
+              serialize: validators2.function
+            },
+            true
+          );
+        }
+      }
+      if (config.allowAbsoluteUrls !== void 0) {
+      } else if (this.defaults.allowAbsoluteUrls !== void 0) {
+        config.allowAbsoluteUrls = this.defaults.allowAbsoluteUrls;
+      } else {
+        config.allowAbsoluteUrls = true;
+      }
+      validator_default.assertOptions(
+        config,
+        {
+          baseUrl: validators2.spelling("baseURL"),
+          withXsrfToken: validators2.spelling("withXSRFToken")
+        },
+        true
+      );
+      config.method = (config.method || this.defaults.method || "get").toLowerCase();
+      let contextHeaders = headers && utils_default.merge(headers.common, headers[config.method]);
+      headers && utils_default.forEach(["delete", "get", "head", "post", "put", "patch", "query", "common"], (method) => {
+        delete headers[method];
+      });
+      config.headers = AxiosHeaders_default.concat(contextHeaders, headers);
+      const requestInterceptorChain = [];
+      let synchronousRequestInterceptors = true;
+      this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+        if (typeof interceptor.runWhen === "function" && interceptor.runWhen(config) === false) {
+          return;
+        }
+        synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+        const transitional3 = config.transitional || transitional_default;
+        const legacyInterceptorReqResOrdering = transitional3 && transitional3.legacyInterceptorReqResOrdering;
+        if (legacyInterceptorReqResOrdering) {
+          requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
+        } else {
+          requestInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
+        }
+      });
+      const responseInterceptorChain = [];
+      this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+        responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
+      });
+      let promise;
+      let i = 0;
+      let len;
+      if (!synchronousRequestInterceptors) {
+        const chain = [dispatchRequest.bind(this), void 0];
+        chain.unshift(...requestInterceptorChain);
+        chain.push(...responseInterceptorChain);
+        len = chain.length;
+        promise = Promise.resolve(config);
+        while (i < len) {
+          promise = promise.then(chain[i++], chain[i++]);
+        }
+        return promise;
+      }
+      len = requestInterceptorChain.length;
+      let newConfig = config;
+      while (i < len) {
+        const onFulfilled = requestInterceptorChain[i++];
+        const onRejected = requestInterceptorChain[i++];
+        try {
+          newConfig = onFulfilled(newConfig);
+        } catch (error2) {
+          onRejected.call(this, error2);
+          break;
+        }
+      }
+      try {
+        promise = dispatchRequest.call(this, newConfig);
+      } catch (error2) {
+        return Promise.reject(error2);
+      }
+      i = 0;
+      len = responseInterceptorChain.length;
+      while (i < len) {
+        promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
+      }
+      return promise;
+    }
+    getUri(config) {
+      config = mergeConfig(this.defaults, config);
+      const fullPath = buildFullPath(config.baseURL, config.url, config.allowAbsoluteUrls);
+      return buildURL(fullPath, config.params, config.paramsSerializer);
+    }
+  };
+  utils_default.forEach(["delete", "get", "head", "options"], function forEachMethodNoData(method) {
+    Axios.prototype[method] = function(url2, config) {
+      return this.request(
+        mergeConfig(config || {}, {
+          method,
+          url: url2,
+          data: (config || {}).data
+        })
+      );
+    };
+  });
+  utils_default.forEach(["post", "put", "patch", "query"], function forEachMethodWithData(method) {
+    function generateHTTPMethod(isForm) {
+      return function httpMethod(url2, data6, config) {
+        return this.request(
+          mergeConfig(config || {}, {
+            method,
+            headers: isForm ? {
+              "Content-Type": "multipart/form-data"
+            } : {},
+            url: url2,
+            data: data6
+          })
+        );
+      };
+    }
+    Axios.prototype[method] = generateHTTPMethod();
+    if (method !== "query") {
+      Axios.prototype[method + "Form"] = generateHTTPMethod(true);
+    }
+  });
+  var Axios_default = Axios;
+
+  // node_modules/axios/lib/cancel/CancelToken.js
+  var CancelToken = class _CancelToken {
+    constructor(executor) {
+      if (typeof executor !== "function") {
+        throw new TypeError("executor must be a function.");
+      }
+      let resolvePromise;
+      this.promise = new Promise(function promiseExecutor(resolve) {
+        resolvePromise = resolve;
+      });
+      const token = this;
+      this.promise.then((cancel) => {
+        if (!token._listeners) return;
+        let i = token._listeners.length;
+        while (i-- > 0) {
+          token._listeners[i](cancel);
+        }
+        token._listeners = null;
+      });
+      this.promise.then = (onfulfilled) => {
+        let _resolve;
+        const promise = new Promise((resolve) => {
+          token.subscribe(resolve);
+          _resolve = resolve;
+        }).then(onfulfilled);
+        promise.cancel = function reject() {
+          token.unsubscribe(_resolve);
+        };
+        return promise;
+      };
+      executor(function cancel(message, config, request) {
+        if (token.reason) {
+          return;
+        }
+        token.reason = new CanceledError_default(message, config, request);
+        resolvePromise(token.reason);
+      });
+    }
+    /**
+     * Throws a `CanceledError` if cancellation has been requested.
+     */
+    throwIfRequested() {
+      if (this.reason) {
+        throw this.reason;
+      }
+    }
+    /**
+     * Subscribe to the cancel signal
+     */
+    subscribe(listener) {
+      if (this.reason) {
+        listener(this.reason);
+        return;
+      }
+      if (this._listeners) {
+        this._listeners.push(listener);
+      } else {
+        this._listeners = [listener];
+      }
+    }
+    /**
+     * Unsubscribe from the cancel signal
+     */
+    unsubscribe(listener) {
+      if (!this._listeners) {
+        return;
+      }
+      const index = this._listeners.indexOf(listener);
+      if (index !== -1) {
+        this._listeners.splice(index, 1);
+      }
+    }
+    toAbortSignal() {
+      const controller = new AbortController();
+      const abort = (err) => {
+        controller.abort(err);
+      };
+      this.subscribe(abort);
+      controller.signal.unsubscribe = () => this.unsubscribe(abort);
+      return controller.signal;
+    }
+    /**
+     * Returns an object that contains a new `CancelToken` and a function that, when called,
+     * cancels the `CancelToken`.
+     */
+    static source() {
+      let cancel;
+      const token = new _CancelToken(function executor(c) {
+        cancel = c;
+      });
+      return {
+        token,
+        cancel
+      };
+    }
+  };
+  var CancelToken_default = CancelToken;
+
+  // node_modules/axios/lib/helpers/spread.js
+  function spread(callback) {
+    return function wrap(arr) {
+      return callback.apply(null, arr);
+    };
+  }
+
+  // node_modules/axios/lib/helpers/isAxiosError.js
+  function isAxiosError(payload) {
+    return utils_default.isObject(payload) && payload.isAxiosError === true;
+  }
+
+  // node_modules/axios/lib/helpers/HttpStatusCode.js
+  var HttpStatusCode = {
+    Continue: 100,
+    SwitchingProtocols: 101,
+    Processing: 102,
+    EarlyHints: 103,
+    Ok: 200,
+    Created: 201,
+    Accepted: 202,
+    NonAuthoritativeInformation: 203,
+    NoContent: 204,
+    ResetContent: 205,
+    PartialContent: 206,
+    MultiStatus: 207,
+    AlreadyReported: 208,
+    ImUsed: 226,
+    MultipleChoices: 300,
+    MovedPermanently: 301,
+    Found: 302,
+    SeeOther: 303,
+    NotModified: 304,
+    UseProxy: 305,
+    Unused: 306,
+    TemporaryRedirect: 307,
+    PermanentRedirect: 308,
+    BadRequest: 400,
+    Unauthorized: 401,
+    PaymentRequired: 402,
+    Forbidden: 403,
+    NotFound: 404,
+    MethodNotAllowed: 405,
+    NotAcceptable: 406,
+    ProxyAuthenticationRequired: 407,
+    RequestTimeout: 408,
+    Conflict: 409,
+    Gone: 410,
+    LengthRequired: 411,
+    PreconditionFailed: 412,
+    PayloadTooLarge: 413,
+    UriTooLong: 414,
+    UnsupportedMediaType: 415,
+    RangeNotSatisfiable: 416,
+    ExpectationFailed: 417,
+    ImATeapot: 418,
+    MisdirectedRequest: 421,
+    UnprocessableEntity: 422,
+    Locked: 423,
+    FailedDependency: 424,
+    TooEarly: 425,
+    UpgradeRequired: 426,
+    PreconditionRequired: 428,
+    TooManyRequests: 429,
+    RequestHeaderFieldsTooLarge: 431,
+    UnavailableForLegalReasons: 451,
+    InternalServerError: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    HttpVersionNotSupported: 505,
+    VariantAlsoNegotiates: 506,
+    InsufficientStorage: 507,
+    LoopDetected: 508,
+    NotExtended: 510,
+    NetworkAuthenticationRequired: 511,
+    WebServerIsDown: 521,
+    ConnectionTimedOut: 522,
+    OriginIsUnreachable: 523,
+    TimeoutOccurred: 524,
+    SslHandshakeFailed: 525,
+    InvalidSslCertificate: 526
+  };
+  Object.entries(HttpStatusCode).forEach(([key, value]) => {
+    HttpStatusCode[value] = key;
+  });
+  var HttpStatusCode_default = HttpStatusCode;
+
+  // node_modules/axios/lib/axios.js
+  function createInstance(defaultConfig) {
+    const context = new Axios_default(defaultConfig);
+    const instance = bind(Axios_default.prototype.request, context);
+    utils_default.extend(instance, Axios_default.prototype, context, { allOwnKeys: true });
+    utils_default.extend(instance, context, null, { allOwnKeys: true });
+    instance.create = function create2(instanceConfig) {
+      return createInstance(mergeConfig(defaultConfig, instanceConfig));
+    };
+    return instance;
+  }
+  var axios = createInstance(defaults_default);
+  axios.Axios = Axios_default;
+  axios.CanceledError = CanceledError_default;
+  axios.CancelToken = CancelToken_default;
+  axios.isCancel = isCancel;
+  axios.VERSION = VERSION;
+  axios.toFormData = toFormData_default;
+  axios.AxiosError = AxiosError_default;
+  axios.Cancel = axios.CanceledError;
+  axios.all = function all(promises) {
+    return Promise.all(promises);
+  };
+  axios.spread = spread;
+  axios.isAxiosError = isAxiosError;
+  axios.mergeConfig = mergeConfig;
+  axios.AxiosHeaders = AxiosHeaders_default;
+  axios.formToJSON = (thing) => formDataToJSON_default(utils_default.isHTMLForm(thing) ? new FormData(thing) : thing);
+  axios.getAdapter = adapters_default.getAdapter;
+  axios.HttpStatusCode = HttpStatusCode_default;
+  axios.default = axios;
+  var axios_default = axios;
+
+  // node_modules/axios/index.js
+  var {
+    Axios: Axios2,
+    AxiosError: AxiosError2,
+    CanceledError: CanceledError2,
+    isCancel: isCancel2,
+    CancelToken: CancelToken2,
+    VERSION: VERSION2,
+    all: all2,
+    Cancel,
+    isAxiosError: isAxiosError2,
+    spread: spread2,
+    toFormData: toFormData2,
+    AxiosHeaders: AxiosHeaders2,
+    HttpStatusCode: HttpStatusCode2,
+    formToJSON,
+    getAdapter: getAdapter2,
+    mergeConfig: mergeConfig2,
+    create
+  } = axios_default;
+
+  // src/dom.ts
+  var root = document.documentElement;
+  var style = window.getComputedStyle(document.body);
+  var byId = (id) => {
+    return document.getElementById(id);
+  };
+  var byQuery = (query) => document.querySelector(query);
+  var byQueryAll = (query) => document.querySelectorAll(query);
+  var byQ = (elem, query) => elem.querySelector(query);
+  var byQAll = (elem, query) => elem.querySelectorAll(query);
+  var getPx = (num) => `${num}px`;
+  var inner = (elem, txt) => elem.innerHTML = txt;
+  var prepare = (node, options) => {
+    const elem = typeof node === "string" ? document.createElement(node) : node;
+    if (elem && elem instanceof HTMLElement) {
+      if (options?.delete) {
+        elem.remove();
+        return;
+      }
+      if (options?.id) elem.id = options.id;
+      options?.classes?.forEach((c) => elem.classList.add(c));
+      options?.children?.forEach((c) => elem.appendChild(c));
+      if (options?.src && elem instanceof HTMLImageElement) {
+        elem.src = options.src;
+      }
+      if (options?.inner) {
+        elem.textContent = options.inner;
+      }
+      if (options?.position) {
+        elem.style.left = `${options.position.x}px`;
+        elem.style.top = `${options.position.y}px`;
+      }
+      return elem;
+    }
+    return null;
+  };
+  var setStyle = (element, style2, value) => {
+    element.style[style2] = value;
+  };
+  var getColorFromStyle = (name) => style.getPropertyValue(name).trim();
+  var setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
+  var disable = (elem) => elem.setAttribute("disabled", "");
+  var enable = (elem) => elem.removeAttribute("disabled");
+  var display = (elem, attribute) => elem.style.display = attribute;
+  var removeClass = (elem, attribute) => elem.classList.remove(attribute);
+  var addClass = (elem, attribute) => elem.classList.add(attribute);
+  var add = (elem, name, fn) => elem.addEventListener(name, fn);
+  var remove = (elem, name, fn) => elem.removeEventListener(name, fn);
+  var boundRect = (elem) => elem.getBoundingClientRect();
+
+  // src/core.ts
+  var core = {
+    // store: null,
+    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10|PlayBook|IEMobile|Windows Phone|Opera Mini|Opera Mobi|Mobile Safari|Fennec|Kindle|Silk|Ubuntu Touch/i.test(navigator.userAgent) || window.innerWidth < 768,
+    idb: {}
+    // _csrf: null
+  };
+
+  // src/engine/helpers.ts
+  var getDateAtNoonInXDays = (daysPlus, date) => {
+    const newDate = date ? new Date(date) : /* @__PURE__ */ new Date();
+    const targetDate = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newDate.getDate() + daysPlus,
+      12,
+      0,
+      0,
+      0
+    );
+    return targetDate.getTime();
+  };
+  var generateTriangularSequence = (length) => {
+    const result = [];
+    let n = 1, current = 0;
+    for (let i = 0; i < length; i++) {
+      current += n;
+      result.push(current);
+      n++;
+    }
+    return result;
+  };
+
+  // src/engine/params.ts
+  var determinants = {
+    questionInSession: 30,
+    numLastRequiredQuestions: 3,
+    // ile razy pod rząd trzeba odpowiedzieć, żeby było uznane, że umiesz (100%)
+    numLastHighlyRatedQuestions: 6,
+    // --//-- , że umiesz super dobrze (200%)
+    // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
+    repetition: generateTriangularSequence(10)
+  };
+  var repeatable = {
+    lastUsed: 0.1,
+    // ostatnie użycie pytania
+    nextUse: 0.3,
+    // następne planowane użycie pytania
+    appearance: 0.1,
+    // w ilu testach pojawiło się pytanie
+    rating: 1.2,
+    // poziom nauki pytań
+    littleUsed: 0,
+    // najmniej powtarzalne pytania
+    temperature: 0.1
+    // wielkość zbioru do losowania
+  };
+  var single = {
+    lastUsed: 0.1,
+    // ostatnie użycie pytania
+    nextUse: 0.2,
+    // następne planowane użycie pytania
+    appearance: 0.1,
+    // w ilu testach pojawiło się pytanie
+    rating: 5,
+    // poziom nauki pytań
+    littleUsed: 0,
+    // najmniej powtarzalne pytania
+    temperature: 0.05
+  };
+  var data = {
+    weights: null,
+    questions: [],
+    answers: [],
+    repeatableAnswers: [],
+    singleAnswers: [],
+    quantities: [],
+    sume: 0,
+    normalizedWeights: {
+      repeatable: null,
+      single: null
+    },
+    numOfQuestions: {
+      repeatable: 0,
+      single: 0
+    },
+    session: [],
+    index: -1
+  };
+  var getNormalizedWeights = (weights) => {
+    let sume = 0;
+    Object.keys(weights).forEach((key) => sume += weights[key]);
+    sume -= weights.temperature;
+    const normalizedWeights = { ...weights };
+    Object.keys(weights).forEach((key) => normalizedWeights[key] = weights[key] / sume);
+    normalizedWeights.temperature = weights.temperature;
+    return normalizedWeights;
+  };
+  var updateQuestions = async () => {
+    const questions = await core.idb.questions.getAllData();
+    data.questions = [];
+    questions.forEach((question) => {
+      const index = question[0];
+      const item = question[1];
+      data.questions[index] = item;
+    });
+  };
+  var init = async () => {
+    await updateQuestions();
+    data.normalizedWeights.repeatable = getNormalizedWeights(repeatable);
+    data.normalizedWeights.single = getNormalizedWeights(single);
+    const questionRatio = Number(core.store.get(storageNames.questionsRatio));
+    const questionNum = determinants.questionInSession;
+    data.numOfQuestions.repeatable = questionRatio;
+    data.numOfQuestions.single = questionNum - questionRatio;
+  };
+  var updateAnswers = async () => {
+    const answersDb = await core.idb.answers.getAllData();
+    const newAnswers = answersDb.map((answer) => {
+      const index = answer[0];
+      const item = answer[1];
+      item.drawn = false;
+      item.index = index;
+      return item;
+    });
+    const answers = newAnswers.sort((a, b) => b.used - a.used);
+    data.answers = [];
+    data.repeatableAnswers = [];
+    data.singleAnswers = [];
+    answers.forEach((answer, i) => {
+      data.answers[i] = answer;
+      if (answer.used === 1) {
+        data.singleAnswers.push(answer);
+      } else {
+        data.repeatableAnswers.push(answer);
+      }
+    });
+  };
+
+  // src/storage.ts
+  var checked = {
+    yes: "yes",
+    no: "no"
+  };
+  var storageNames = {
+    theme: "theme",
+    questionsData: "questions-data",
+    imgData: "img-data",
+    imgAvailable: "img-available",
+    //
+    userId: "user-id",
+    version: "version",
+    configTests: "config-tests",
+    menuLeft: "menu-left",
+    questionsRatio: "questions-ratio",
+    sessionStarted: "session-started"
+  };
+  var START_QUESTIONS_RATIO = 0.85;
+  var getQuestionsRatio = () => Math.floor(determinants.questionInSession * START_QUESTIONS_RATIO).toString();
+  var defaultData = {
+    theme: "",
     questionsData: checked.yes,
     imgData: checked.yes,
     imgAvailable: checked.no,
-    userId: 'null',
-    version: 'null',
-    configTests: 'null',
+    userId: "null",
+    version: "null",
+    configTests: "null",
     menuLeft: checked.no,
-    questionsRatio: null,
-    sessionStarted: checked.no,
-};
-const getStorage = async () => {
+    questionsRatio: "null",
+    sessionStarted: checked.no
+  };
+  var getStorage = async () => {
     const isValidJSONStringify = (value) => {
-        try {
-            const result = JSON.stringify(value);
-            return result !== undefined;
-        }
-        catch {
-            return false;
-        }
+      try {
+        const result = JSON.stringify(value);
+        return result !== void 0;
+      } catch {
+        return false;
+      }
     };
     const isValidJSONParse = (value) => {
-        try {
-            JSON.parse(value);
-            return true;
-        }
-        catch {
-            return false;
-        }
+      try {
+        JSON.parse(value);
+        return true;
+      } catch {
+        return false;
+      }
     };
-    const set = (key, value) => {
-        if (!isValidJSONStringify(value)) {
-            throw new Error(`Value for key "${key}" is not JSON serializable`);
-        }
-        localStorage.setItem(key, JSON.stringify(value));
+    const set3 = (key, value) => {
+      if (!isValidJSONStringify(value)) {
+        throw new Error(`Value for key "${key}" is not JSON serializable`);
+      }
+      localStorage.setItem(key, JSON.stringify(value));
     };
-    const get = (key) => {
-        const value = localStorage.getItem(key);
-        if (value === null)
-            return null;
-        if (!isValidJSONParse(value)) {
-            return value;
-        }
-        return JSON.parse(value);
+    const get3 = (key) => {
+      const value = localStorage.getItem(key);
+      if (value === null) return null;
+      if (!isValidJSONParse(value)) {
+        return value;
+      }
+      return JSON.parse(value);
     };
-    const remove = (key) => {
-        localStorage.removeItem(key);
+    const remove2 = (key) => {
+      localStorage.removeItem(key);
     };
     const clear = () => {
-        localStorage.clear();
+      localStorage.clear();
     };
     const initData = () => {
-        const keys = Object.keys(storageNames);
-        keys.forEach((key) => {
-            const keyName = storageNames[key];
-            const data = get(keyName);
-            if (data === null) {
-                set(keyName, defaultData[key]);
-            }
-        });
-        const questionsRatio = get(storageNames.questionsRatio);
-        if (questionsRatio === null) {
-            set(storageNames.questionsRatio, getQuestionsRatio());
+      const keys = Object.keys(storageNames);
+      keys.forEach((key) => {
+        const keyName = storageNames[key];
+        const data6 = get3(keyName);
+        if (data6 === null) {
+          set3(keyName, defaultData[key]);
         }
+      });
+      const questionsRatio = get3(storageNames.questionsRatio);
+      if (questionsRatio === null) {
+        set3(storageNames.questionsRatio, getQuestionsRatio());
+      }
     };
     initData();
     return {
-        set,
-        get,
-        remove,
-        clear,
-        isValidJSONStringify,
-        isValidJSONParse,
+      set: set3,
+      get: get3,
+      remove: remove2,
+      clear,
+      isValidJSONStringify,
+      isValidJSONParse
     };
-};
-var core;
-(function (core) {
-    core.store = null;
-    core.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10|PlayBook|IEMobile|Windows Phone|Opera Mini|Opera Mobi|Mobile Safari|Fennec|Kindle|Silk|Ubuntu Touch/i
-        .test(navigator.userAgent)
-        || window.innerWidth < 768;
-    core.idb = {
-        questions: null,
-        images: null,
-        answers: null,
-        statistics: null,
-        logs: null,
+  };
+
+  // src/utils/isNotNull.ts
+  var getObjectPath = (keys) => {
+    let path = "";
+    keys.forEach((key) => {
+      if (typeof key === "number") {
+        path += `[${key}]`;
+        return;
+      }
+      path += path ? `.${key}` : key;
+    });
+    return path;
+  };
+  var isNotNull = (value, keys = []) => {
+    if (value === null) {
+      console.log(
+        "%c AssertionError:",
+        "background:rgb(255, 0, 212); color: #003300",
+        `Passed value at "${getObjectPath(keys)}" is nullable`
+      );
+    }
+  };
+  var areNotNull = (value, keys = []) => {
+    isNotNull(value, keys);
+    if (value === null) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        areNotNull(item, [
+          ...keys,
+          index
+        ]);
+      });
+      return;
+    }
+    if (typeof value === "object") {
+      Object.entries(value).forEach(
+        ([key, nestedValue]) => {
+          areNotNull(nestedValue, [
+            ...keys,
+            key
+          ]);
+        }
+      );
+    }
+  };
+
+  // src/tab/simpleMenu/simpleMenu.ts
+  var elements = {};
+  var setIconsColor = (index) => elements.items.forEach((item, i) => {
+    if (index === i) {
+      setStyle(item, "fill", "var(--mine_color)");
+    } else {
+      setStyle(item, "fill", "var(--mine_6_color)");
+    }
+  });
+  var init3 = (getGoTo2, items) => {
+    elements.menu = byId("menu-mobile");
+    elements.list = byQuery(".menu-mobile-list");
+    elements.items = byQAll(elements.menu, ".menu-mobile-item");
+    elements.iconShowHide = byId("menu-mobile-icon-menu");
+    elements.iconShow = byId("menu-mobile-icon-show");
+    elements.iconHide = byId("menu-mobile-icon-hide");
+    elements.iconHideSvg = byId("menu-mobile-icon-hide-svg");
+    elements.items.forEach((item, index) => {
+      items.push(item);
+      const goTo = getGoTo2(index);
+      add(item, "click", () => {
+        goTo();
+        setIconsColor(index);
+      });
+    });
+    areNotNull(elements, ["simpleMenu"]);
+    display(elements.menu, "none");
+    setIconsColor(0);
+    init2();
+  };
+  var showMenu = () => display(elements.menu, "flex");
+
+  // src/tab/simpleMenu/visible.ts
+  var leftSide = checked.no;
+  var showHideIcon = {};
+  var moveIconLeft = () => {
+    showHideIcon.hide = () => {
+      setStyle(elements.menu, "borderRadius", "0 30% 0 0");
+      setStyle(elements.menu, "right", "");
+      setStyle(elements.menu, "left", "-3%");
+      setStyle(elements.iconHideSvg, "marginLeft", "0%");
     };
-})(core || (core = {}));
-var dom;
-(function (dom) {
-    dom.root = document.documentElement;
-    dom.style = window.getComputedStyle(document.body);
-    dom.byId = (id) => {
-        return document.getElementById(id);
+    showHideIcon.show = () => {
+      setStyle(elements.menu, "borderRadius", "0");
+      setStyle(elements.menu, "right", "");
+      setStyle(elements.menu, "left", "0px");
+      setStyle(elements.iconHideSvg, "marginLeft", "15%");
     };
-    dom.byQuery = (query) => document.querySelector(query);
-    dom.byQueryAll = (query) => document.querySelectorAll(query);
-    dom.byQ = (elem, query) => elem.querySelector(query);
-    dom.byQAll = (elem, query) => elem.querySelectorAll(query);
-    dom.getPx = (num) => `${num}px`;
-    dom.inner = (elem, txt) => elem.innerHTML = txt;
-    dom.getAllById = (obj) => {
-        const results = {};
-        Object.keys(obj).forEach((key) => {
-            const value = obj[key];
-            if (typeof value === "string") {
-                results[key] = dom.byId(value);
-            }
-            else if (Array.isArray(value)) {
-                results[key] = value.map(id => dom.byId(id));
-            }
-            else if (typeof value === "object" && value !== null) {
-                results[key] = dom.getAllById(value);
-            }
+  };
+  var moveIconRight = () => {
+    showHideIcon.hide = () => {
+      setStyle(elements.menu, "borderRadius", "30% 0 0 0");
+      setStyle(elements.menu, "right", "-3%");
+      setStyle(elements.menu, "left", "");
+      setStyle(elements.iconHideSvg, "marginLeft", "15%");
+    };
+    showHideIcon.show = () => {
+      setStyle(elements.menu, "borderRadius", "0");
+      setStyle(elements.menu, "right", "0px");
+      setStyle(elements.menu, "left", "");
+      setStyle(elements.iconHideSvg, "marginLeft", "15%");
+    };
+  };
+  var hide = async () => {
+    display(elements.iconHide, "initial");
+    display(elements.iconShow, "none");
+    display(elements.list, "none");
+    setStyle(elements.menu, "width", "17%");
+    setStyle(elements.iconShowHide, "width", "80%");
+    if (showHideIcon.hide) showHideIcon.hide();
+  };
+  var show = async () => {
+    display(elements.iconHide, "none");
+    display(elements.iconShow, "initial");
+    display(elements.list, "flex");
+    setStyle(elements.menu, "width", "100%");
+    setStyle(elements.iconShowHide, "width", "17%");
+    if (showHideIcon.show) showHideIcon.show();
+  };
+  var isVisible = true;
+  var menuSide = async (side) => {
+    if (side === checked.yes) {
+      addClass(elements.iconShowHide, "menu-mobile-left-icon");
+      moveIconLeft();
+      elements.items.forEach((i) => {
+        setStyle(i, "borderLeft", "3px solid var(--fourth_from_end_color)");
+        setStyle(i, "borderRight", "0px solid var(--fourth_from_end_color)");
+      });
+    } else {
+      removeClass(elements.iconShowHide, "menu-mobile-left-icon");
+      moveIconRight();
+      elements.items.forEach((i) => {
+        setStyle(i, "borderLeft", "0px solid var(--fourth_from_end_color)");
+        setStyle(i, "borderRight", "3px solid var(--fourth_from_end_color)");
+      });
+    }
+    if (isVisible) {
+      showHideIcon.show();
+    } else {
+      showHideIcon.hide();
+    }
+  };
+  var changeVisibility = () => {
+    if (isVisible) {
+      hide();
+      isVisible = false;
+    } else {
+      show();
+      isVisible = true;
+    }
+  };
+  var init2 = async () => {
+    leftSide = await core.store.get(storageNames.menuLeft);
+    menuSide(leftSide);
+    add(elements.iconShowHide, "click", changeVisibility);
+  };
+
+  // src/tab/tab.ts
+  var tab_exports = {};
+  __export(tab_exports, {
+    blur: () => blur,
+    getGoTo: () => getGoTo,
+    goLeft: () => goLeft,
+    goRight: () => goRight,
+    init: () => init13,
+    resize: () => resize6,
+    screens: () => screens,
+    setTab: () => setTab,
+    state: () => state2,
+    unBlur: () => unBlur
+  });
+
+  // src/screens/starter/starter.ts
+  var starter_exports = {};
+  __export(starter_exports, {
+    active: () => active,
+    deactivate: () => deactivate,
+    elements: () => elements2,
+    init: () => init4,
+    resize: () => resize
+  });
+  var elements2 = {};
+  var init4 = async () => {
+    elements2.logoDark = byId("logo-dark");
+    elements2.logoLight = byId("logo-light");
+    elements2.svgTitle = byId("starter-svg-title");
+    elements2.title_1 = byId("starter-title-1");
+    elements2.title_2 = byId("starter-title-2");
+    elements2.userLabel = byId("starter-user-label");
+    elements2.userId = byId("starter-user-id");
+    elements2.statusNow = byId("status-now");
+    elements2.statusAction = byId("status-action");
+    elements2.version = byId("starter-version");
+    areNotNull(elements2, ["starter", "screen"]);
+  };
+  var resize = (w, h) => {
+    const menuH = 121 / 701 * w;
+    const versionX = w - elements2.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200);
+    const versionY = h - 6 - (core.isMobile ? menuH : 0);
+    setAttribute(elements2.version, "x", `${getPx(versionX)}`);
+    setAttribute(elements2.version, "y", `${getPx(versionY)}`);
+    const svgHeight = `${getPx(h)}`;
+    const setTitleSize = (size) => {
+      setStyle(elements2.svgTitle, "height", svgHeight);
+      const fontSize = `${getPx(size)}`;
+      let y = size;
+      [elements2.title_1, elements2.title_2].forEach((title) => {
+        setStyle(title, "fontSize", fontSize);
+        setStyle(title, "lineHeight", fontSize);
+        setAttribute(title, "y", `${getPx(y)}`);
+        y += size * 1.1;
+      });
+      y += 50;
+      setAttribute(elements2.userLabel, "y", `${getPx(y)}`);
+      const correctW = core.isMobile ? w : w - 200;
+      const userIdSize = (correctW < h ? correctW : h) / 14;
+      y += userIdSize + 6;
+      setStyle(elements2.userId, "fontSize", `${getPx(userIdSize)}`);
+      setAttribute(elements2.userId, "y", `${getPx(y)}`);
+      y += 24 + 24;
+      [elements2.statusNow, elements2.statusAction].forEach((status) => {
+        setAttribute(status, "y", `${getPx(y)}`);
+        y += 24;
+      });
+    };
+    const setLogoSize = (width, height) => {
+      [elements2.logoDark, elements2.logoLight].forEach((elem) => {
+        setStyle(elem, "width", width);
+        setStyle(elem, "height", height);
+      });
+    };
+    if (core.isMobile) {
+      const fontSize = w / 7;
+      setTitleSize(fontSize);
+      setLogoSize("100%", "nope");
+    } else {
+      const fontSize = w < h ? w / 12 : h / 12;
+      setTitleSize(fontSize);
+      if (w < h) {
+        setLogoSize("100%", "nope");
+      } else {
+        const scaledH = h * 0.6;
+        const height = `${scaledH}px`;
+        const ratio2 = 270.9 / 289.7;
+        const width = `${scaledH * ratio2}px`;
+        setLogoSize(width, height);
+      }
+    }
+  };
+  var active = () => {
+  };
+  var deactivate = () => {
+  };
+
+  // src/screens/statistics/statistics.ts
+  var statistics_exports = {};
+  __export(statistics_exports, {
+    active: () => active4,
+    deactivate: () => deactivate4,
+    elements: () => elements3,
+    firstUse: () => firstUse,
+    init: () => init9,
+    resize: () => resize4
+  });
+
+  // src/screens/statistics/data.ts
+  var data2 = {
+    // background: null,
+    base: {
+      used: {},
+      bad: {},
+      good: {}
+    },
+    steps: {
+      used: [],
+      bad: [],
+      good: []
+    },
+    monitor: {
+      size: 0,
+      width: 0,
+      pos: {
+        x: 0,
+        y: 0
+      }
+    },
+    cell: {
+      size: 0,
+      space: 0,
+      all: 0
+    }
+  };
+  var determinants2 = {
+    cell: {
+      size: 20,
+      space: 2
+    }
+  };
+
+  // src/types.ts
+  var rating = {
+    bad: "bad",
+    good: "good"
+  };
+  var ratingNames = Object.values(rating);
+
+  // src/screens/statistics/helpers.ts
+  var hexToRgb = (hex) => {
+    const newHex = hex.trim().replace(/^#/, "");
+    if (newHex.length !== 6) {
+      throw new Error(`Nieprawid\u0142owy format koloru HEX: "${hex}"`);
+    }
+    const bigint = parseInt(newHex, 16);
+    return {
+      r: bigint >> 16 & 255,
+      g: bigint >> 8 & 255,
+      b: bigint & 255
+    };
+  };
+  var mix = (from, to, ratio2) => {
+    const rgb = {
+      r: Math.round(from.r + (to.r - from.r) * ratio2),
+      g: Math.round(from.g + (to.g - from.g) * ratio2),
+      b: Math.round(from.b + (to.b - from.b) * ratio2)
+    };
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+  };
+  var getColorSteps = (from, to, steps) => {
+    const result = [];
+    const ratio2 = 1 / (steps - 1);
+    for (let i = 0; i < steps; ++i) {
+      result.push(mix(hexToRgb(from), hexToRgb(to), ratio2 * i));
+    }
+    return result;
+  };
+  var getColor = (answer) => {
+    if (answer.rating) {
+      if (answer.rating.type === rating.bad) {
+        return data2.steps.bad[answer.rating.scale];
+      }
+      if (answer.rating.type === rating.good) {
+        return data2.steps.good[answer.rating.scale];
+      }
+    }
+    return data2.steps.used[answer.used - 1];
+  };
+  var getOnThisSession = (answer) => data.session.some((item) => item.id === answer.id);
+
+  // src/screens/learning/learning.ts
+  var learning_exports = {};
+  __export(learning_exports, {
+    active: () => active2,
+    deactivate: () => deactivate2,
+    elements: () => elements4,
+    init: () => init7,
+    resize: () => resize2
+  });
+
+  // src/screens/statistics/legend.ts
+  var listElements = {
+    bad: null,
+    good: null,
+    used: null
+  };
+  var data3 = [
+    { name: "poprawne", id: "good" },
+    { name: "nieu\u017Cyte", id: "used" },
+    { name: "b\u0142\u0119dne", id: "bad" }
+  ];
+  var prepareColorLines = () => {
+    elements3.legend.replaceChildren();
+    const children = [
+      prepare("div", {
+        classes: ["statistics-box-title"],
+        inner: "legenda"
+      })
+    ];
+    const setLegendColors = (name, id) => {
+      children.push(prepare("div", {
+        classes: ["statistics-colors-title"],
+        inner: name
+      }));
+      const item = prepare("div", {
+        id: `statistics-${id}-colors`,
+        classes: ["statistics-section"]
+      });
+      listElements[id] = item;
+      children.push(item);
+    };
+    data3.forEach((item) => setLegendColors(item.name, item.id));
+    prepare(elements3.legend, {
+      children
+    });
+  };
+  var setColorLine = (key) => {
+    const colors = data2.steps[key];
+    const parent = listElements[key];
+    setTimeout(() => {
+      colors.forEach((color, index) => {
+        const elem = prepare("div", {
+          classes: ["statistics-color"]
         });
-        return results;
-    };
-    dom.prepare = (node, options) => {
-        const elem = typeof node === "string" ? document.createElement(node) : node;
-        if (elem && elem instanceof HTMLElement) {
-            if (options.delete) {
-                elem.remove();
-                return;
-            }
-            if (options?.id)
-                elem.id = options.id;
-            options?.classes?.forEach((c) => elem.classList.add(c));
-            options?.children?.forEach((c) => elem.appendChild(c));
-            if (options?.src && elem instanceof HTMLImageElement) {
-                elem.src = options.src;
-            }
-            if (options?.inner) {
-                elem.textContent = options.inner;
-            }
-            if (options?.position) {
-                elem.style.left = `${options.position.x}px`;
-                elem.style.top = `${options.position.y}px`;
-            }
-            return elem;
-        }
-    };
-    dom.setStyle = (element, style, value) => {
-        element.style[style] = value;
-    };
-    dom.getColorFromStyle = (name) => dom.style.getPropertyValue(name).trim();
-    dom.setAllStyles = (styles) => styles.forEach((s) => dom.setStyle(s[0], s[1], s[2]));
-    dom.setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
-    dom.setAllAttributes = (attributes) => attributes.forEach((a) => a[0].setAttribute(a[1], a[2]));
-    dom.disable = (elem) => elem.setAttribute('disabled', '');
-    dom.enable = (elem) => elem.removeAttribute('disabled');
-    dom.check = (elem) => elem.checked = true;
-    dom.uncheck = (elem) => elem.checked = false;
-    dom.display = (elem, attribute) => elem.style.display = attribute;
-    dom.setColor = (elem, color) => elem.style.color = color;
-    dom.removeClass = (elem, attribute) => elem.classList.remove(attribute);
-    dom.addClass = (elem, attribute) => elem.classList.add(attribute);
-    dom.colors = {
-        line: 'var(--line_color)',
-        prime: 'var(--prime_color)',
-        off1: 'var(--off_prime_color)',
-        off2: 'var(--off_second_color)',
-    };
-    dom.add = (elem, name, fn) => elem.addEventListener(name, fn);
-    dom.remove = (elem, name, fn) => elem.removeEventListener(name, fn);
-    dom.xmlns = 'http://www.w3.org/2000/svg';
-    dom.newNS = (name) => document.createElementNS(dom.xmlns, 'rect');
-})(dom || (dom = {}));
-const setConsole = () => (function () {
-    let styles = [
-        'background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)',
-        'border: 1px solid #3E0E02',
-        'width: 220px',
-        'color: black',
-        'display: block',
-        'text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3)',
-        'box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 5px 3px -5px rgba(0, 0, 0, 0.5), 0 -13px 5px -10px rgba(255, 255, 255, 0.4) inset',
-        'line-height: 30px',
-        'text-align: center',
-        'font-weight: bold',
-        'font-size: 24px',
-        'margin: 10px 0',
-        'padding: 10px 0 15px 0'
-    ].join(';');
-    console.log('%c👉rol 04👈', styles);
-    let styles2 = [
-        'background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)',
-        'border: 1px solid #3E0E02',
-        'width: 220px',
-        'color: black',
-        'display: block',
-        'text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3)',
-        'box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 5px 3px -5px rgba(0, 0, 0, 0.5), 0 -13px 5px -10px rgba(255, 255, 255, 0.4) inset',
-        'line-height: 18px',
-        'text-align: center',
-        'font-weight: bold',
-        'font-size: 16px',
-        'margin: 10px 0',
-        'padding: 10px 0 15px 0'
-    ].join(';');
-    console.log('%c   𝒂𝒖𝒕𝒐𝒓: 𝐌𝐢𝐜𝐡𝐚𝐥 𝐀𝐧𝐢𝐨𝐥 😎   ', styles2);
-}());
-!function (e, t) { "object" == typeof exports && "object" == typeof module ? module.exports = t() : "function" == typeof define && define.amd ? define([], t) : "object" == typeof exports ? exports.axios = t() : e.axios = t(); }(window, (function () { return function (e) { var t = {}; function r(n) { if (t[n])
-    return t[n].exports; var o = t[n] = { i: n, l: !1, exports: {} }; return e[n].call(o.exports, o, o.exports, r), o.l = !0, o.exports; } return r.m = e, r.c = t, r.d = function (e, t, n) { r.o(e, t) || Object.defineProperty(e, t, { enumerable: !0, get: n }); }, r.r = function (e) { "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e, "__esModule", { value: !0 }); }, r.t = function (e, t) { if (1 & t && (e = r(e)), 8 & t)
-    return e; if (4 & t && "object" == typeof e && e && e.__esModule)
-    return e; var n = Object.create(null); if (r.r(n), Object.defineProperty(n, "default", { enumerable: !0, value: e }), 2 & t && "string" != typeof e)
-    for (var o in e)
-        r.d(n, o, function (t) { return e[t]; }.bind(null, o)); return n; }, r.n = function (e) { var t = e && e.__esModule ? function () { return e.default; } : function () { return e; }; return r.d(t, "a", t), t; }, r.o = function (e, t) { return Object.prototype.hasOwnProperty.call(e, t); }, r.p = "", r(r.s = 10); }([function (e, t, r) {
-        "use strict";
-        var n = r(2), o = Object.prototype.toString;
-        function i(e) { return "[object Array]" === o.call(e); }
-        function s(e) { return void 0 === e; }
-        function a(e) { return null !== e && "object" == typeof e; }
-        function u(e) { if ("[object Object]" !== o.call(e))
-            return !1; var t = Object.getPrototypeOf(e); return null === t || t === Object.prototype; }
-        function c(e) { return "[object Function]" === o.call(e); }
-        function f(e, t) { if (null != e)
-            if ("object" != typeof e && (e = [e]), i(e))
-                for (var r = 0, n = e.length; r < n; r++)
-                    t.call(null, e[r], r, e);
-            else
-                for (var o in e)
-                    Object.prototype.hasOwnProperty.call(e, o) && t.call(null, e[o], o, e); }
-        e.exports = { isArray: i, isArrayBuffer: function (e) { return "[object ArrayBuffer]" === o.call(e); }, isBuffer: function (e) { return null !== e && !s(e) && null !== e.constructor && !s(e.constructor) && "function" == typeof e.constructor.isBuffer && e.constructor.isBuffer(e); }, isFormData: function (e) { return "undefined" != typeof FormData && e instanceof FormData; }, isArrayBufferView: function (e) { return "undefined" != typeof ArrayBuffer && ArrayBuffer.isView ? ArrayBuffer.isView(e) : e && e.buffer && e.buffer instanceof ArrayBuffer; }, isString: function (e) { return "string" == typeof e; }, isNumber: function (e) { return "number" == typeof e; }, isObject: a, isPlainObject: u, isUndefined: s, isDate: function (e) { return "[object Date]" === o.call(e); }, isFile: function (e) { return "[object File]" === o.call(e); }, isBlob: function (e) { return "[object Blob]" === o.call(e); }, isFunction: c, isStream: function (e) { return a(e) && c(e.pipe); }, isURLSearchParams: function (e) { return "undefined" != typeof URLSearchParams && e instanceof URLSearchParams; }, isStandardBrowserEnv: function () { return ("undefined" == typeof navigator || "ReactNative" !== navigator.product && "NativeScript" !== navigator.product && "NS" !== navigator.product) && ("undefined" != typeof window && "undefined" != typeof document); }, forEach: f, merge: function e() { var t = {}; function r(r, n) { u(t[n]) && u(r) ? t[n] = e(t[n], r) : u(r) ? t[n] = e({}, r) : i(r) ? t[n] = r.slice() : t[n] = r; } for (var n = 0, o = arguments.length; n < o; n++)
-                f(arguments[n], r); return t; }, extend: function (e, t, r) { return f(t, (function (t, o) { e[o] = r && "function" == typeof t ? n(t, r) : t; })), e; }, trim: function (e) { return e.trim ? e.trim() : e.replace(/^\s+|\s+$/g, ""); }, stripBOM: function (e) { return 65279 === e.charCodeAt(0) && (e = e.slice(1)), e; } };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(16), i = r(4), s = { "Content-Type": "application/x-www-form-urlencoded" };
-        function a(e, t) { !n.isUndefined(e) && n.isUndefined(e["Content-Type"]) && (e["Content-Type"] = t); }
-        var u, c = { transitional: { silentJSONParsing: !0, forcedJSONParsing: !0, clarifyTimeoutError: !1 }, adapter: (("undefined" != typeof XMLHttpRequest || "undefined" != typeof process && "[object process]" === Object.prototype.toString.call(process)) && (u = r(5)), u), transformRequest: [function (e, t) { return o(t, "Accept"), o(t, "Content-Type"), n.isFormData(e) || n.isArrayBuffer(e) || n.isBuffer(e) || n.isStream(e) || n.isFile(e) || n.isBlob(e) ? e : n.isArrayBufferView(e) ? e.buffer : n.isURLSearchParams(e) ? (a(t, "application/x-www-form-urlencoded;charset=utf-8"), e.toString()) : n.isObject(e) || t && "application/json" === t["Content-Type"] ? (a(t, "application/json"), function (e, t, r) { if (n.isString(e))
-                    try {
-                        return (t || JSON.parse)(e), n.trim(e);
-                    }
-                    catch (e) {
-                        if ("SyntaxError" !== e.name)
-                            throw e;
-                    } return (r || JSON.stringify)(e); }(e)) : e; }], transformResponse: [function (e) { var t = this.transitional, r = t && t.silentJSONParsing, o = t && t.forcedJSONParsing, s = !r && "json" === this.responseType; if (s || o && n.isString(e) && e.length)
-                    try {
-                        return JSON.parse(e);
-                    }
-                    catch (e) {
-                        if (s) {
-                            if ("SyntaxError" === e.name)
-                                throw i(e, this, "E_JSON_PARSE");
-                            throw e;
-                        }
-                    } return e; }], timeout: 0, xsrfCookieName: "XSRF-TOKEN", xsrfHeaderName: "X-XSRF-TOKEN", maxContentLength: -1, maxBodyLength: -1, validateStatus: function (e) { return e >= 200 && e < 300; } };
-        c.headers = { common: { Accept: "application/json, text/plain, */*" } }, n.forEach(["delete", "get", "head"], (function (e) { c.headers[e] = {}; })), n.forEach(["post", "put", "patch"], (function (e) { c.headers[e] = n.merge(s); })), e.exports = c;
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e, t) { return function () { for (var r = new Array(arguments.length), n = 0; n < r.length; n++)
-            r[n] = arguments[n]; return e.apply(t, r); }; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        function o(e) { return encodeURIComponent(e).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]"); }
-        e.exports = function (e, t, r) { if (!t)
-            return e; var i; if (r)
-            i = r(t);
-        else if (n.isURLSearchParams(t))
-            i = t.toString();
-        else {
-            var s = [];
-            n.forEach(t, (function (e, t) { null != e && (n.isArray(e) ? t += "[]" : e = [e], n.forEach(e, (function (e) { n.isDate(e) ? e = e.toISOString() : n.isObject(e) && (e = JSON.stringify(e)), s.push(o(t) + "=" + o(e)); }))); })), i = s.join("&");
-        } if (i) {
-            var a = e.indexOf("#");
-            -1 !== a && (e = e.slice(0, a)), e += (-1 === e.indexOf("?") ? "?" : "&") + i;
-        } return e; };
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e, t, r, n, o) { return e.config = t, r && (e.code = r), e.request = n, e.response = o, e.isAxiosError = !0, e.toJSON = function () { return { message: this.message, name: this.name, description: this.description, number: this.number, fileName: this.fileName, lineNumber: this.lineNumber, columnNumber: this.columnNumber, stack: this.stack, config: this.config, code: this.code }; }, e; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(17), i = r(18), s = r(3), a = r(19), u = r(22), c = r(23), f = r(6);
-        e.exports = function (e) { return new Promise((function (t, r) { var p = e.data, l = e.headers, d = e.responseType; n.isFormData(p) && delete l["Content-Type"]; var h = new XMLHttpRequest; if (e.auth) {
-            var m = e.auth.username || "", g = e.auth.password ? unescape(encodeURIComponent(e.auth.password)) : "";
-            l.Authorization = "Basic " + btoa(m + ":" + g);
-        } var v = a(e.baseURL, e.url); function y() { if (h) {
-            var n = "getAllResponseHeaders" in h ? u(h.getAllResponseHeaders()) : null, i = { data: d && "text" !== d && "json" !== d ? h.response : h.responseText, status: h.status, statusText: h.statusText, headers: n, config: e, request: h };
-            o(t, r, i), h = null;
-        } } if (h.open(e.method.toUpperCase(), s(v, e.params, e.paramsSerializer), !0), h.timeout = e.timeout, "onloadend" in h ? h.onloadend = y : h.onreadystatechange = function () { h && 4 === h.readyState && (0 !== h.status || h.responseURL && 0 === h.responseURL.indexOf("file:")) && setTimeout(y); }, h.onabort = function () { h && (r(f("Request aborted", e, "ECONNABORTED", h)), h = null); }, h.onerror = function () { r(f("Network Error", e, null, h)), h = null; }, h.ontimeout = function () { var t = "timeout of " + e.timeout + "ms exceeded"; e.timeoutErrorMessage && (t = e.timeoutErrorMessage), r(f(t, e, e.transitional && e.transitional.clarifyTimeoutError ? "ETIMEDOUT" : "ECONNABORTED", h)), h = null; }, n.isStandardBrowserEnv()) {
-            var b = (e.withCredentials || c(v)) && e.xsrfCookieName ? i.read(e.xsrfCookieName) : void 0;
-            b && (l[e.xsrfHeaderName] = b);
-        } "setRequestHeader" in h && n.forEach(l, (function (e, t) { void 0 === p && "content-type" === t.toLowerCase() ? delete l[t] : h.setRequestHeader(t, e); })), n.isUndefined(e.withCredentials) || (h.withCredentials = !!e.withCredentials), d && "json" !== d && (h.responseType = e.responseType), "function" == typeof e.onDownloadProgress && h.addEventListener("progress", e.onDownloadProgress), "function" == typeof e.onUploadProgress && h.upload && h.upload.addEventListener("progress", e.onUploadProgress), e.cancelToken && e.cancelToken.promise.then((function (e) { h && (h.abort(), r(e), h = null); })), p || (p = null), h.send(p); })); };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(4);
-        e.exports = function (e, t, r, o, i) { var s = new Error(e); return n(s, t, r, o, i); };
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e) { return !(!e || !e.__CANCEL__); };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        e.exports = function (e, t) { t = t || {}; var r = {}, o = ["url", "method", "data"], i = ["headers", "auth", "proxy", "params"], s = ["baseURL", "transformRequest", "transformResponse", "paramsSerializer", "timeout", "timeoutMessage", "withCredentials", "adapter", "responseType", "xsrfCookieName", "xsrfHeaderName", "onUploadProgress", "onDownloadProgress", "decompress", "maxContentLength", "maxBodyLength", "maxRedirects", "transport", "httpAgent", "httpsAgent", "cancelToken", "socketPath", "responseEncoding"], a = ["validateStatus"]; function u(e, t) { return n.isPlainObject(e) && n.isPlainObject(t) ? n.merge(e, t) : n.isPlainObject(t) ? n.merge({}, t) : n.isArray(t) ? t.slice() : t; } function c(o) { n.isUndefined(t[o]) ? n.isUndefined(e[o]) || (r[o] = u(void 0, e[o])) : r[o] = u(e[o], t[o]); } n.forEach(o, (function (e) { n.isUndefined(t[e]) || (r[e] = u(void 0, t[e])); })), n.forEach(i, c), n.forEach(s, (function (o) { n.isUndefined(t[o]) ? n.isUndefined(e[o]) || (r[o] = u(void 0, e[o])) : r[o] = u(void 0, t[o]); })), n.forEach(a, (function (n) { n in t ? r[n] = u(e[n], t[n]) : n in e && (r[n] = u(void 0, e[n])); })); var f = o.concat(i).concat(s).concat(a), p = Object.keys(e).concat(Object.keys(t)).filter((function (e) { return -1 === f.indexOf(e); })); return n.forEach(p, c), r; };
-    }, function (e, t, r) {
-        "use strict";
-        function n(e) { this.message = e; }
-        n.prototype.toString = function () { return "Cancel" + (this.message ? ": " + this.message : ""); }, n.prototype.__CANCEL__ = !0, e.exports = n;
-    }, function (e, t, r) { e.exports = r(11); }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(2), i = r(12), s = r(8);
-        function a(e) { var t = new i(e), r = o(i.prototype.request, t); return n.extend(r, i.prototype, t), n.extend(r, t), r; }
-        var u = a(r(1));
-        u.Axios = i, u.create = function (e) { return a(s(u.defaults, e)); }, u.Cancel = r(9), u.CancelToken = r(26), u.isCancel = r(7), u.all = function (e) { return Promise.all(e); }, u.spread = r(27), u.isAxiosError = r(28), e.exports = u, e.exports.default = u;
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(3), i = r(13), s = r(14), a = r(8), u = r(24), c = u.validators;
-        function f(e) { this.defaults = e, this.interceptors = { request: new i, response: new i }; }
-        f.prototype.request = function (e) { "string" == typeof e ? (e = arguments[1] || {}).url = arguments[0] : e = e || {}, (e = a(this.defaults, e)).method ? e.method = e.method.toLowerCase() : this.defaults.method ? e.method = this.defaults.method.toLowerCase() : e.method = "get"; var t = e.transitional; void 0 !== t && u.assertOptions(t, { silentJSONParsing: c.transitional(c.boolean, "1.0.0"), forcedJSONParsing: c.transitional(c.boolean, "1.0.0"), clarifyTimeoutError: c.transitional(c.boolean, "1.0.0") }, !1); var r = [], n = !0; this.interceptors.request.forEach((function (t) { "function" == typeof t.runWhen && !1 === t.runWhen(e) || (n = n && t.synchronous, r.unshift(t.fulfilled, t.rejected)); })); var o, i = []; if (this.interceptors.response.forEach((function (e) { i.push(e.fulfilled, e.rejected); })), !n) {
-            var f = [s, void 0];
-            for (Array.prototype.unshift.apply(f, r), f = f.concat(i), o = Promise.resolve(e); f.length;)
-                o = o.then(f.shift(), f.shift());
-            return o;
-        } for (var p = e; r.length;) {
-            var l = r.shift(), d = r.shift();
-            try {
-                p = l(p);
-            }
-            catch (e) {
-                d(e);
-                break;
-            }
-        } try {
-            o = s(p);
-        }
-        catch (e) {
-            return Promise.reject(e);
-        } for (; i.length;)
-            o = o.then(i.shift(), i.shift()); return o; }, f.prototype.getUri = function (e) { return e = a(this.defaults, e), o(e.url, e.params, e.paramsSerializer).replace(/^\?/, ""); }, n.forEach(["delete", "get", "head", "options"], (function (e) { f.prototype[e] = function (t, r) { return this.request(a(r || {}, { method: e, url: t, data: (r || {}).data })); }; })), n.forEach(["post", "put", "patch"], (function (e) { f.prototype[e] = function (t, r, n) { return this.request(a(n || {}, { method: e, url: t, data: r })); }; })), e.exports = f;
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        function o() { this.handlers = []; }
-        o.prototype.use = function (e, t, r) { return this.handlers.push({ fulfilled: e, rejected: t, synchronous: !!r && r.synchronous, runWhen: r ? r.runWhen : null }), this.handlers.length - 1; }, o.prototype.eject = function (e) { this.handlers[e] && (this.handlers[e] = null); }, o.prototype.forEach = function (e) { n.forEach(this.handlers, (function (t) { null !== t && e(t); })); }, e.exports = o;
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(15), i = r(7), s = r(1);
-        function a(e) { e.cancelToken && e.cancelToken.throwIfRequested(); }
-        e.exports = function (e) { return a(e), e.headers = e.headers || {}, e.data = o.call(e, e.data, e.headers, e.transformRequest), e.headers = n.merge(e.headers.common || {}, e.headers[e.method] || {}, e.headers), n.forEach(["delete", "get", "head", "post", "put", "patch", "common"], (function (t) { delete e.headers[t]; })), (e.adapter || s.adapter)(e).then((function (t) { return a(e), t.data = o.call(e, t.data, t.headers, e.transformResponse), t; }), (function (t) { return i(t) || (a(e), t && t.response && (t.response.data = o.call(e, t.response.data, t.response.headers, e.transformResponse))), Promise.reject(t); })); };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = r(1);
-        e.exports = function (e, t, r) { var i = this || o; return n.forEach(r, (function (r) { e = r.call(i, e, t); })), e; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        e.exports = function (e, t) { n.forEach(e, (function (r, n) { n !== t && n.toUpperCase() === t.toUpperCase() && (e[t] = r, delete e[n]); })); };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(6);
-        e.exports = function (e, t, r) { var o = r.config.validateStatus; r.status && o && !o(r.status) ? t(n("Request failed with status code " + r.status, r.config, null, r.request, r)) : e(r); };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        e.exports = n.isStandardBrowserEnv() ? { write: function (e, t, r, o, i, s) { var a = []; a.push(e + "=" + encodeURIComponent(t)), n.isNumber(r) && a.push("expires=" + new Date(r).toGMTString()), n.isString(o) && a.push("path=" + o), n.isString(i) && a.push("domain=" + i), !0 === s && a.push("secure"), document.cookie = a.join("; "); }, read: function (e) { var t = document.cookie.match(new RegExp("(^|;\\s*)(" + e + ")=([^;]*)")); return t ? decodeURIComponent(t[3]) : null; }, remove: function (e) { this.write(e, "", Date.now() - 864e5); } } : { write: function () { }, read: function () { return null; }, remove: function () { } };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(20), o = r(21);
-        e.exports = function (e, t) { return e && !n(t) ? o(e, t) : t; };
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e) { return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(e); };
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e, t) { return t ? e.replace(/\/+$/, "") + "/" + t.replace(/^\/+/, "") : e; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0), o = ["age", "authorization", "content-length", "content-type", "etag", "expires", "from", "host", "if-modified-since", "if-unmodified-since", "last-modified", "location", "max-forwards", "proxy-authorization", "referer", "retry-after", "user-agent"];
-        e.exports = function (e) { var t, r, i, s = {}; return e ? (n.forEach(e.split("\n"), (function (e) { if (i = e.indexOf(":"), t = n.trim(e.substr(0, i)).toLowerCase(), r = n.trim(e.substr(i + 1)), t) {
-            if (s[t] && o.indexOf(t) >= 0)
-                return;
-            s[t] = "set-cookie" === t ? (s[t] ? s[t] : []).concat([r]) : s[t] ? s[t] + ", " + r : r;
-        } })), s) : s; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(0);
-        e.exports = n.isStandardBrowserEnv() ? function () { var e, t = /(msie|trident)/i.test(navigator.userAgent), r = document.createElement("a"); function o(e) { var n = e; return t && (r.setAttribute("href", n), n = r.href), r.setAttribute("href", n), { href: r.href, protocol: r.protocol ? r.protocol.replace(/:$/, "") : "", host: r.host, search: r.search ? r.search.replace(/^\?/, "") : "", hash: r.hash ? r.hash.replace(/^#/, "") : "", hostname: r.hostname, port: r.port, pathname: "/" === r.pathname.charAt(0) ? r.pathname : "/" + r.pathname }; } return e = o(window.location.href), function (t) { var r = n.isString(t) ? o(t) : t; return r.protocol === e.protocol && r.host === e.host; }; }() : function () { return !0; };
-    }, function (e, t, r) {
-        "use strict";
-        var n = r(25), o = {};
-        ["object", "boolean", "number", "function", "string", "symbol"].forEach((function (e, t) { o[e] = function (r) { return typeof r === e || "a" + (t < 1 ? "n " : " ") + e; }; }));
-        var i = {}, s = n.version.split(".");
-        function a(e, t) { for (var r = t ? t.split(".") : s, n = e.split("."), o = 0; o < 3; o++) {
-            if (r[o] > n[o])
-                return !0;
-            if (r[o] < n[o])
-                return !1;
-        } return !1; }
-        o.transitional = function (e, t, r) { var o = t && a(t); function s(e, t) { return "[Axios v" + n.version + "] Transitional option '" + e + "'" + t + (r ? ". " + r : ""); } return function (r, n, a) { if (!1 === e)
-            throw new Error(s(n, " has been removed in " + t)); return o && !i[n] && (i[n] = !0, console.warn(s(n, " has been deprecated since v" + t + " and will be removed in the near future"))), !e || e(r, n, a); }; }, e.exports = { isOlderVersion: a, assertOptions: function (e, t, r) { if ("object" != typeof e)
-                throw new TypeError("options must be an object"); for (var n = Object.keys(e), o = n.length; o-- > 0;) {
-                var i = n[o], s = t[i];
-                if (s) {
-                    var a = e[i], u = void 0 === a || s(a, i, e);
-                    if (!0 !== u)
-                        throw new TypeError("option " + i + " must be " + u);
-                }
-                else if (!0 !== r)
-                    throw Error("Unknown option " + i);
-            } }, validators: o };
-    }, function (e) { e.exports = JSON.parse('{"name":"axios","version":"0.21.4","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://axios-http.com","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.14.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}]}'); }, function (e, t, r) {
-        "use strict";
-        var n = r(9);
-        function o(e) { if ("function" != typeof e)
-            throw new TypeError("executor must be a function."); var t; this.promise = new Promise((function (e) { t = e; })); var r = this; e((function (e) { r.reason || (r.reason = new n(e), t(r.reason)); })); }
-        o.prototype.throwIfRequested = function () { if (this.reason)
-            throw this.reason; }, o.source = function () { var e; return { token: new o((function (t) { e = t; })), cancel: e }; }, e.exports = o;
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e) { return function (t) { return e.apply(null, t); }; };
-    }, function (e, t, r) {
-        "use strict";
-        e.exports = function (e) { return "object" == typeof e && !0 === e.isAxiosError; };
-    }]); }));
-var utils;
-(function (utils) {
-    const getObjectPath = (keys) => {
-        let path = '';
-        keys.forEach((key) => {
-            if (typeof key === 'number') {
-                path += `[${key}]`;
-                return;
-            }
-            path += path ? `.${key}` : key;
+        setStyle(elem, "backgroundColor", color);
+        prepare(parent, { children: [elem] });
+        const p = prepare("p", {
+          inner: `${index + 1}x`
         });
-        return path;
+        prepare(elem, { children: [p] });
+      });
+    }, 500);
+  };
+  var setMonitorLegend = () => {
+    prepareColorLines();
+    Object.keys(data2.steps).forEach((key) => setColorLine(key));
+  };
+
+  // src/utils/radio.ts
+  var getRadio = (radioData) => {
+    const themeElements = radioData.elementList.map((tn) => byId(radioData.prefix + tn));
+    const newRadioData = [];
+    const shift = (num) => newRadioData.forEach((rd, i) => rd.checkbox.checked = i === num);
+    radioData.nameList.forEach((name, i) => {
+      const click = radioData.clickList && radioData.clickList[i] ? () => {
+        const fn = radioData.clickList[i];
+        fn();
+        core.store.set(radioData.storeName, name);
+        shift(i);
+      } : () => {
+        core.store.set(radioData.storeName, name);
+        shift(i);
+      };
+      const elem = themeElements[i];
+      newRadioData.push({
+        item: elem,
+        click,
+        checkbox: byQ(elem, "input"),
+        name
+      });
+    });
+    const getSaved = () => core.store.get(radioData.storeName);
+    const mark2 = (name) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name);
+    const active7 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
+    const deactivate7 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
+    const init18 = () => {
+      active7();
+      const saved = getSaved();
+      if (radioData.init) radioData.init(saved);
+      mark2(saved);
+      return saved;
     };
-    utils.isNotNull = (value, keys = []) => {
-        if (value === null) {
-            console.log('%c AssertionError:', 'background:rgb(255, 0, 212); color: #003300', `Passed value at "${getObjectPath(keys)}" is nullable`);
-        }
+    return {
+      init: init18,
+      active: active7,
+      deactivate: deactivate7
     };
-    utils.areNotNull = (value, keys = []) => {
-        utils.isNotNull(value, keys);
-        if (value === null) {
-            return;
-        }
-        if (Array.isArray(value)) {
-            value.forEach((item, index) => {
-                utils.areNotNull(item, [
-                    ...keys,
-                    index
-                ]);
-            });
-            return;
-        }
-        if (typeof value === 'object') {
-            Object.entries(value).forEach(([key, nestedValue]) => {
-                utils.areNotNull(nestedValue, [
-                    ...keys,
-                    key
-                ]);
-            });
-        }
+  };
+
+  // src/screens/settings/theme/theme.ts
+  var theme = {
+    dark: "dark",
+    light: "light"
+  };
+  var themeMode = {
+    ...theme,
+    system: "system"
+  };
+  var themeNames = Object.values(themeMode);
+  var memo = {
+    theme: null
+  };
+  var get = () => memo.theme;
+  var apply = (theme2) => {
+    root.setAttribute("data-theme", theme2);
+    setAttribute(root, "data-theme", theme2);
+    removeClass(root, themeMode.dark);
+    removeClass(root, themeMode.light);
+    addClass(root, theme2);
+    setStyle(root, "colorScheme", theme2);
+  };
+  var setSystemTheme = () => {
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const newTheme = systemPrefersDark ? theme.dark : theme.light;
+    apply(newTheme);
+    memo.theme = newTheme;
+  };
+  var set = (saved) => {
+    if (saved === theme.dark || saved === theme.light) {
+      apply(saved);
+      memo.theme = saved;
+      return saved;
+    }
+    if (saved === themeMode.system) {
+      setSystemTheme();
+      return saved;
+    }
+    core.store.set(storageNames.theme, themeMode.system);
+    setSystemTheme();
+    return themeMode.system;
+  };
+  var themeData = {
+    prefix: "setting-theme-",
+    storeName: storageNames.theme,
+    elementList: themeNames,
+    nameList: themeNames,
+    clickList: themeNames.map((name) => () => {
+      set(name);
+      setTimeout(() => {
+        themeChange();
+        setMonitorLegend();
+      }, 100);
+    }),
+    init: set
+  };
+  var ratio;
+  var init5 = async () => {
+    ratio = getRadio(themeData);
+    ratio.init();
+  };
+
+  // src/screens/learning/evaluation.ts
+  var mark = (num) => () => {
+    if (data4.confirm) {
+      return;
+    }
+    if (num === -1) {
+      disable(elements4.confirm);
+    } else {
+      enable(elements4.confirm);
+    }
+    data4.mark = num;
+    elements4.checkbox.forEach((a, i) => a.checked = i === num);
+    elements4.answersFields.forEach((a, i) => i === num ? setStyle(a, "border", "2px solid var(--mine_color)") : setStyle(a, "border", "2px solid transparent"));
+  };
+  var setResult = (result, history) => {
+    history.forEach((h) => {
+      if (h.result) {
+        result.good++;
+      } else {
+        result.bad++;
+      }
+    });
+    return result;
+  };
+  var getRateHistory = (history) => {
+    const getResult = () => ({ good: 0, bad: 0 });
+    const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    const lastThree = sortedHistory.slice(-determinants.numLastRequiredQuestions);
+    const resultOne = setResult(getResult(), lastThree);
+    if (resultOne.bad > 0) {
+      return {
+        type: rating.bad,
+        scale: resultOne.bad - 1
+      };
+    } else {
+      const lastSix = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions);
+      const resultTwo = setResult(getResult(), lastSix);
+      return {
+        type: rating.good,
+        scale: resultTwo.good - 1
+      };
+    }
+  };
+  var sumAndMemo = async () => {
+    const answer = data4.answers.shuffled[data4.mark];
+    const timestamp = Date.now();
+    data4.answers.origin?.answer.history.push({
+      timestamp,
+      result: answer.correct
+    });
+    const rate = getRateHistory(data4.answers.origin?.answer.history);
+    data4.answers.origin.answer.rating = rate;
+    const { drawn, index, ...answerDb } = data4.answers.origin.answer;
+    core.idb.answers.update(index, (old) => old = answerDb);
+    const log = {
+      action: data4.answers.origin.answer.id,
+      result: answer.correct
     };
-})(utils || (utils = {}));
-const shuffle = (arr) => {
+    core.idb.logs.set(timestamp, log);
+  };
+  var setGreen = (field) => {
+    setStyle(field, "backgroundColor", "var(--on_prime_color)");
+    const theme2 = get();
+    if (theme2 === theme.dark) {
+      setStyle(field, "color", "var(--last_color)");
+    }
+  };
+  var showResult = async () => {
+    data4.confirm = true;
+    inner(elements4.confirm, "Nast\u0119pne");
+    disable(elements4.confirm);
+    setTimeout(() => {
+      enable(elements4.confirm);
+    }, 600);
+    const markedAnswer = data4.answers.shuffled[data4.mark];
+    if (markedAnswer.correct) {
+      setGreen(elements4.answersFields[data4.mark]);
+    } else {
+      elements4.answersFields.forEach((field, index) => {
+        if (index === data4.mark) {
+          setStyle(field, "backgroundColor", "var(--off_prime_color)");
+        }
+        const correct = data4.answers.shuffled[index].correct;
+        if (correct) {
+          setGreen(field);
+        }
+      });
+    }
+    await sumAndMemo();
+  };
+  var clearResults = () => {
+    data4.confirm = false;
+    inner(elements4.confirm, "Zatwierd\u017A");
+    setQuestion();
+    elements4.answersFields.forEach((field, index) => {
+      if (index % 2 === 0) {
+        setStyle(field, "backgroundColor", "var(--penultimate_color)");
+      } else {
+        setStyle(field, "backgroundColor", "var(--third_from_end_color)");
+      }
+    });
+  };
+  var confirmClick = async () => {
+    if (data4.confirm) {
+      clearResults();
+    } else {
+      await showResult();
+    }
+  };
+
+  // src/engine/analize.ts
+  var countLastFewFalse = (answer) => {
+    if (answer) {
+      const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
+      const lastFew = sortedHistory.slice(0, determinants.numLastRequiredQuestions);
+      const result = lastFew.filter((entry) => !entry.result).length;
+      return result;
+    }
+    return 0;
+  };
+  var prepareData = (reverseLastUse, answers) => {
+    const now = getDateAtNoonInXDays(1);
+    let maxLastUse = now;
+    let maxNextUse = now;
+    let maxImportance = 1;
+    let maxUsed = 0;
+    const preData = answers.map((answer, index) => {
+      let lastUsed = 0;
+      let nextUse = 0;
+      let rating2 = 0;
+      if (answer !== null) {
+        let theLastOne = 0;
+        lastUsed = now - theLastOne;
+        nextUse = nextUse - now;
+        if (maxNextUse < nextUse) maxNextUse = nextUse;
+        let allFalsies = countLastFewFalse(answer);
+        rating2 = allFalsies / determinants.numLastRequiredQuestions;
+      }
+      if (lastUsed < maxLastUse) maxLastUse = lastUsed;
+      const appearance = answer.used;
+      if (maxImportance < appearance) maxImportance = appearance;
+      if (answer && maxUsed < answer.history.length) maxUsed = answer.history.length;
+      return {
+        id: answer.id,
+        index,
+        // index
+        used: answer ? answer.history.length : 0,
+        lastUsed,
+        nextUse,
+        appearance,
+        rating: rating2
+      };
+    });
+    const data6 = preData.map((p) => {
+      let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
+      if (reverseLastUse) lastUsed = 1 - lastUsed;
+      const used = maxUsed === 0 ? 1 : 1 - p.used / maxUsed;
+      return {
+        id: p.id,
+        index: p.index,
+        used,
+        // 1 czym zadziej uzyto
+        lastUsed,
+        nextUse: p.nextUse / maxNextUse,
+        // 1 czym bliżej w czasie
+        appearance: p.appearance / maxImportance,
+        // 1 czym więcej użyte
+        rating: p.rating
+        // 1 czym więcej pomyłek
+      };
+    });
+    return data6;
+  };
+  var scoringData = (data6, weights) => {
+    const scoredData = data6.map((d) => {
+      const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used;
+      return { ...d, score };
+    });
+    return scoredData.sort((a, b) => b.score - a.score);
+  };
+  var getTensors = async (normalizedWeights, answers) => {
+    const data6 = prepareData(false, answers);
+    const result = scoringData(data6, normalizedWeights);
+    return result;
+  };
+
+  // src/engine/select.ts
+  var selectByTemperature = (array, temperature, num) => {
+    if (temperature < 0) {
+      throw new Error("Temperature musi by\u0107 w zakresie od 0 do 1.");
+    }
+    if (temperature > 1) temperature = 1;
+    if (num > array.length) {
+      throw new Error("Nie mo\u017Cna wybra\u0107 wi\u0119cej element\xF3w ni\u017C zawiera tablica.");
+    }
+    const baseSharpness = 50;
+    const k = baseSharpness * (1 - temperature);
+    const weights = array.map((_, i) => 1 / Math.log(k * i + 2));
+    const result = [];
+    const usedIndices = /* @__PURE__ */ new Set();
+    while (result.length < num) {
+      const totalWeight = weights.reduce((sum, w, i) => usedIndices.has(i) ? sum : sum + w, 0);
+      let rand = Math.random() * totalWeight * temperature;
+      for (let i = 0; i < array.length; i++) {
+        if (usedIndices.has(i)) continue;
+        rand -= weights[i];
+        if (rand <= 0) {
+          result.push(array[i]);
+          usedIndices.add(i);
+          break;
+        }
+      }
+    }
+    return result;
+  };
+
+  // src/utils/shuffle.ts
+  var shuffle = (arr) => {
     const shuffleOnce = (a) => {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const temp = a[i];
-            a[i] = a[j];
-            a[j] = temp;
-        }
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+      }
     };
     for (let k = 0; k < 3; k++) {
-        shuffleOnce(arr);
+      shuffleOnce(arr);
     }
     return arr;
-};
-var utils;
-(function (utils) {
-    utils.resize = () => {
-        const functionList = [];
-        const add = (fn) => functionList.push(fn);
-        const run = () => {
-            const w = window.visualViewport.width;
-            const h = window.visualViewport.height;
-            functionList.forEach(f => f(w, h));
-        };
-        window.onresize = run;
-        return {
-            add,
-            run
-        };
-    };
-})(utils || (utils = {}));
-var utils;
-(function (utils) {
-    utils.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-})(utils || (utils = {}));
-var utils;
-(function (utils) {
-    utils.waitFor = (condition, fn) => {
-        const check = () => {
-            setTimeout(() => {
-                if (condition()) {
-                    fn();
-                    return;
-                }
-                check();
-            }, 100);
-        };
-        return check;
-    };
-})(utils || (utils = {}));
-var utils;
-(function (utils) {
-    const { byId, byQ, add, remove } = dom;
-    utils.getRadio = (radioData) => {
-        const themeElements = radioData.elementList.map(tn => byId(radioData.prefix + tn));
-        const newRadioData = [];
-        const shift = (num) => newRadioData.forEach((rd, i) => rd.checkbox.checked = i === num);
-        radioData.nameList.forEach((name, i) => {
-            const click = radioData.clickList && radioData.clickList[i] ? () => {
-                radioData.clickList[i]();
-                core.store.set(radioData.storeName, name);
-                shift(i);
-            } : () => {
-                core.store.set(radioData.storeName, name);
-                shift(i);
-            };
-            const elem = themeElements[i];
-            newRadioData.push({
-                item: elem,
-                click,
-                checkbox: byQ(elem, 'input'),
-                name: name,
-            });
-        });
-        const getSaved = () => core.store.get(radioData.storeName);
-        const mark = (name) => newRadioData.forEach(rd => rd.checkbox.checked = rd.name === name);
-        const active = () => newRadioData.forEach(rd => add(rd.item, 'click', rd.click));
-        const deactivate = () => newRadioData.forEach(rd => remove(rd.item, 'click', rd.click));
-        const init = () => {
-            active();
-            const saved = getSaved();
-            if (radioData.init)
-                radioData.init(saved);
-            mark(saved);
-            return saved;
-        };
-        return {
-            init,
-            active,
-            deactivate,
-        };
-    };
-})(utils || (utils = {}));
-var utils;
-(function (utils) {
-    let blob;
-    (function (blob_1) {
-        blob_1.toString = (blob) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-        blob_1.toBlob = async (value) => {
-            const response = await fetch(value);
-            return await response.blob();
-        };
-    })(blob = utils.blob || (utils.blob = {}));
-})(utils || (utils = {}));
-var utils;
-(function (utils) {
-    utils.drawImage = () => (() => {
-        const data = {
-            canvas: null,
-            ctx: null,
-            fitCanvas: null,
-            fitCtx: null,
-            fitWidth: 0
-        };
-        const init = (canvas, fitCanvas) => {
-            data.canvas = canvas;
-            data.ctx = canvas.getContext('2d');
-            data.fitCanvas = fitCanvas;
-            data.fitCtx = fitCanvas.getContext('2d');
-        };
-        const setWidth = (width) => data.fitWidth = width;
-        const fitToWidth = (img) => {
-            if (!data.fitCanvas || !data.fitCtx)
-                return;
-            const scale = data.fitWidth / img.width;
-            const displayWidth = img.width * scale;
-            const displayHeight = img.height * scale;
-            const dpr = window.devicePixelRatio || 1;
-            data.fitCanvas.style.width = displayWidth + 'px';
-            data.fitCanvas.style.height = displayHeight + 'px';
-            data.fitCanvas.width = displayWidth * dpr;
-            data.fitCanvas.height = displayHeight * dpr;
-            data.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            data.fitCtx.clearRect(0, 0, displayWidth, displayHeight);
-            data.fitCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
-        };
-        const draw = (() => {
-            let currentUrl = null;
-            return async (source) => {
-                if (!data.ctx || !data.canvas)
-                    return;
-                if (currentUrl) {
-                    URL.revokeObjectURL(currentUrl);
-                    currentUrl = null;
-                }
-                const img = new Image();
-                await new Promise((resolve, reject) => {
-                    img.onload = () => resolve();
-                    img.onerror = reject;
-                    if (typeof source === 'string') {
-                        img.src = source;
-                    }
-                    else {
-                        currentUrl = URL.createObjectURL(source);
-                        img.src = currentUrl;
-                    }
-                });
-                data.canvas.width = img.width;
-                data.canvas.height = img.height;
-                data.ctx.clearRect(0, 0, img.width, img.height);
-                data.ctx.drawImage(img, 0, 0);
-                fitToWidth(img);
-                if (currentUrl) {
-                    URL.revokeObjectURL(currentUrl);
-                    currentUrl = null;
-                }
-            };
-        })();
-        return {
-            init,
-            setWidth,
-            draw,
-        };
-    })();
-})(utils || (utils = {}));
-var engine;
-(function (engine) {
-    let helpers;
-    (function (helpers) {
-        helpers.getDateAtNoonInXDays = (daysPlus, date) => {
-            const newDate = date ? new Date(date) : new Date();
-            const targetDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate() + daysPlus, 12, 0, 0, 0);
-            return targetDate.getTime();
-        };
-        helpers.generateTriangularSequence = (length) => {
-            const result = [];
-            let n = 1, current = 0;
-            for (let i = 0; i < length; i++) {
-                current += n;
-                result.push(current);
-                n++;
-            }
-            return result;
-        };
-    })(helpers = engine.helpers || (engine.helpers = {}));
-})(engine || (engine = {}));
-var engine;
-(function (engine) {
-    let params;
-    (function (params) {
-        params.determinants = {
-            questionInSession: 30,
-            numLastRequiredQuestions: 3,
-            numLastHighlyRatedQuestions: 6,
-            repetition: engine.helpers.generateTriangularSequence(10),
-        };
-        params.repeatable = {
-            lastUsed: 0.1,
-            nextUse: 0.3,
-            appearance: 0.1,
-            rating: 1.2,
-            littleUsed: 0,
-            temperature: 0.1,
-        };
-        params.single = {
-            lastUsed: 0,
-            nextUse: 0,
-            appearance: 0,
-            rating: 2,
-            littleUsed: 0,
-            temperature: 0.1,
-        };
-        params.data = {
-            weights: null,
-            questions: [],
-            answers: [],
-            repeatableAnswers: [],
-            singleAnswers: [],
-            quantities: [],
-            sume: 0,
-            normalizedWeights: {
-                repeatable: null,
-                single: null,
-            },
-            numOfQuestions: {
-                repeatable: 0,
-                single: 0,
-            },
-            session: [],
-            index: 0,
-        };
-        const getNormalizedWeights = (weights) => {
-            let sume = 0;
-            Object.keys(weights).forEach((key) => sume += weights[key]);
-            sume -= weights.temperature;
-            const normalizedWeights = { ...weights };
-            Object.keys(weights).forEach((key) => normalizedWeights[key] = weights[key] / sume);
-            normalizedWeights.temperature = weights.temperature;
-            return normalizedWeights;
-        };
-        const updateQuestions = async () => {
-            const questions = await core.idb.questions.getAllData();
-            params.data.questions = [];
-            questions.forEach(question => {
-                const index = question[0];
-                const item = question[1];
-                params.data.questions[index] = item;
-            });
-        };
-        params.init = async () => {
-            await updateQuestions();
-            params.data.normalizedWeights.repeatable = getNormalizedWeights(params.repeatable);
-            params.data.normalizedWeights.single = getNormalizedWeights(params.single);
-            const now = engine.helpers.getDateAtNoonInXDays(1);
-            const answers = await core.idb.answers.getAllData();
-            const questionRatio = Number(core.store.get(storageNames.questionsRatio));
-            const questionNum = params.determinants.questionInSession;
-            params.data.numOfQuestions.repeatable = questionRatio;
-            params.data.numOfQuestions.single = questionNum - questionRatio;
-        };
-        params.updateAnswers = async () => {
-            const answersDb = await core.idb.answers.getAllData();
-            const newAnswers = answersDb.map((answer, i) => {
-                const index = answer[0];
-                const item = answer[1];
-                item.drawn = false;
-                item.index = index;
-                return item;
-            });
-            const answers = newAnswers
-                .sort((a, b) => b.used - a.used);
-            params.data.answers = [];
-            params.data.repeatableAnswers = [];
-            params.data.singleAnswers = [];
-            answers.forEach((answer, i) => {
-                params.data.answers[i] = answer;
-                if (answer.used === 1) {
-                    params.data.singleAnswers.push(answer);
-                }
-                else {
-                    params.data.repeatableAnswers.push(answer);
-                }
-            });
-        };
-    })(params = engine.params || (engine.params = {}));
-})(engine || (engine = {}));
-var engine;
-(function (engine) {
-    let analize;
-    (function (analize) {
-        const countLastFewFalse = (answer) => {
-            if (answer) {
-                const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
-                const lastFew = sortedHistory.slice(0, engine.params.determinants.numLastRequiredQuestions);
-                const result = lastFew.filter(entry => !entry.result).length;
-                return result;
-            }
-            return 0;
-        };
-        const prepareData = (reverseLastUse, answers) => {
-            const now = engine.helpers.getDateAtNoonInXDays(1);
-            let maxLastUse = now;
-            let maxNextUse = now;
-            let maxImportance = 1;
-            let maxUsed = 0;
-            const preData = answers.map((answer, index) => {
-                let lastUsed = 0;
-                let nextUse = 0;
-                let rating = 0;
-                if (answer !== null) {
-                    let theLastOne = 0;
-                    lastUsed = now - theLastOne;
-                    nextUse = nextUse - now;
-                    if (maxNextUse < nextUse)
-                        maxNextUse = nextUse;
-                    let allFalsies = countLastFewFalse(answer);
-                    rating = allFalsies / engine.params.determinants.numLastRequiredQuestions;
-                }
-                if (lastUsed < maxLastUse)
-                    maxLastUse = lastUsed;
-                const appearance = answer.used;
-                if (maxImportance < appearance)
-                    maxImportance = appearance;
-                if (answer && maxUsed < answer.history.length)
-                    maxUsed = answer.history.length;
-                return {
-                    id: answer.id,
-                    index,
-                    used: answer ? answer.history.length : 0,
-                    lastUsed,
-                    nextUse,
-                    appearance,
-                    rating,
-                };
-            });
-            const data = preData.map(p => {
-                let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
-                if (reverseLastUse)
-                    lastUsed = 1 - lastUsed;
-                const used = maxUsed === 0 ? 1 : (1 - (p.used / maxUsed));
-                return {
-                    id: p.id,
-                    index: p.index,
-                    used,
-                    lastUsed,
-                    nextUse: p.nextUse / maxNextUse,
-                    appearance: p.appearance / maxImportance,
-                    rating: p.rating,
-                };
-            });
-            return data;
-        };
-        const checkGoodAnswers = () => {
-            const countLastFewTrue = (answer) => {
-                if (answer) {
-                    const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
-                    const lastFew = sortedHistory.slice(0, engine.params.determinants.numLastRequiredQuestions);
-                    const result = lastFew.filter(entry => !entry.result).length;
-                    if (result === 0)
-                        return true;
-                }
-                return false;
-            };
-            let sume = 0;
-            engine.params.data.answers.forEach(a => {
-                if (countLastFewTrue(a))
-                    sume++;
-            });
-            return sume;
-        };
-        const scoringData = (data, weights) => {
-            const scoredData = data.map(d => {
-                const score = (weights.lastUsed * d.lastUsed) +
-                    (weights.nextUse * d.nextUse) +
-                    (weights.appearance * d.appearance) +
-                    (weights.rating * d.rating) +
-                    (weights.littleUsed * d.used);
-                return { ...d, score };
-            });
-            return scoredData.sort((a, b) => b.score - a.score);
-        };
-        analize.getTensors = async (normalizedWeights, answers) => {
-            const data = prepareData(false, answers);
-            const result = scoringData(data, normalizedWeights);
-            return result;
-        };
-    })(analize = engine.analize || (engine.analize = {}));
-})(engine || (engine = {}));
-var engine;
-(function (engine) {
-    let select;
-    (function (select) {
-        select.selectByTemperature = (array, temperature, num) => {
-            if (temperature < 0) {
-                throw new Error("Temperature musi być w zakresie od 0 do 1.");
-            }
-            if (temperature > 1)
-                temperature = 1;
-            if (num > array.length) {
-                throw new Error("Nie można wybrać więcej elementów niż zawiera tablica.");
-            }
-            const baseSharpness = 50;
-            const k = baseSharpness * (1 - temperature);
-            const weights = array.map((_, i) => 1 / Math.log(k * i + 2));
-            const result = [];
-            const usedIndices = new Set();
-            while (result.length < num) {
-                const totalWeight = weights.reduce((sum, w, i) => usedIndices.has(i) ? sum : sum + w, 0);
-                let rand = Math.random() * totalWeight * temperature;
-                for (let i = 0; i < array.length; i++) {
-                    if (usedIndices.has(i))
-                        continue;
-                    rand -= weights[i];
-                    if (rand <= 0) {
-                        result.push(array[i]);
-                        usedIndices.add(i);
-                        break;
-                    }
-                }
-            }
-            return result;
-        };
-    })(select = engine.select || (engine.select = {}));
-})(engine || (engine = {}));
-var engine;
-(function (engine) {
-    engine.getTensors = async () => {
-        await engine.params.updateAnswers();
-        const repeatableTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.repeatable, engine.params.data.repeatableAnswers);
-        const selectedRepeatableTensors = engine.select.selectByTemperature(repeatableTensors, engine.params.repeatable.temperature, engine.params.data.numOfQuestions.repeatable);
-        const singleTensors = await engine.analize.getTensors(engine.params.data.normalizedWeights.single, engine.params.data.singleAnswers);
-        const selectedSingleTensors = engine.select.selectByTemperature(singleTensors, engine.params.single.temperature, engine.params.data.numOfQuestions.single);
-        const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors]);
-        return result;
-    };
-    const createTensorGenerator = async () => {
-        engine.params.data.session = await engine.getTensors();
-        engine.params.data.index = 0;
-        return (async function* () {
-            while (true) {
-                if (engine.params.data.index >= engine.params.data.session.length) {
-                    engine.params.data.session = await engine.getTensors();
-                    engine.params.data.index = 0;
-                }
-                const result = engine.params.data.session[engine.params.data.index++];
-                yield result;
-            }
-        })();
-    };
-    const generator = {
-        tensor: null
-    };
-    engine.init = async () => {
-        generator.tensor = await createTensorGenerator();
-    };
-    engine.getItem = async () => {
-        const tensorItem = await generator.tensor.next();
-        const tensor = tensorItem.value;
-        const answer = engine.params.data.answers[tensor.index];
-        const question = engine.params.data.questions[answer.index];
-        const result = {
-            question,
-            answer,
-            index: tensor.index
-        };
-        return result;
-    };
-    engine.endSession = () => { engine.params.data.session = []; };
-})(engine || (engine = {}));
-var queries;
-(function (queries) {
-    queries.responseCommand = {
-        main: {
-            ddos: 'DDoS',
-            ddosId: 'DDoSid',
-            csrf: 'csrf',
-        },
-        secure: {
-            noMahakala: 'noMahakala',
-            wrongMahakala: 'wrongMahakala',
-            generateUserId: 'generateUserId',
-            go: 'go',
-            testOk: 'testOk'
-        },
-        user: {
-            set: 'userSet',
-            ok: 'userOk',
-            no: 'noUser',
-            noId: 'noId',
-            qr: 'qr',
-        },
-        statistics: {
-            answersMemoried: 'answersMemoried',
-            noAnswers: 'noAnswers',
-            logsMemoried: 'logsMemoried',
-            lastLogTimestamp: 'lastLogTimestamp',
-            noLogs: 'noLogs',
-        }
-    };
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    queries.url = (function () {
-        const main = `api/`;
-        const rol04 = `rol04/api/`;
-        return {
-            test: {
-                csrf: `${main}csrf`,
-                ddos: `${main}ddos`,
-                ddosId: `${main}ddos-id`,
-                noMahakala: `${main}no-mahakala`,
-                wrongMahakala: `${main}wrong-mahakala`,
-            },
-            secure: {
-                get: `${main}secure`,
-                test: `${main}secure-test`,
-            },
-            user: {
-                set: `${rol04}set-user`,
-                check: `${rol04}check-user`,
-                getQr: `${rol04}get-user-qr-code`,
-                setQr: `${rol04}set-user-by-qr-code`,
-            },
-            data: {
-                version: `${rol04}get-version`,
-                config: `${rol04}get-config`,
-                questions: `${rol04}get-questions`,
-                images: `${rol04}get-images`,
-            },
-            statistics: {
-                memoAnswers: `${rol04}memo-answers`,
-                getAnswers: `${rol04}get-answers`,
-                getLastLogTimestamp: `${rol04}get-last-log-timestamp`,
-                memoLogs: `${rol04}memo-logs`,
-            },
-        };
-    }());
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    const okCodes = [304, 401, 403, 429];
-    queries.api = axios.create({
-        baseURL: 'https://192.168.1.109:3331/',
-        validateStatus: function (status) {
-            return status >= 200 && status < 300 || okCodes.some(c => c === status);
-        }
-    });
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let test;
-    (function (test) {
-        test.getCsrf = async () => await queries.checkError(async () => {
-            return await queries.api.get(queries.url.test.csrf, {
-                withCredentials: true,
-            });
-        }, queries.url.test.csrf);
-        test.getDdos = async () => queries.checkError(async () => {
-            return await queries.api.get(queries.url.test.ddos, {
-                withCredentials: true,
-            });
-        }, queries.url.test.ddos);
-        test.getDdosId = async () => queries.checkError(async () => {
-            return await queries.api.get(queries.url.test.ddosId, {
-                withCredentials: true,
-            });
-        }, queries.url.test.ddosId);
-        test.getNoMahakala = async () => queries.checkError(async () => {
-            return await queries.api.get(queries.url.test.noMahakala, {
-                withCredentials: true,
-            });
-        }, queries.url.test.noMahakala);
-        test.getWrongMahakala = async () => queries.checkError(async () => {
-            return await queries.api.get(queries.url.test.wrongMahakala, {
-                withCredentials: true,
-            });
-        }, queries.url.test.wrongMahakala);
-    })(test = queries.test || (queries.test = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    queries.responseState = {
-        ok: 'ok',
-        noNetwork: 'noNetwork',
-        csrf: 'csrf',
-        ddos: 'ddos',
-        ddosId: 'DDoSid',
-        noMahakala: 'noMahakala',
-        wrongMahakala: 'wrongMahakala',
-        otherProblem: 'otherProblem',
-        error: 'error'
-    };
-    const baseErrorsChecker = async (promise) => {
-        return await promise()
-            .then((response) => {
-            const okCodes = [200, 304];
-            if (okCodes.includes(response?.status)) {
-                return {
-                    state: queries.responseState.ok,
-                    data: response.data,
-                };
-            }
-            if (response?.status === 403) {
-                return {
-                    state: queries.responseState.csrf,
-                    data: response.data,
-                };
-            }
-            if (response?.status === 429) {
-                if (response.data.command === queries.responseCommand.main.ddos) {
-                    return {
-                        state: queries.responseState.ddos,
-                        data: response.data,
-                    };
-                }
-                else {
-                    return {
-                        state: queries.responseState.ddosId,
-                        data: response.data,
-                    };
-                }
-            }
-            if (response?.status === 401) {
-                if (response.data.command === queries.responseCommand.secure.noMahakala) {
-                    return {
-                        state: queries.responseState.noMahakala,
-                        data: response.data,
-                    };
-                }
-                else {
-                    return {
-                        state: queries.responseState.wrongMahakala,
-                        data: response.data,
-                    };
-                }
-            }
-            return {
-                state: queries.responseState.otherProblem,
-                data: response?.data,
-            };
-        }).catch((error) => {
-            if (error.code === "ERR_NETWORK" || !error.response) {
-                const result = {
-                    state: queries.responseState.noNetwork,
-                    data: null,
-                };
-                return result;
-            }
-            const errorState = error.response?.status ? `${queries.responseState.error}: ${error.response?.status}` : null;
-            return {
-                state: errorState,
-                data: error.response?.data ?? null,
-            };
-        });
-    };
-    queries.checkError = async (promise, endpointName) => {
-        const response = await baseErrorsChecker(promise);
-        const canGo = true;
-        if (response.state === queries.responseState.ok) {
-            return response.data;
-        }
-        return new Promise((resolve) => {
-            const onClose = () => {
-                resolve(response?.data);
-                return response.data;
-            };
-            const getShow = (txt) => {
-                if (endpointName) {
-                    modal.error.show(`endpoint: .../${endpointName}<br><br>${txt}`, canGo, onClose);
-                }
-                else {
-                    modal.error.show(txt, canGo, onClose);
-                }
-            };
-            switch (response.state) {
-                case queries.responseState.noNetwork:
-                    getShow('Brak dostępu do sieci.');
-                    break;
-                case queries.responseState.csrf:
-                    getShow('CSRF token jest błędny.');
-                    break;
-                case queries.responseState.ddos:
-                    getShow('Przekroczono limit zapytań do serwera. Limit zrestartuje się za godzinę.');
-                    break;
-                case queries.responseState.ddosId:
-                    getShow('Przekroczono limit tworzenia uzytkownikow na dzień.  Limit zrestartuje się za 24 godziny');
-                    break;
-                case queries.responseState.noMahakala:
-                    getShow('Brak mahakala token');
-                    break;
-                case queries.responseState.wrongMahakala:
-                    getShow('Wadliwy mahakala token');
-                    break;
-                case queries.responseState.otherProblem:
-                    getShow('Nieznany problem.');
-                    break;
-                case queries.responseState.error:
-                    getShow(response.state);
-                    break;
-            }
-        });
-    };
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let secure;
-    (function (secure) {
-        secure.getSecure = async () => queries.checkError(async () => {
-            return await queries.api.get(queries.url.secure.get, {
-                withCredentials: true,
-            });
-        });
-    })(secure = queries.secure || (queries.secure = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let secure;
-    (function (secure) {
-        secure.secureTest = async () => {
-            try {
-                const response = await queries.api.post(queries.url.secure.test, {}, {
-                    withCredentials: true,
-                });
-                const data = response.data;
-                console.log('---->>> ', data);
-                return data;
-            }
-            catch (error) {
-                console.error('Błąd podczas pobierania konfiguracji:', error);
-                return null;
-            }
-        };
-    })(secure = queries.secure || (queries.secure = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let user;
-    (function (user) {
-        user.checkId = async (userId) => {
-            const result = await queries.api.post(queries.url.user.check, { userId }, { withCredentials: true, });
-            return result.data;
-        };
-    })(user = queries.user || (queries.user = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let user;
-    (function (user) {
-        user.set = async () => {
-            const result = await queries.api.post(queries.url.user.set, {}, { withCredentials: true });
-            return result.data;
-        };
-    })(user = queries.user || (queries.user = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let data;
-    (function (data) {
-        data.getVersion = async (version) => {
-            const result = await queries.api.post(queries.url.data.version, { version }, { withCredentials: true, });
-            return result.data;
-        };
-    })(data = queries.data || (queries.data = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let data;
-    (function (data) {
-        data.getConfig = async () => {
-            const result = await queries.api.get(queries.url.data.config, { withCredentials: true, });
-            return result.data;
-        };
-    })(data = queries.data || (queries.data = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let data;
-    (function (data) {
-        data.getAllQuestions = async () => {
-            const result = await queries.api.get(queries.url.data.questions, { withCredentials: true, });
-            return result.data;
-        };
-    })(data = queries.data || (queries.data = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let data;
-    (function (data) {
-        data.getImage = async (name) => {
-            const result = await queries.api.post(queries.url.data.images, { name }, {
-                withCredentials: true,
-                responseType: 'blob',
-            });
-            return result.data;
-        };
-    })(data = queries.data || (queries.data = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let statistics;
-    (function (statistics) {
-        statistics.memoAnswers = async () => {
-            const answersDb = await core.idb.answers.getAllData();
-            const answers = [];
-            answersDb.forEach(answer => {
-                const history = answer[1].history;
-                const sortedHistory = history
-                    .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-                const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions);
-                if (history.length > 0) {
-                    answers.push({
-                        id: answer[1].id,
-                        history: lastSix,
-                    });
-                }
-            });
-            if (answers.length > 0) {
-                const result = await queries.api.post(queries.url.statistics.memoAnswers, { answers: answers }, { withCredentials: true, });
-                return result.data;
-            }
-            return null;
-        };
-    })(statistics = queries.statistics || (queries.statistics = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let statistics;
-    (function (statistics) {
-        statistics.getAnswers = async () => {
-            const result = await queries.api.get(queries.url.statistics.getAnswers, { withCredentials: true, });
-            return result.data;
-        };
-    })(statistics = queries.statistics || (queries.statistics = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let statistics;
-    (function (statistics) {
-        statistics.getLastLogTimestamp = async () => {
-            const result = await queries.api.get(queries.url.statistics.getLastLogTimestamp, { withCredentials: true, });
-            return result.data;
-        };
-    })(statistics = queries.statistics || (queries.statistics = {}));
-})(queries || (queries = {}));
-var queries;
-(function (queries) {
-    let statistics;
-    (function (statistics) {
-        statistics.memoLogs = async () => {
-            const convertLog = (log) => ({
-                action: log[1].action,
-                result: log[1].result,
-                timestamp: log[0],
-            });
-            const sentAndGetData = async (logs) => {
-                const result = await queries.api.post(queries.url.statistics.memoLogs, { logs }, { withCredentials: true, });
-                return result.data;
-            };
-            const logsDb = await core.idb.logs.getAllData();
-            const timestampLog = await queries.statistics.getLastLogTimestamp();
-            if (timestampLog.command === queries.responseCommand.statistics.noLogs) {
-                const logs = logsDb.map(log => convertLog(log));
-                await sentAndGetData(logs);
-            }
-            else {
-                const logs = logsDb
-                    .filter(log => log[0] > Number(timestampLog.timestamp))
-                    .map(log => convertLog(log));
-                if (logs.length > 0) {
-                    await sentAndGetData(logs);
-                }
-                else {
-                    return null;
-                }
-            }
-        };
-    })(statistics = queries.statistics || (queries.statistics = {}));
-})(queries || (queries = {}));
-var controllers;
-(function (controllers) {
-    const { add } = dom;
-    const keysListener = (event) => {
-        switch (event.code) {
-            case 'Tab':
-                {
-                    event.preventDefault();
-                }
-                break;
-            case 'Space':
-                {
-                    tab.simpleMenu.visible.changeVisibility();
-                }
-                break;
-            case 'ArrowRight':
-            case 'KeyD':
-                {
-                    tab.goRight();
-                }
-                break;
-            case 'ArrowLeft':
-            case 'KeyA':
-                {
-                    tab.goLeft();
-                }
-                break;
-        }
-    };
-    controllers.initKeys = () => {
-        document.addEventListener('keydown', keysListener);
-    };
-})(controllers || (controllers = {}));
-var starter;
-(function (starter) {
-    const { byId, add, getPx, setStyle, setAttribute } = dom;
-    starter.elements = {
-        logoDark: null,
-        logoLight: null,
-        svgTitle: null,
-        title_1: null,
-        title_2: null,
-        userLabel: null,
-        userId: null,
-        statusNow: null,
-        statusAction: null,
-        version: null,
-    };
-    starter.init = async () => {
-        starter.elements.logoDark = byId('logo-dark');
-        starter.elements.logoLight = byId('logo-light');
-        starter.elements.svgTitle = byId('starter-svg-title');
-        starter.elements.title_1 = byId('starter-title-1');
-        starter.elements.title_2 = byId('starter-title-2');
-        starter.elements.userLabel = byId('starter-user-label');
-        starter.elements.userId = byId('starter-user-id');
-        starter.elements.statusNow = byId('status-now');
-        starter.elements.statusAction = byId('status-action');
-        starter.elements.version = byId('starter-version');
-        utils.areNotNull(starter.elements, ['starter', 'screen']);
-    };
-    starter.resize = (w, h) => {
-        const menuH = (121 / 701) * w;
-        const versionX = w - starter.elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200);
-        const versionY = h - 6 - (core.isMobile ? menuH : 0);
-        setAttribute(starter.elements.version, 'x', `${getPx(versionX)}`);
-        setAttribute(starter.elements.version, 'y', `${getPx(versionY)}`);
-        const svgHeight = `${getPx(h)}`;
-        const setTitleSize = (size) => {
-            setStyle(starter.elements.svgTitle, 'height', svgHeight);
-            const fontSize = `${getPx(size)}`;
-            let y = size;
-            [starter.elements.title_1, starter.elements.title_2].forEach(title => {
-                setStyle(title, 'fontSize', fontSize);
-                setStyle(title, 'lineHeight', fontSize);
-                setAttribute(title, 'y', `${getPx(y)}`);
-                y += size * 1.1;
-            });
-            y += 50;
-            setAttribute(starter.elements.userLabel, 'y', `${getPx(y)}`);
-            const correctW = core.isMobile ? w : w - 200;
-            const userIdSize = (correctW < h ? correctW : h) / 14;
-            y += userIdSize + 6;
-            setStyle(starter.elements.userId, 'fontSize', `${getPx(userIdSize)}`);
-            setAttribute(starter.elements.userId, 'y', `${getPx(y)}`);
-            y += 24 + 24;
-            [starter.elements.statusNow, starter.elements.statusAction].forEach(status => {
-                setAttribute(status, 'y', `${getPx(y)}`);
-                y += 24;
-            });
-        };
-        const setLogoSize = (width, height) => {
-            [starter.elements.logoDark, starter.elements.logoLight].forEach((elem) => {
-                setStyle(elem, 'width', width);
-                setStyle(elem, 'height', height);
-            });
-        };
-        if (core.isMobile) {
-            const fontSize = w / 7;
-            setTitleSize(fontSize);
-            setLogoSize('100%', 'nope');
-        }
-        else {
-            const fontSize = (w < h) ? w / 12 : h / 12;
-            setTitleSize(fontSize);
-            if (w < h) {
-                setLogoSize('100%', 'nope');
-            }
-            else {
-                const scaledH = h * 0.6;
-                const height = `${scaledH}px`;
-                const ratio = 270.9 / 289.7;
-                const width = `${scaledH * ratio}px`;
-                setLogoSize(width, height);
-            }
-        }
-    };
-    starter.active = () => { };
-    starter.deactivate = () => { };
-})(starter || (starter = {}));
-var starter;
-(function (starter) {
-    let user;
-    (function (user) {
-        const { inner, setStyle, disable, enable } = dom;
-        const memoUserId = (userId) => {
-            core.store.set(storageNames.userId, userId);
-            dom.inner(starter.elements.userId, userId);
-        };
-        const alphabetData = {
-            azSmall: 'qwertyuiopasdfghjklzxcvbnm',
-            azBig: 'QWERTYUIOPASDFGHJKLZXCVBNM',
-            numbers: '1234567890',
-        };
-        const ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
-        const regex = new RegExp(`^[${ALPHABET}]{21}$`);
-        user.init = async (dataCheck) => {
-            const go = async (getAnswersFromMemo = false) => {
-                await queries.secure.getSecure();
-                setTimeout(() => dataCheck(getAnswersFromMemo), 100);
-            };
-            const secure = await queries.secure.getSecure();
-            console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure);
-            const startApp = () => {
-                if (secure.command === queries.responseCommand.secure.generateUserId) {
-                    const setNewUser = async () => {
-                        const userIdSet = await queries.user.set();
-                        memoUserId(userIdSet.userId);
-                        go();
-                    };
-                    const getNo = (info, btn) => (text) => {
-                        inner(info, text);
-                        setStyle(info, 'color', 'var(--off_prime_color)');
-                        disable(btn);
-                    };
-                    const validateUserId = (info, btn) => (event) => {
-                        const value = event.target.value;
-                        const no = getNo(info, btn);
-                        if (value.length < 21) {
-                            no('Za krótki min 21 znaków');
-                            return;
-                        }
-                        if (value.length > 21) {
-                            no('Za długi max 21 znaków');
-                            return;
-                        }
-                        if (!regex.test(value)) {
-                            no('String zawiera niedozwolone znaki');
-                            return;
-                        }
-                        inner(info, 'jest OK.');
-                        setStyle(info, 'color', 'var(--on_second_color)');
-                        enable(btn);
-                    };
-                    const checkUserId = (info, btn, input, hide) => async () => {
-                        const userIdSet = await queries.user.checkId(input.value);
-                        const state = userIdSet.command;
-                        const no = getNo(info, btn);
-                        if (state === queries.responseCommand.user.ok) {
-                            memoUserId(input.value);
-                            hide();
-                            go(true);
-                        }
-                        else {
-                            no('Niema takiego użytkownika');
-                        }
-                    };
-                    modal.user.showUserModal(setNewUser, validateUserId, checkUserId);
-                }
-                else if (secure.command === queries.responseCommand.secure.go) {
-                    memoUserId(secure.userId);
-                    go();
-                }
-            };
-            if (!modal.installer.isAppInstalled()) {
-                modal.installer.showInstallerModal(startApp);
-            }
-            else {
-                startApp();
-            }
-        };
-    })(user = starter.user || (starter.user = {}));
-})(starter || (starter = {}));
-var starter;
-(function (starter) {
-    let data;
-    (function (data) {
-        data.check = async (getAnswersFromMemo = false) => {
-            const { setStyle, inner } = dom;
-            const waitForIntervalClear = (intervalFn, time) => {
-                return new Promise((resolve) => {
-                    let interval;
-                    const clear = () => {
-                        clearInterval(interval);
-                        resolve();
-                    };
-                    const fn = intervalFn(clear);
-                    interval = setInterval(fn, time);
-                });
-            };
-            const versionDb = await core.store.get(storageNames.version);
-            const response = await queries.data.getVersion(versionDb);
-            const versionRes = response.version;
-            if (versionRes !== versionDb) {
-                await core.store.set(storageNames.imgAvailable, checked.no);
-                setStyle(starter.elements.statusAction, 'display', 'initial');
-                inner(starter.elements.statusAction, 'wczytywanie pytań');
-                const configRes = await queries.data.getConfig();
-                const configTestsDb = await core.store.get(storageNames.configTests);
-                if (configRes.tests !== configTestsDb) {
-                    setStyle(starter.elements.statusNow, 'display', 'initial');
-                    const allQuestionsRes = await queries.data.getAllQuestions();
-                    const allQuestions = allQuestionsRes.map(question => {
-                        if (!question.used)
-                            question.used = [];
-                        return question;
-                    });
-                    let index = 0;
-                    const questionInterval = (clear) => async () => {
-                        const question = allQuestions[index];
-                        if (!question) {
-                            await core.store.set(storageNames.configTests, configRes.tests);
-                            clear();
-                            return;
-                        }
-                        inner(starter.elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestions.length}`);
-                        const item = await core.idb.questions.get(index);
-                        if (!item || item.version !== question.version) {
-                            await core.idb.questions.set(index, question);
-                        }
-                        index++;
-                    };
-                    await waitForIntervalClear(questionInterval, 1);
-                    if (core.isMobile)
-                        tab.simpleMenu.showMenu();
-                }
-                inner(starter.elements.statusAction, `wczytywanie obrazów`);
-                const imgSToAdd = [];
-                await configRes.img.forEach(async (img) => {
-                    const imgDb = await core.idb.images.get(img.name);
-                    if (!imgDb || imgDb.version !== img.version)
-                        imgSToAdd.push(img);
-                });
-                let index = 0;
-                const imageInterval = (clear) => async () => {
-                    const imageDataRes = imgSToAdd[index];
-                    if (!imageDataRes) {
-                        await core.store.set(storageNames.imgAvailable, checked.yes);
-                        setStyle(starter.elements.statusNow, 'display', 'none');
-                        setStyle(starter.elements.statusAction, 'display', 'none');
-                        await core.store.set(storageNames.version, versionRes);
-                        clear();
-                        return;
-                    }
-                    inner(starter.elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`);
-                    index++;
-                    const image = await queries.data.getImage(imageDataRes.name);
-                    if (image) {
-                        await core.idb.images.set(imageDataRes.name, {
-                            version: imageDataRes.version,
-                            data: await utils.blob.toString(image),
-                        });
-                    }
-                };
-                waitForIntervalClear(imageInterval, 1000);
-            }
-            const questions = await core.idb.questions.getAllData();
-            let maxUsed = 0;
-            await questions.forEach(async (question, index) => {
-                const key = question[0];
-                const q = question[1];
-                if (maxUsed < q.used.length + 1)
-                    maxUsed = q.used.length + 1;
-                const answer = await core.idb.answers.get(key);
-                if (!answer) {
-                    await core.idb.answers.set(index, {
-                        id: q.id,
-                        history: [],
-                        used: q.used.length + 1
-                    });
-                }
-            });
-            engine.params.data.quantities = Array(maxUsed).fill(0);
-            engine.params.data.sume = 0;
-            questions.forEach(q => {
-                engine.params.data.quantities[q[1].used.length]++;
-                engine.params.data.sume++;
-            });
-            statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)));
-            await engine.params.updateAnswers();
-            if (getAnswersFromMemo) {
-                const answers = await queries.statistics.getAnswers();
-                if (answers !== null) {
-                    answers.forEach(async (answer) => {
-                        const question = questions.find(q => q[1].id = answer.id);
-                        const index = question[0];
-                        const oldAnswer = await core.idb.answers.get(index);
-                        oldAnswer.history = answer.history;
-                        oldAnswer.rating = learning.evaluation.getRateHistory(answer.history);
-                    });
-                }
-            }
-            if (core.isMobile)
-                tab.simpleMenu.showMenu();
-        };
-    })(data = starter.data || (starter.data = {}));
-})(starter || (starter = {}));
-var starter;
-(function (starter) {
-    starter.run = async () => {
-        utils.waitFor(() => engine.params.data.sume !== 0, async () => {
-            const started = await core.store.get(storageNames.sessionStarted);
-            if (started === checked.yes) {
-                await queries.statistics.memoAnswers();
-                await queries.statistics.memoLogs();
-                await core.store.set(storageNames.sessionStarted, checked.no);
-                learning.resize(window.visualViewport.width, window.visualViewport.height);
-            }
-        })();
-        await starter.user.init(starter.data.check);
-    };
-})(starter || (starter = {}));
-var statistics;
-(function (statistics) {
-    statistics.data = {
-        background: null,
-        base: {
-            used: { min: null, max: null },
-            bad: { min: null, max: null },
-            good: { min: null, max: null },
-        },
-        steps: {
-            used: [],
-            bad: [],
-            good: [],
-        },
-        monitor: {
-            size: 0,
-            width: 0,
-        },
-        cell: {
-            size: 0,
-            space: 0,
-        }
-    };
-    statistics.determinants = {
-        cell: {
-            size: 20,
-            space: 2,
-        }
-    };
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    let helpers;
-    (function (helpers) {
-        const hexToRgb = (hex) => {
-            const newHex = hex.trim().replace(/^#/, '');
-            if (newHex.length !== 6) {
-                throw new Error(`Nieprawidłowy format koloru HEX: "${hex}"`);
-            }
-            const bigint = parseInt(newHex, 16);
-            return {
-                r: (bigint >> 16) & 255,
-                g: (bigint >> 8) & 255,
-                b: bigint & 255
-            };
-        };
-        const mix = (from, to, ratio) => {
-            const rgb = {
-                r: Math.round(from.r + (to.r - from.r) * ratio),
-                g: Math.round(from.g + (to.g - from.g) * ratio),
-                b: Math.round(from.b + (to.b - from.b) * ratio)
-            };
-            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-        };
-        helpers.getColorSteps = (from, to, steps) => {
-            const result = [];
-            const ratio = 1 / (steps - 1);
-            for (let i = 0; i < steps; ++i) {
-                result.push(mix(hexToRgb(from), hexToRgb(to), ratio * i));
-            }
-            return result;
-        };
-        helpers.getColor = (answer) => {
-            if (answer.rating) {
-                if (answer.rating.type === rating.bad) {
-                    return statistics.data.steps.bad[answer.rating.scale];
-                }
-                if (answer.rating.type === rating.good) {
-                    return statistics.data.steps.good[answer.rating.scale];
-                }
-            }
-            return statistics.data.steps.used[answer.used - 1];
-        };
-        helpers.getOnThisSession = (answer) => engine.params.data.session.some(item => item.id === answer.id);
-    })(helpers = statistics.helpers || (statistics.helpers = {}));
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    let draw;
-    (function (draw) {
-        const { getColorFromStyle } = dom;
-        const getMetrics = () => {
-            const halfSpace = statistics.data.cell.space / 2;
-            const offset = statistics.data.cell.space + halfSpace;
-            const smallRect = statistics.data.cell.size - (offset * 2);
-            return {
-                twoPi: Math.PI * 2,
-                halfSpace,
-                offset,
-                smallRect,
-                center: statistics.data.cell.size / 2,
-                quarter: statistics.data.cell.size / 4,
-            };
-        };
-        draw.themeChange = () => {
-            statistics.data.background = getColorFromStyle('--last_color');
-            statistics.data.base.used.min = getColorFromStyle('--mine_6_color');
-            statistics.data.base.used.max = getColorFromStyle('--mine_color');
-            statistics.data.steps.used = statistics.helpers.getColorSteps(statistics.data.base.used.min, statistics.data.base.used.max, engine.params.data.quantities.length);
-            statistics.data.base.bad.min = getColorFromStyle('--off_second_color');
-            statistics.data.base.bad.max = getColorFromStyle('--off_prime_color');
-            statistics.data.steps.bad = statistics.helpers.getColorSteps(statistics.data.base.bad.min, statistics.data.base.bad.max, engine.params.determinants.numLastRequiredQuestions);
-            statistics.data.base.good.min = getColorFromStyle('--on_second_color');
-            statistics.data.base.good.max = getColorFromStyle('--on_prime_color');
-            statistics.data.steps.good = statistics.helpers.getColorSteps(statistics.data.base.good.min, statistics.data.base.good.max, engine.params.determinants.numLastHighlyRatedQuestions);
-        };
-        draw.cells = async () => {
-            statistics.elements.ctx.clearRect(0, 0, statistics.elements.monitor.width, statistics.elements.monitor.height);
-            const { twoPi, offset, smallRect, center, quarter } = getMetrics();
-            const answers = engine.params.data.answers;
-            if (answers === null)
-                return;
-            answers.forEach((answer, index) => {
-                const pozX = (index % statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
-                const pozY = Math.floor(index / statistics.data.monitor.size) * (statistics.data.cell.size + statistics.data.cell.space);
-                statistics.elements.ctx.fillStyle = statistics.helpers.getColor(answer);
-                statistics.elements.ctx.fillRect(pozX, pozY, statistics.data.cell.size, statistics.data.cell.size);
-                const onThisSession = statistics.helpers.getOnThisSession(answer);
-                if (onThisSession) {
-                    statistics.elements.ctx.strokeStyle = statistics.data.background;
-                    statistics.elements.ctx.lineWidth = statistics.data.cell.space;
-                    const sesX = pozX + offset;
-                    const sesY = pozY + offset;
-                    const sesSize = smallRect;
-                    statistics.elements.ctx.strokeRect(sesX, sesY, sesSize, sesSize);
-                }
-                if (learning.data.answers.origin?.answer) {
-                    const condition = learning.data.answers.origin.answer.id === answer.id;
-                    if (condition) {
-                        statistics.elements.ctx.fillStyle = statistics.data.background;
-                        const nowX = pozX + center;
-                        const nowY = pozY + center;
-                        statistics.elements.ctx.beginPath();
-                        statistics.elements.ctx.arc(nowX, nowY, quarter, 0, twoPi);
-                        statistics.elements.ctx.fill();
-                    }
-                }
-            });
-        };
-        draw.init = () => {
-            utils.waitFor(() => engine.params.data.sume !== 0, () => {
-                draw.themeChange();
-                draw.resize(window.visualViewport.width, window.visualViewport.height);
-            })();
-        };
-        draw.resize = (w, h) => {
-            const bit = statistics.data.monitor.width / ((statistics.determinants.cell.size * statistics.data.monitor.size) + (statistics.determinants.cell.space * (statistics.data.monitor.size - 1)));
-            statistics.data.cell.size = statistics.determinants.cell.size * bit;
-            statistics.data.cell.space = statistics.determinants.cell.space * bit;
-            statistics.elements.monitor.width = statistics.data.monitor.width;
-            statistics.elements.monitor.height = statistics.data.monitor.width;
-            draw.cells();
-        };
-    })(draw = statistics.draw || (statistics.draw = {}));
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    let legend;
-    (function (legend) {
-        const { prepare, setStyle } = dom;
-        const listElements = {
-            bad: null,
-            good: null,
-            used: null,
-        };
-        const data = [
-            { name: 'poprawne', id: 'good' },
-            { name: 'nieużyte', id: 'used' },
-            { name: 'błędne', id: 'bad' }
-        ];
-        const prepareColorLines = () => {
-            statistics.elements.legend.replaceChildren();
-            const children = [
-                prepare('div', {
-                    classes: ['statistics-box-title'],
-                    inner: 'legenda'
-                })
-            ];
-            const setLegendColors = (name, id) => {
-                children.push(prepare('div', {
-                    classes: ['statistics-colors-title'],
-                    inner: name,
-                }));
-                const item = prepare('div', {
-                    id: `statistics-${id}-colors`,
-                    classes: ['statistics-section']
-                });
-                listElements[id] = item;
-                children.push(item);
-            };
-            data.forEach(item => setLegendColors(item.name, item.id));
-            prepare(statistics.elements.legend, {
-                children
-            });
-        };
-        const setColorLine = (key) => {
-            const colors = statistics.data.steps[key];
-            const parent = listElements[key];
-            setTimeout(() => {
-                colors.forEach((color, index) => {
-                    const elem = prepare('div', {
-                        classes: ['statistics-color'],
-                    });
-                    setStyle(elem, 'backgroundColor', color);
-                    prepare(parent, { children: [elem] });
-                    const p = prepare('p', {
-                        inner: `${index + 1}x`
-                    });
-                    prepare(elem, { children: [p] });
-                });
-            }, 500);
-        };
-        legend.setMonitorLegend = () => {
-            prepareColorLines();
-            Object.keys(statistics.data.steps).forEach((key) => setColorLine(key));
-        };
-    })(legend = statistics.legend || (statistics.legend = {}));
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    let legend;
-    (function (legend) {
-        const { byQ, inner } = dom;
-        const colNames = ['good', 'bad', 'unused'];
-        const rowNames = ['all', 'allPercent', 'moreOne', 'moreOnePercent', 'one', 'onePercent'];
-        const createTableData = () => {
-            const data = {};
-            for (const row of rowNames) {
-                const rowObj = {};
-                for (const col of colNames) {
-                    rowObj[col] = 0;
-                }
-                data[row] = rowObj;
-            }
-            return data;
-        };
-        const setValues = (row, answer) => {
-            if (answer.rating?.type === rating.bad) {
-                row.bad++;
-            }
-            else if (answer.rating?.type === rating.good) {
-                row.good += (answer.rating.scale + 1) / 3;
-            }
-            else {
-                row.unused++;
-            }
-        };
-        const countPercent = (numRow, percRow, sum) => {
-            Object.keys(numRow).forEach((key) => {
-                const num = numRow[key];
-                percRow[key] = Math.round(sum === 0 ? 0 : (num / sum) * 1000) / 10;
-            });
-        };
-        const getElement = (row, col) => byQ(statistics.elements.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
-        const showTableData = (data) => {
-            const percentNames = ['allPercent', 'moreOnePercent', 'onePercent'];
-            for (const row of rowNames) {
-                for (const col of colNames) {
-                    const value = data[row][col];
-                    const suffix = percentNames.some(pn => pn === row) ? '%' : '';
-                    const elem = getElement(row, col);
-                    inner(elem, value.toFixed(1) + suffix);
-                }
-            }
-        };
-        legend.setData = () => {
-            if (engine.params.data.answers === null)
-                return;
-            const tableData = createTableData();
-            const sumeMoreOne = engine.params.data.sume - engine.params.data.quantities[0];
-            engine.params.data.answers.forEach(answer => {
-                if (answer.used > 1) {
-                    setValues(tableData.moreOne, answer);
-                }
-                else {
-                    setValues(tableData.one, answer);
-                }
-                setValues(tableData.all, answer);
-            });
-            countPercent(tableData.all, tableData.allPercent, engine.params.data.sume);
-            countPercent(tableData.moreOne, tableData.moreOnePercent, sumeMoreOne);
-            countPercent(tableData.one, tableData.onePercent, engine.params.data.quantities[0]);
-            showTableData(tableData);
-        };
-    })(legend = statistics.legend || (statistics.legend = {}));
-})(statistics || (statistics = {}));
-var statistics;
-(function (statistics) {
-    const { byId, getPx, setStyle } = dom;
-    statistics.elements = {
-        sheet: null,
-        monitor: null,
-        ctx: null,
-        legend: null,
-        table: null,
-        bottom: null,
-    };
-    statistics.init = () => {
-        statistics.elements.sheet = byId('statistics-sheet');
-        statistics.elements.monitor = byId('statistics-monitor');
-        statistics.elements.ctx = statistics.elements.monitor.getContext('2d');
-        statistics.elements.table = byId('statistics-table');
-        statistics.elements.legend = byId('statistics-colors-legend');
-        statistics.elements.bottom = byId('statistics-bottom');
-        utils.areNotNull(statistics.elements, ['screens', 'drawing']);
-        engine.params.updateAnswers();
-        statistics.draw.init();
-        utils.waitFor(() => engine.params.data.answers.length !== 0 && statistics.data.steps.used.length !== 0 && statistics.elements.legend !== null, statistics.legend.setMonitorLegend)();
-    };
-    statistics.resize = (w, h) => {
-        statistics.data.monitor.width = w - 40 - (core.isMobile ? 0 : 200);
-        const menuH = core.isMobile ? (121 / 701) * w : 0;
-        setStyle(statistics.elements.sheet, 'height', `calc(${getPx(h)})`);
-        setStyle(statistics.elements.bottom, 'height', getPx(menuH));
-        statistics.draw.resize(w, h);
-    };
-    statistics.active = () => {
-        utils.waitFor(() => engine.params.data.sume !== 0, statistics.draw.cells)();
-        utils.waitFor(() => engine.params.data.sume !== 0, statistics.legend.setData)();
-    };
-    statistics.deactivate = () => { };
-})(statistics || (statistics = {}));
-var learning;
-(function (learning) {
-    learning.data = {
-        mark: 0,
-        confirm: false,
-        tabH: 0,
-        answers: {
-            origin: null,
-            shuffled: [],
-        }
-    };
-    let preparation;
-    (function (preparation) {
-        const { setStyle, display, getPx, inner, } = dom;
-        preparation.setSheetHight = () => {
-            setStyle(learning.elements.separator, 'height', ``);
-            setStyle(learning.elements.sheet, 'height', ``);
-            setStyle(learning.elements.sheet, 'opacity', `0`);
-            setTimeout(() => {
-                const menuH = core.isMobile ? (121 / 701) * window.visualViewport.width : 0;
-                const sheetH = learning.elements.measure.getBoundingClientRect().height - menuH;
-                const condition = sheetH < learning.data.tabH - menuH;
-                setStyle(learning.elements.bottom, 'height', getPx(menuH + (condition ? 0 : 40)));
-                const separatorH = condition ? getPx(learning.data.tabH - sheetH - 80) : '';
-                setStyle(learning.elements.separator, 'height', separatorH);
-                setStyle(learning.elements.sheet, 'opacity', `1`);
-            }, 300);
-        };
-        const getMonth = (key) => {
-            const idToMonth = {
-                paz: 'pazdziernik',
-                cze: 'czerwiec',
-                sty: 'styczeń',
-                lut: 'styczeń',
-                wrz: 'wrzesień',
-            };
-            return idToMonth[key];
-        };
-        const idToDate = (id) => {
-            const splittedId = id.split('-');
-            const year = splittedId[0];
-            const month = getMonth(splittedId[1]);
-            return `${month} ${year}`;
-        };
-        const idsToDate = (ids) => {
-            let result = '';
-            ids.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? '' : ', '));
-            return result;
-        };
-        preparation.setQuestion = async () => {
-            const item = await engine.getItem();
-            if (!item.question.img) {
-                preparation.setQuestion();
-                return;
-            }
-            if (item.question.img) {
-                const imgData = await core.idb.images.get(item.question.img);
-                if (imgData === null) {
-                    preparation.setQuestion();
-                    return;
-                }
-            }
-            learning.data.answers.origin = item;
-            learning.evaluation.mark(-1)();
-            setStyle(learning.elements.sheet, 'opacity', `0`);
-            const usedList = [item.question.id, ...item.question.used];
-            inner(learning.elements.info, `wystąpiło <b>${usedList.length}x</b> w: ${idsToDate(usedList)}.`);
-            if (item.question.img) {
-                display(learning.elements.img, 'block');
-                const imgData = await core.idb.images.get(item.question.img);
-                learning.elements.drawImage.draw(imgData.data);
-            }
-            else {
-                display(learning.elements.img, 'none');
-            }
-            inner(learning.elements.question, item.question.question);
-            const answers = [{
-                    content: item.question.answer,
-                    correct: true,
-                    number: -1
-                }];
-            item.question.falseAnswers.forEach((falseAnswer, index) => {
-                answers.push({
-                    content: falseAnswer,
-                    correct: false,
-                    number: index
-                });
-            });
-            learning.data.answers.shuffled = shuffle(answers);
-            learning.elements.answers.forEach((a, i) => {
-                inner(a, learning.data.answers.shuffled[i].content);
-            });
-            learning.elements.answersFields.forEach((a, i) => {
-                setStyle(a, 'color', 'var(--prime_color)');
-            });
-            preparation.setSheetHight();
-        };
-    })(preparation = learning.preparation || (learning.preparation = {}));
-})(learning || (learning = {}));
-var learning;
-(function (learning) {
-    let evaluation;
-    (function (evaluation) {
-        const { byId, byQueryAll, setStyle, add, remove, display, getPx, inner, disable, enable } = dom;
-        evaluation.mark = (num) => () => {
-            if (num === -1) {
-                disable(learning.elements.confirm);
-            }
-            else {
-                enable(learning.elements.confirm);
-            }
-            learning.data.mark = num;
-            learning.elements.checkbox.forEach((a, i) => a.checked = (i === num));
-            learning.elements.answersFields.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'));
-        };
-        const setResult = (result, history) => {
-            history.forEach(h => {
-                if (h.result) {
-                    result.good++;
-                }
-                else {
-                    result.bad++;
-                }
-            });
-            return result;
-        };
-        evaluation.getRateHistory = (history) => {
-            const getResult = () => ({ good: 0, bad: 0, });
-            const sortedHistory = history
-                .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-            const lastThree = sortedHistory.slice(-engine.params.determinants.numLastRequiredQuestions);
-            const resultOne = setResult(getResult(), lastThree);
-            if (resultOne.bad > 0) {
-                return {
-                    type: rating.bad,
-                    scale: resultOne.bad - 1
-                };
-            }
-            else {
-                const lastSix = sortedHistory.slice(-engine.params.determinants.numLastHighlyRatedQuestions);
-                const resultTwo = setResult(getResult(), lastSix);
-                return {
-                    type: rating.good,
-                    scale: resultTwo.good - 1
-                };
-            }
-        };
-        const sumAndMemo = async () => {
-            const answer = learning.data.answers.shuffled[learning.data.mark];
-            const timestamp = Date.now();
-            learning.data.answers.origin.answer.history.push({
-                timestamp,
-                result: answer.correct,
-            });
-            const rate = evaluation.getRateHistory(learning.data.answers.origin.answer.history);
-            learning.data.answers.origin.answer.rating = rate;
-            const { drawn, index, ...answerDb } = learning.data.answers.origin.answer;
-            core.idb.answers.update(index, (old) => old = answerDb);
-            const log = {
-                action: learning.data.answers.origin.answer.id,
-                result: answer.correct,
-            };
-            core.idb.logs.set(timestamp, log);
-        };
-        const setGreen = (field) => {
-            setStyle(field, 'backgroundColor', 'var(--on_prime_color)');
-            const theme = settings.theme.get();
-            if (theme === settings.theme.theme.dark) {
-                setStyle(field, 'color', 'var(--last_color)');
-            }
-        };
-        const showResult = async () => {
-            learning.data.confirm = true;
-            inner(learning.elements.confirm, 'Następne');
-            disable(learning.elements.confirm);
-            setTimeout(() => {
-                enable(learning.elements.confirm);
-            }, 1000);
-            const markedAnswer = learning.data.answers.shuffled[learning.data.mark];
-            if (markedAnswer.correct) {
-                setGreen(learning.elements.answersFields[learning.data.mark]);
-            }
-            else {
-                learning.elements.answersFields.forEach((field, index) => {
-                    if (index === learning.data.mark) {
-                        setStyle(field, 'backgroundColor', 'var(--off_prime_color)');
-                    }
-                    const correct = learning.data.answers.shuffled[index].correct;
-                    if (correct) {
-                        setGreen(field);
-                    }
-                });
-            }
-            await sumAndMemo();
-        };
-        const clearResults = () => {
-            learning.data.confirm = false;
-            inner(learning.elements.confirm, 'Zatwierdź');
-            learning.preparation.setQuestion();
-            learning.elements.answersFields.forEach((field, index) => {
-                if (index % 2 === 0) {
-                    setStyle(field, 'backgroundColor', 'var(--penultimate_color)');
-                }
-                else {
-                    setStyle(field, 'backgroundColor', 'var(--third_from_end_color)');
-                }
-            });
-        };
-        evaluation.confirmClick = async () => {
-            if (learning.data.confirm) {
-                clearResults();
-            }
-            else {
-                await showResult();
-            }
-        };
-    })(evaluation = learning.evaluation || (learning.evaluation = {}));
-})(learning || (learning = {}));
-var learning;
-(function (learning) {
-    let startEnd;
-    (function (startEnd) {
-        const { setStyle, add, remove, display, inner } = dom;
-        startEnd.start = async () => {
-            await core.store.set(storageNames.sessionStarted, checked.yes);
-            setStyle(learning.elements.sheet, 'opacity', `0`);
-            learning.resize(window.visualViewport.width, window.visualViewport.height);
-            inner(learning.elements.startEndBtn, 'Zakończ');
-            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_4_color)');
-            remove(learning.elements.startEndBtn, 'click', startEnd.start);
-            add(learning.elements.startEndBtn, 'click', startEnd.end);
-            await engine.init();
-            setTimeout(() => {
-                display(learning.elements.sheet, 'block');
-                learning.preparation.setQuestion();
-            }, 500);
-        };
-        startEnd.end = async () => {
-            await core.store.set(storageNames.sessionStarted, checked.no);
-            display(learning.elements.sheet, 'none');
-            learning.resize(window.visualViewport.width, window.visualViewport.height);
-            inner(learning.elements.startEndBtn, 'Rozpocznij');
-            setStyle(learning.elements.startEndBtn, 'backgroundColor', 'var(--mine_color)');
-            remove(learning.elements.startEndBtn, 'click', startEnd.end);
-            add(learning.elements.startEndBtn, 'click', startEnd.start);
-            queries.statistics.memoAnswers();
-            queries.statistics.memoLogs();
-            engine.endSession();
-            learning.data.answers.origin = null;
-        };
-    })(startEnd = learning.startEnd || (learning.startEnd = {}));
-})(learning || (learning = {}));
-var learning;
-(function (learning) {
-    const { byId, byQueryAll, setStyle, add, remove, display, getPx } = dom;
-    learning.elements = {
-        startEnd: null,
-        startEndBtn: null,
-        sheet: null,
-        measure: null,
-        imgBig: null,
-        info: null,
-        separator: null,
-        question: null,
-        img: null,
-        answers: null,
-        answersFields: null,
-        checkbox: null,
-        confirm: null,
-        bottom: null,
-        drawImage: null,
-    };
-    learning.init = () => {
-        learning.elements.startEnd = byId('learning-start-end');
-        learning.elements.startEndBtn = byId('learning-start-end-btn');
-        learning.elements.sheet = byId('learning-sheet');
-        learning.elements.measure = byId('learning-measure');
-        learning.elements.imgBig = byId('learning-img-big');
-        learning.elements.info = byId('learning-question-info');
-        learning.elements.separator = byId('learning-sheet-separator');
-        learning.elements.question = byId('question');
-        learning.elements.img = byId('learning-img');
-        learning.elements.answers = byQueryAll('.answer p');
-        learning.elements.answersFields = byQueryAll('.answer');
-        learning.elements.checkbox = byQueryAll('.answer input');
-        learning.elements.checkbox.forEach(c => c.checked = false);
-        learning.elements.confirm = byId('learning-confirm-btn');
-        learning.elements.bottom = byId('learning-bottom-separator');
-        learning.elements.drawImage = utils.drawImage();
-        const canvas = byId('learning-img-big-canvas');
-        const fitCanvas = byId('learning-img-canvas');
-        learning.elements.drawImage.init(canvas, fitCanvas);
-        utils.areNotNull(learning.elements, ['screens', 'learning']);
-        display(learning.elements.sheet, 'none');
-    };
-    const LOW_START_END_BTN = 12 + 28 + 12;
-    learning.resize = (w, h) => {
-        const menuH = core.isMobile ? (121 / 701) * w : 0;
-        learning.data.tabH = h - 30 - menuH - 20;
-        const tabW = w - (core.isMobile ? 0 : 200);
-        setStyle(learning.elements.imgBig, 'height', getPx(h));
-        setStyle(learning.elements.imgBig, 'width', getPx(tabW));
-        setStyle(learning.elements.bottom, 'height', getPx(menuH));
-        learning.elements.drawImage.setWidth(tabW - 80);
-        const started = core.store.get(storageNames.sessionStarted);
-        if (started === checked.yes) {
-            setStyle(learning.elements.startEnd, 'height', getPx(LOW_START_END_BTN));
-            setStyle(learning.elements.startEndBtn, 'padding', '12px 0');
-            learning.preparation.setSheetHight();
-        }
-        else {
-            setStyle(learning.elements.sheet, 'height', `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
-            setStyle(learning.elements.startEnd, 'height', getPx(h - 30 - menuH - 20));
-            setStyle(learning.elements.startEndBtn, 'padding', '24px 0');
-        }
-    };
-    const showBigImg = () => display(learning.elements.imgBig, 'flex');
-    const hideBigImg = () => display(learning.elements.imgBig, 'none');
-    learning.active = () => {
-        learning.elements.answersFields.forEach((a, i) => add(a, 'click', learning.evaluation.mark(i)));
-        const started = core.store.get(storageNames.sessionStarted);
-        add(learning.elements.startEndBtn, 'click', started === checked.yes ? learning.startEnd.end : learning.startEnd.start);
-        add(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
-        add(learning.elements.img, 'click', showBigImg);
-        add(learning.elements.imgBig, 'click', hideBigImg);
-    };
-    learning.deactivate = () => {
-        learning.elements.answersFields.forEach((a, i) => remove(a, 'click', learning.evaluation.mark(i)));
-        remove(learning.elements.startEndBtn, 'click', learning.startEnd.start);
-        remove(learning.elements.startEndBtn, 'click', learning.startEnd.end);
-        remove(learning.elements.confirm, 'click', learning.evaluation.confirmClick);
-        remove(learning.elements.img, 'click', showBigImg);
-        remove(learning.elements.imgBig, 'click', hideBigImg);
-    };
-})(learning || (learning = {}));
-var answers;
-(function (answers) {
-    const { byId, prepare, setStyle } = dom;
-    const elements = {};
-    answers.init = () => {
-    };
-    answers.active = () => { };
-    answers.deactivate = () => { };
-})(answers || (answers = {}));
-var settings;
-(function (settings) {
-    let info;
-    (function (info) {
-        const { byId, byQuery, getPx, setStyle, add, remove } = dom;
-        const elements = {
-            settingsAppInfo: null,
-            settingsAppInfoMore: null,
-            settingsAppInfoLess: null,
-            settingsAppInfoContent: null,
-        };
-        const state = {
-            settingsAppInfoContentHeight: null,
-            open: false,
-        };
-        info.init = () => {
-            elements.settingsAppInfo = byId('settings-app-info-title');
-            elements.settingsAppInfoMore = byId('settings-app-info-more');
-            elements.settingsAppInfoLess = byId('settings-app-info-less');
-            elements.settingsAppInfoContent = byId('settings-app-info-content');
-            utils.areNotNull(elements, ['settings', 'info']);
-            setTimeout(() => {
-                const contentBox = elements.settingsAppInfoContent.getBoundingClientRect();
-                state.settingsAppInfoContentHeight = contentBox.height;
-                setStyle(elements.settingsAppInfoLess, 'display', 'none');
-                setStyle(elements.settingsAppInfoContent, 'height', '0px');
-            }, 100);
-        };
-        const showInfo = () => {
-            if (state.open) {
-                setStyle(elements.settingsAppInfoLess, 'display', 'none');
-                setStyle(elements.settingsAppInfoMore, 'display', 'initial');
-                setStyle(elements.settingsAppInfoContent, 'height', '0px');
-            }
-            else {
-                setStyle(elements.settingsAppInfoLess, 'display', 'initial');
-                setStyle(elements.settingsAppInfoMore, 'display', 'none');
-                setStyle(elements.settingsAppInfoContent, 'height', `${state.settingsAppInfoContentHeight}px`);
-            }
-            state.open = !state.open;
-        };
-        info.active = () => {
-            add(elements.settingsAppInfo, 'click', showInfo);
-        };
-        info.deactivate = () => {
-            remove(elements.settingsAppInfo, 'click', showInfo);
-        };
-    })(info = settings.info || (settings.info = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    let dataControl;
-    (function (dataControl) {
-        const { byId, byQuery, getPx, setStyle } = dom;
-        const ids = {
-            prefix: 'setting-data-',
-            questions: {
-                offline: 'questions-offline',
-                online: 'questions-online',
-            },
-            img: {
-                offline: 'img-offline',
-                online: 'img-online',
-            },
-        };
-        const valuesList = [checked.yes, checked.no];
-        const questionsNames = Object.values(ids.questions);
-        const controlQuestionsData = {
-            prefix: ids.prefix,
-            storeName: storageNames.questionsData,
-            elementList: questionsNames,
-            nameList: valuesList,
-        };
-        const imgNames = Object.values(ids.img);
-        const controlImgData = {
-            prefix: ids.prefix,
-            storeName: storageNames.imgData,
-            elementList: imgNames,
-            nameList: valuesList,
-        };
-        dataControl.init = () => {
-            dataControl.questionsRatio = utils.getRadio(controlQuestionsData);
-            dataControl.questionsRatio.init();
-            dataControl.imgRatio = utils.getRadio(controlImgData);
-            dataControl.imgRatio.init();
-        };
-    })(dataControl = settings.dataControl || (settings.dataControl = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    let ratio;
-    (function (ratio) {
-        const { byId, byQuery, getPx, setStyle, add, remove, inner } = dom;
-        const elements = {
-            settingsSliderRepeatable: null,
-            settingsSliderSingle: null,
-            settingsSliderInput: null,
-        };
-        const state = {
-            ratio: 0,
-        };
-        ratio.init = async () => {
-            elements.settingsSliderRepeatable = byId('settings-slider-repeatable');
-            elements.settingsSliderSingle = byId('settings-slider-single');
-            elements.settingsSliderInput = byId('settings-slider-input');
-            utils.areNotNull(elements, ['settings', 'ratio']);
-            state.ratio = Number(await core.store.get(storageNames.questionsRatio));
-            elements.settingsSliderInput.value = state.ratio.toString();
-            elements.settingsSliderInput.max = engine.params.determinants.questionInSession.toString();
-            inner(elements.settingsSliderRepeatable, state.ratio.toString());
-            inner(elements.settingsSliderSingle, (engine.params.determinants.questionInSession - state.ratio).toString());
-        };
-        const showRatio = (event) => {
-            const value = event.target.value;
-            inner(elements.settingsSliderRepeatable, value);
-            inner(elements.settingsSliderSingle, (engine.params.determinants.questionInSession - Number(value)).toString());
-        };
-        const memoRatio = async (event) => {
-            const value = event.target.value;
-            state.ratio = Number(value);
-            await core.store.set(storageNames.questionsRatio, value);
-            engine.params.data.numOfQuestions.repeatable = state.ratio;
-            const single = engine.params.determinants.questionInSession - state.ratio;
-            engine.params.data.numOfQuestions.single = single;
-        };
-        ratio.active = () => {
-            add(elements.settingsSliderInput, 'input', showRatio);
-            add(elements.settingsSliderInput, 'change', memoRatio);
-        };
-        ratio.deactivate = () => {
-            remove(elements.settingsSliderInput, 'input', showRatio);
-            remove(elements.settingsSliderInput, 'change', memoRatio);
-        };
-    })(ratio = settings.ratio || (settings.ratio = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    const { root, setAttribute, setStyle, removeClass, addClass } = dom;
-    let theme;
-    (function (theme_1) {
-        theme_1.theme = {
-            dark: 'dark',
-            light: 'light',
-        };
-        theme_1.themeMode = {
-            ...theme_1.theme,
-            system: 'system',
-        };
-        const themeNames = Object.values(theme_1.themeMode);
-        const memo = {
-            theme: null
-        };
-        theme_1.get = () => memo.theme;
-        const apply = (theme) => {
-            root.setAttribute('data-theme', theme);
-            setAttribute(root, 'data-theme', theme);
-            removeClass(root, theme_1.themeMode.dark);
-            removeClass(root, theme_1.themeMode.light);
-            addClass(root, theme);
-            setStyle(root, 'colorScheme', theme);
-        };
-        const setSystemTheme = () => {
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const newTheme = systemPrefersDark ? theme_1.theme.dark : theme_1.theme.light;
-            apply(newTheme);
-            memo.theme = newTheme;
-        };
-        const set = (saved) => {
-            if (saved === theme_1.theme.dark || saved === theme_1.theme.light) {
-                apply(saved);
-                memo.theme = saved;
-                return saved;
-            }
-            if (saved === theme_1.themeMode.system) {
-                setSystemTheme();
-                return saved;
-            }
-            core.store.set(storageNames.theme, theme_1.themeMode.system);
-            setSystemTheme();
-            return theme_1.themeMode.system;
-        };
-        const themeData = {
-            prefix: 'setting-theme-',
-            storeName: storageNames.theme,
-            elementList: themeNames,
-            nameList: themeNames,
-            clickList: themeNames.map((name, i) => () => {
-                set(name);
-                setTimeout(() => {
-                    statistics.draw.themeChange();
-                    statistics.legend.setMonitorLegend();
-                }, 100);
-            }),
-            init: set,
-        };
-        theme_1.init = async () => {
-            theme_1.ratio = utils.getRadio(themeData);
-            theme_1.ratio.init();
-        };
-    })(theme = settings.theme || (settings.theme = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    let menu;
-    (function (menu) {
-        const { byId, byQuery, getPx, setStyle } = dom;
-        const ids = {
-            prefix: 'setting-menu-',
-            side: {
-                right: 'right',
-                left: 'left',
-            },
-        };
-        const valuesList = [checked.no, checked.yes];
-        const menuNames = Object.values(ids.side);
-        const controlMenuData = {
-            prefix: ids.prefix,
-            storeName: storageNames.menuLeft,
-            elementList: menuNames,
-            nameList: valuesList,
-        };
-        menu.init = () => {
-            controlMenuData.clickList = [
-                () => tab.simpleMenu.visible.menuSide(checked.no),
-                () => tab.simpleMenu.visible.menuSide(checked.yes),
-            ];
-            menu.menuRatio = utils.getRadio(controlMenuData);
-            menu.menuRatio.init();
-        };
-    })(menu = settings.menu || (settings.menu = {}));
-})(settings || (settings = {}));
-var settings;
-(function (settings) {
-    const { byQuery, getPx, setStyle } = dom;
-    const elements = {
-        scrollBox: null,
-    };
-    settings.resize = (w, h) => {
-        setStyle(elements.scrollBox, 'height', `calc(${getPx(h)} - 32px - var(--font_title_size))`);
-    };
-    settings.init = () => {
-        elements.scrollBox = byQuery('#settings-tab-box .scroll-box');
-        utils.areNotNull(elements, ['settings']);
-        settings.info.init();
-        settings.theme.init();
-        settings.ratio.init();
-        settings.menu.init();
-    };
-    settings.active = () => {
-        settings.info.active();
-        settings.theme.ratio.active();
-        settings.ratio.active();
-    };
-    settings.deactivate = () => {
-        settings.info.deactivate();
-        settings.theme.ratio.deactivate();
-        settings.ratio.deactivate();
-    };
-})(settings || (settings = {}));
-var tab;
-(function (tab_1) {
-    const { byId, byQueryAll, getPx, setStyle, display, add } = dom;
-    const WEB_MENU_WIDTH = 200;
-    const elements = {
-        carousel: null,
-        carouselBox: null,
-        allTabs: null,
-        tabs: null,
-        menu: {
-            web: null,
-            mobile: null,
-            items: null
-        },
-    };
-    tab_1.state = {
-        screen: 0,
-        max: 0,
-        carouselLeftPos: 0,
-        tabWidth: 0,
-    };
-    tab_1.screens = [
-        starter,
-        statistics,
-        learning,
-        answers,
-        settings
-    ];
-    const getTabLeftPos = () => (tab_1.state.tabWidth * tab_1.state.screen);
-    tab_1.setTab = () => {
-        elements.carousel.style.left = getPx(-getTabLeftPos());
-        tab_1.screens.forEach((s, i) => (i === tab_1.state.screen) ? s.active() : s.deactivate());
-    };
-    tab_1.goLeft = () => {
-        if (tab_1.state.screen > 0) {
-            tab_1.state.screen--;
-            tab_1.setTab();
-        }
-    };
-    tab_1.goRight = () => {
-        if (tab_1.state.screen < tab_1.state.max - 1) {
-            tab_1.state.screen++;
-            tab_1.setTab();
-        }
-    };
-    const setWebBtnsColor = (index) => {
-        elements.menu.items.forEach((item, i) => {
-            if (index === i) {
-                setStyle(item, 'backgroundColor', 'var(--mine_color)');
-                setStyle(item, 'color', 'var(--last_color)');
-            }
-            else {
-                setStyle(item, 'backgroundColor', 'var(--penultimate_color)');
-                setStyle(item, 'color', 'var(--prime_color)');
-            }
-        });
-    };
-    tab_1.getGoTo = (screenNum) => () => {
-        tab_1.state.screen = screenNum;
-        tab_1.setTab();
-        if (core.isMobile) {
-            tab_1.simpleMenu.setIconsColor(screenNum);
-        }
-        else {
-            setWebBtnsColor(screenNum);
-        }
-    };
-    tab_1.blur = () => {
-        setStyle(elements.allTabs, 'filter', 'blur(5px)');
-    };
-    tab_1.unBlur = () => {
-        setStyle(elements.allTabs, 'filter', 'blur(0px)');
-    };
-    tab_1.init = () => {
-        elements.carousel = byId('carousel');
-        elements.carouselBox = byId('carousel-box');
-        elements.allTabs = byId('tabs');
-        elements.tabs = byQueryAll('.tab');
-        tab_1.state.max = elements.tabs.length;
-        elements.menu.mobile = byId('menu-mobile');
-        elements.menu.web = byId('menu-web');
-        if (core.isMobile) {
-            display(elements.menu.web, 'none');
-            elements.menu.items = [];
-            tab_1.simpleMenu.init(tab_1.getGoTo, elements.menu.items);
-        }
-        else {
-            display(elements.menu.mobile, 'none');
-            tab_1.state.carouselLeftPos = WEB_MENU_WIDTH;
-            elements.menu.items = byQueryAll('.menu-web-item');
-            for (let i = 0; i < elements.menu.items.length; ++i) {
-                const item = elements.menu.items[i];
-                add(item, 'click', tab_1.getGoTo(i));
-            }
-        }
-        utils.areNotNull(elements, ['tab']);
-    };
-    tab_1.resize = (w, h) => {
-        tab_1.state.tabWidth = w - tab_1.state.carouselLeftPos;
-        for (let i = 0; i < elements.tabs.length; ++i) {
-            const tab = elements.tabs[i];
-            setStyle(tab, 'width', getPx(tab_1.state.tabWidth));
-            setStyle(tab, 'height', getPx(h));
-        }
-        setStyle(elements.allTabs, 'width', getPx(w));
-        setStyle(elements.allTabs, 'height', getPx(h));
-        setStyle(elements.carouselBox, 'width', getPx(tab_1.state.tabWidth));
-        setStyle(elements.carouselBox, 'left', getPx(tab_1.state.carouselLeftPos));
-        setStyle(elements.carousel, 'width', getPx(tab_1.state.max * tab_1.state.tabWidth));
-        tab_1.setTab();
-    };
-})(tab || (tab = {}));
-var tab;
-(function (tab) {
-    let simpleMenu;
-    (function (simpleMenu) {
-        const { byId, byQuery, byQAll, getPx, setStyle, add, display } = dom;
-        simpleMenu.elements = {
-            menu: null,
-            list: null,
-            items: null,
-            iconShowHide: null,
-            iconShow: null,
-            iconHide: null,
-            iconHideSvg: null,
-        };
-        simpleMenu.resize = () => {
-        };
-        simpleMenu.setIconsColor = (index) => simpleMenu.elements.items.forEach((item, i) => {
-            if (index === i) {
-                setStyle(item, 'fill', 'var(--mine_color)');
-            }
-            else {
-                setStyle(item, 'fill', 'var(--mine_6_color)');
-            }
-        });
-        simpleMenu.init = (getGoTo, items) => {
-            simpleMenu.elements.menu = byId('menu-mobile');
-            simpleMenu.elements.list = byQuery('.menu-mobile-list');
-            simpleMenu.elements.items = byQAll(simpleMenu.elements.menu, '.menu-mobile-item');
-            simpleMenu.elements.iconShowHide = byId('menu-mobile-icon-menu');
-            simpleMenu.elements.iconShow = byId('menu-mobile-icon-show');
-            simpleMenu.elements.iconHide = byId('menu-mobile-icon-hide');
-            simpleMenu.elements.iconHideSvg = byId('menu-mobile-icon-hide-svg');
-            simpleMenu.elements.items.forEach((item, index) => {
-                items.push(item);
-                const goTo = getGoTo(index);
-                add(item, 'click', () => {
-                    goTo();
-                    simpleMenu.setIconsColor(index);
-                });
-            });
-            utils.areNotNull(simpleMenu.elements, ['simpleMenu']);
-            display(simpleMenu.elements.menu, 'none');
-            simpleMenu.setIconsColor(0);
-            simpleMenu.visible.init();
-        };
-        simpleMenu.showMenu = () => display(simpleMenu.elements.menu, 'flex');
-    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
-})(tab || (tab = {}));
-var tab;
-(function (tab) {
-    let simpleMenu;
-    (function (simpleMenu) {
-        let visible;
-        (function (visible) {
-            const { setStyle, addClass, removeClass, display, add } = dom;
-            let leftSide = checked.no;
-            const showHideIcon = {
-                show: null,
-                hide: null
-            };
-            const moveIconLeft = () => {
-                showHideIcon.hide = () => {
-                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0 30% 0 0');
-                    setStyle(simpleMenu.elements.menu, 'right', '');
-                    setStyle(simpleMenu.elements.menu, 'left', '-3%');
-                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '0%');
-                };
-                showHideIcon.show = () => {
-                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0');
-                    setStyle(simpleMenu.elements.menu, 'right', '');
-                    setStyle(simpleMenu.elements.menu, 'left', '0px');
-                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
-                };
-            };
-            const moveIconRight = () => {
-                showHideIcon.hide = () => {
-                    setStyle(simpleMenu.elements.menu, 'borderRadius', '30% 0 0 0');
-                    setStyle(simpleMenu.elements.menu, 'right', '-3%');
-                    setStyle(simpleMenu.elements.menu, 'left', '');
-                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
-                };
-                showHideIcon.show = () => {
-                    setStyle(simpleMenu.elements.menu, 'borderRadius', '0');
-                    setStyle(simpleMenu.elements.menu, 'right', '0px');
-                    setStyle(simpleMenu.elements.menu, 'left', '');
-                    setStyle(simpleMenu.elements.iconHideSvg, 'marginLeft', '15%');
-                };
-            };
-            const hide = async () => {
-                display(simpleMenu.elements.iconHide, 'initial');
-                display(simpleMenu.elements.iconShow, 'none');
-                display(simpleMenu.elements.list, 'none');
-                setStyle(simpleMenu.elements.menu, 'width', '17%');
-                setStyle(simpleMenu.elements.iconShowHide, 'width', '80%');
-                if (showHideIcon.hide)
-                    showHideIcon.hide();
-            };
-            const show = async () => {
-                display(simpleMenu.elements.iconHide, 'none');
-                display(simpleMenu.elements.iconShow, 'initial');
-                display(simpleMenu.elements.list, 'flex');
-                setStyle(simpleMenu.elements.menu, 'width', '100%');
-                setStyle(simpleMenu.elements.iconShowHide, 'width', '17%');
-                if (showHideIcon.show)
-                    showHideIcon.show();
-            };
-            let isVisible = true;
-            visible.menuSide = async (side) => {
-                if (side === checked.yes) {
-                    addClass(simpleMenu.elements.iconShowHide, 'menu-mobile-left-icon');
-                    moveIconLeft();
-                    simpleMenu.elements.items.forEach(i => {
-                        setStyle(i, 'borderLeft', '3px solid var(--fourth_from_end_color)');
-                        setStyle(i, 'borderRight', '0px solid var(--fourth_from_end_color)');
-                    });
-                }
-                else {
-                    removeClass(simpleMenu.elements.iconShowHide, 'menu-mobile-left-icon');
-                    moveIconRight();
-                    simpleMenu.elements.items.forEach(i => {
-                        setStyle(i, 'borderLeft', '0px solid var(--fourth_from_end_color)');
-                        setStyle(i, 'borderRight', '3px solid var(--fourth_from_end_color)');
-                    });
-                }
-                if (isVisible) {
-                    showHideIcon.show();
-                }
-                else {
-                    showHideIcon.hide();
-                }
-            };
-            visible.changeVisibility = () => {
-                if (isVisible) {
-                    hide();
-                    isVisible = false;
-                }
-                else {
-                    show();
-                    isVisible = true;
-                }
-            };
-            visible.init = async () => {
-                leftSide = await core.store.get(storageNames.menuLeft);
-                visible.menuSide(leftSide);
-                add(simpleMenu.elements.iconShowHide, 'click', visible.changeVisibility);
-            };
-        })(visible = simpleMenu.visible || (simpleMenu.visible = {}));
-    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
-})(tab || (tab = {}));
-var tab;
-(function (tab) {
-    let simpleMenu;
-    (function (simpleMenu) {
-        let touch;
-        (function (touch) {
-            const { byId, byQAll, getPx, setStyle, add } = dom;
-            const state = {
-                pivot: {
-                    x: 0,
-                    y: 0,
-                },
-                start: {
-                    x: 0,
-                    y: 0,
-                },
-                originAngle: 0,
-                startAngle: 0,
-                angle: 0,
-            };
-            touch.resize = () => {
-            };
-            const setDeg = () => {
-                const style = window.getComputedStyle(simpleMenu.elements.list);
-                const transform = style.transform;
-                const values = transform.match(/matrix\(([^)]+)\)/)?.[1].split(',').map(v => parseFloat(v));
-                if (values) {
-                    const [a, b, c, d] = values;
-                    const angleRad = Math.atan2(b, a);
-                    const angleDeg = angleRad * 180 / Math.PI;
-                    state.originAngle = angleDeg;
-                }
-            };
-            const getDeg = () => `rotate(${(state.originAngle + state.angle - state.startAngle)}deg)`;
-            const rotate = () => {
-                setStyle(simpleMenu.elements.list, 'transform', getDeg());
-            };
-            const getAngle = (dx, dy) => Math.atan2(dx, -dy) * 180 / Math.PI;
-            const touchstart = (e) => {
-                const t = e.touches[0];
-                state.start.x = t.clientX;
-                state.start.y = t.clientY;
-                const dx = state.start.x - state.pivot.x;
-                const dy = state.start.y - state.pivot.y;
-                state.startAngle = getAngle(dx, dy);
-                setDeg();
-            };
-            const touchmove = (e) => {
-                const t = e.touches[0];
-                const x = t.clientX;
-                const y = t.clientY;
-                const dx = x - state.pivot.x;
-                const dy = y - state.pivot.y;
-                state.angle = getAngle(dx, dy);
-                rotate();
-            };
-            const touchend = (e) => {
-                const t = e.changedTouches[0];
-                const x = t.clientX;
-                const y = t.clientY;
-            };
-            touch.init = () => {
-                add(simpleMenu.elements.menu, 'touchstart', touchstart);
-                add(simpleMenu.elements.menu, 'touchmove', touchmove);
-                add(simpleMenu.elements.menu, 'touchend', touchend);
-            };
-        })(touch = simpleMenu.touch || (simpleMenu.touch = {}));
-    })(simpleMenu = tab.simpleMenu || (tab.simpleMenu = {}));
-})(tab || (tab = {}));
-var modal;
-(function (modal) {
-    let installer;
-    (function (installer) {
-        const { byId, inner, setStyle, add, remove } = dom;
-        const elements = {
-            modal: null,
-            installBtn: null,
-            noInstallBtn: null,
-        };
-        let deferredPrompt = null;
-        const beforeInstallPrompt = (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const installBtn = document.getElementById('installBtn');
-            if (installBtn) {
-                installBtn.style.display = 'block';
-            }
-        };
-        const instalClick = async () => {
-            if (!deferredPrompt)
-                return;
-            deferredPrompt.prompt();
-            const choiceResult = await deferredPrompt.userChoice;
-            if (choiceResult.outcome === 'accepted') {
-                console.log('Użytkownik zainstalował aplikację');
-            }
-            else {
-                console.log('Użytkownik odrzucił instalację');
-            }
-            deferredPrompt = null;
-        };
-        installer.isAppInstalled = () => {
-            const isInstalled = window.matchMedia('(display-mode: standalone)').matches
-                || window.navigator.standalone === true;
-            return isInstalled;
-        };
-        installer.init = () => {
-            elements.modal = byId('modal-installer');
-            elements.installBtn = byId('modal-installer-btn');
-            elements.noInstallBtn = byId('modal-installer-btn-no');
-            utils.areNotNull(elements, ['modal', 'user']);
-            setStyle(elements.modal, 'display', 'none');
-        };
-        const data = {
-            hideFn: null,
-        };
-        installer.showInstallerModal = (hideFn) => {
-            modal.show();
-            setStyle(elements.modal, 'display', 'flex');
-            add(window, 'beforeinstallprompt', beforeInstallPrompt);
-            add(elements.installBtn, 'click', instalClick);
-            add(elements.noInstallBtn, 'click', installer.hideInstallerModal);
-            data.hideFn = hideFn;
-        };
-        installer.hideInstallerModal = () => {
-            modal.hide();
-            setStyle(elements.modal, 'display', 'none');
-            remove(window, 'beforeinstallprompt', beforeInstallPrompt);
-            remove(elements.installBtn, 'click', instalClick);
-            remove(elements.noInstallBtn, 'click', installer.hideInstallerModal);
-            data.hideFn();
-        };
-    })(installer = modal.installer || (modal.installer = {}));
-})(modal || (modal = {}));
-var modal;
-(function (modal_1) {
-    let user;
-    (function (user) {
-        const { byId, inner, setStyle, add, remove } = dom;
-        const elements = {
-            modal: null,
-            btnNewUser: null,
-            idInfo: null,
-            idInput: null,
-            btnOldUser: null,
-        };
-        user.init = () => {
-            elements.btnNewUser = byId('modal-user-btn-new-user');
-            elements.modal = byId('modal-user');
-            elements.idInfo = byId('modal-user-id-info');
-            elements.idInput = byId('modal-user-id-input');
-            elements.btnOldUser = byId('modal-user-btn-old-user');
-            utils.areNotNull(elements, ['modal', 'user']);
-        };
-        user.showUserModal = (setNewUser, getValidateUserId, getCheckUserId) => {
-            modal_1.show();
-            const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements;
-            setStyle(modal, 'display', 'flex');
-            btnOldUser.disabled = true;
-            add(btnNewUser, 'click', async () => {
-                await setNewUser();
-                user.hideUserModal();
-            });
-            const validateUserId = getValidateUserId(idInfo, btnOldUser);
-            add(idInput, 'input', validateUserId);
-            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, user.hideUserModal);
-            add(btnOldUser, 'click', checkUserId);
-        };
-        user.hideUserModal = () => {
-            modal_1.hide();
-            setStyle(elements.modal, 'display', 'none');
-        };
-    })(user = modal_1.user || (modal_1.user = {}));
-})(modal || (modal = {}));
-var modal;
-(function (modal) {
-    const { byId, byQuery, getPx, setStyle, inner, add, remove } = dom;
-    const elements = {
-        modal: null,
-        txt: null,
-        info: null,
-        btn: null,
-    };
-    const reload = () => window.location.reload();
-    let close = null;
-    modal.error = {
-        init: () => {
-            elements.modal = byId('modal-error');
-            elements.txt = byId('modal-error-txt');
-            elements.info = byId('modal-error-info');
-            elements.btn = byId('modal-error-btn');
-        },
-        show: (err, canWork, onClose) => {
-            modal.show();
-            setStyle(elements.modal, 'display', 'flex');
-            close = onClose;
-            if (canWork) {
-                inner(elements.txt, err);
-                inner(elements.info, "Będzie działać dzięki zapamiętanym danym.");
-                setStyle(elements.info, 'color', 'var(--on_prime_color)');
-                inner(elements.btn, 'Dalej');
-                add(elements.btn, 'click', modal.error.hide);
-            }
-            else {
-                inner(elements.txt, err);
-                inner(elements.info, 'Brak danych aby uruchomić aplikację.');
-                setStyle(elements.info, 'color', 'var(--off_prime_color)');
-                inner(elements.btn, 'Przeładuj');
-                add(elements.btn, 'click', reload);
-            }
-        },
-        hide: () => {
-            modal.hide();
-            setStyle(elements.modal, 'display', 'none');
-            remove(elements.btn, 'click', reload);
-            remove(elements.btn, 'click', modal.error.hide);
-            if (close)
-                close();
-        }
-    };
-})(modal || (modal = {}));
-var modal;
-(function (modal) {
-    const { byId, getPx, setStyle, add } = dom;
-    const elements = {
-        modal: null,
-        back: null,
-    };
-    modal.init = () => {
-        elements.modal = byId('modal');
-        elements.back = byId('modal-back');
-        utils.areNotNull(elements, ['modal']);
-        modal.error.init();
-        modal.user.init();
-        modal.installer.init();
-    };
-    modal.resize = (w, h) => {
-        setStyle(elements.back, 'width', getPx(w));
-        setStyle(elements.back, 'height', getPx(h));
-    };
-    let visible = false;
-    modal.show = () => {
-        visible = true;
-        setStyle(elements.modal, 'opacity', '0');
-        setStyle(elements.modal, 'display', 'flex');
-        setTimeout(() => {
-            setStyle(elements.modal, 'opacity', '1');
-        }, 30);
-        tab.blur();
-    };
-    modal.hide = () => {
-        visible = false;
-        setStyle(elements.modal, 'opacity', '0');
-        setTimeout(() => {
-            if (!visible) {
-                setStyle(elements.modal, 'display', 'none');
-            }
-        }, 330);
-        tab.unBlur();
-    };
-})(modal || (modal = {}));
-var tests;
-(function (tests) {
-    tests.errorModal = async () => {
-        const test1 = await queries.test.getCsrf();
-        console.log('test 1:', test1);
-        await utils.sleep(100);
-        const test2 = await queries.test.getDdos();
-        console.log('test 2:', test2);
-        await utils.sleep(100);
-        const test3 = await queries.test.getDdosId();
-        console.log('test 3:', test3);
-        await utils.sleep(100);
-        const test4 = await queries.test.getNoMahakala();
-        console.log('test 4:', test4);
-        await utils.sleep(100);
-        const test5 = await queries.test.getWrongMahakala();
-        console.log('test 5:', test5);
-    };
-})(tests || (tests = {}));
-const serviceWorker = () => {
-    console.log('serviceWorker');
-    if ("serviceWorker" in navigator) {
-        console.log('serviceWorker - ok');
+  };
+
+  // src/engine/run.ts
+  var getTensors2 = async () => {
+    await updateAnswers();
+    const repeatableTensors = await getTensors(
+      data.normalizedWeights.repeatable,
+      data.repeatableAnswers
+    );
+    const selectedRepeatableTensors = selectByTemperature(
+      repeatableTensors,
+      repeatable.temperature,
+      data.numOfQuestions.repeatable
+    );
+    const singleTensors = await getTensors(
+      data.normalizedWeights.single,
+      data.singleAnswers
+    );
+    const selectedSingleTensors = selectByTemperature(
+      singleTensors,
+      single.temperature,
+      data.numOfQuestions.single
+    );
+    const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors]);
+    return result;
+  };
+  var startSession = async () => {
+    data.session = await getTensors2();
+    console.log("%c params.data.session:", "background:rgb(0, 17, 255); color: #003300", data.session);
+    data.index = 0;
+  };
+  var endSession = async () => {
+    data.session = [];
+    data.index = -1;
+  };
+  var getNextQuestion = async () => {
+    if (data.index === -1) {
+      await startSession();
     }
-    navigator.serviceWorker
-        .register("/sw.js")
-        .then(() => console.log("Service Worker zarejestrowany"))
-        .catch((err) => console.error("Błąd SW:", err));
-};
-(function () {
-    axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
-    axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
-    axios.defaults.withCredentials = true;
+    const result = data.session[data.index];
+    console.log("%c params.data.index:", "background:rgb(255, 0, 251); color: #003300", data.index);
+    data.index++;
+    if (data.index >= data.session.length) {
+      await startSession();
+    }
+    return result;
+  };
+  var init6 = async () => {
+  };
+  var getItem = async () => {
+    const tensor = await getNextQuestion();
+    const answer = data.answers.find((a) => a.id === tensor.id);
+    const question = data.questions.find((q) => q.id === tensor.id);
+    console.log("%c question:", "background: #ffcc00; color: #003300", question);
+    const result = {
+      question,
+      answer,
+      index: tensor.index
+    };
+    return result;
+  };
+
+  // src/queries/url.ts
+  var url = (function() {
+    const main = `api/`;
+    return {
+      test: {
+        csrf: `${main}csrf`,
+        ddos: `${main}ddos`,
+        ddosId: `${main}ddos-id`,
+        noMahakala: `${main}no-mahakala`,
+        wrongMahakala: `${main}wrong-mahakala`
+      },
+      secure: {
+        get: `${main}secure`,
+        test: `${main}secure-test`
+      },
+      user: {
+        set: `${main}set-user`,
+        check: `${main}check-user`,
+        getQr: `${main}get-user-qr-code`,
+        setQr: `${main}set-user-by-qr-code`
+      },
+      data: {
+        version: `${main}get-version`,
+        config: `${main}get-config`,
+        questions: `${main}get-questions`,
+        images: `${main}get-images`
+      },
+      statistics: {
+        memoAnswers: `${main}memo-answers`,
+        getAnswers: `${main}get-answers`,
+        getLastLogTimestamp: `${main}get-last-log-timestamp`,
+        memoLogs: `${main}memo-logs`
+      }
+    };
+  })();
+
+  // src/queries/responseCommand.ts
+  var responseCommand = {
+    main: {
+      ddos: "DDoS",
+      ddosId: "DDoSid",
+      csrf: "csrf"
+    },
+    secure: {
+      noMahakala: "noMahakala",
+      wrongMahakala: "wrongMahakala",
+      generateUserId: "generateUserId",
+      go: "go",
+      testOk: "testOk"
+    },
+    user: {
+      set: "userSet",
+      ok: "userOk",
+      no: "noUser",
+      noId: "noId",
+      qr: "qr"
+    },
+    statistics: {
+      answersMemoried: "answersMemoried",
+      noAnswers: "noAnswers",
+      logsMemoried: "logsMemoried",
+      lastLogTimestamp: "lastLogTimestamp",
+      noLogs: "noLogs"
+    },
+    error: {
+      none: "none"
+    }
+  };
+
+  // src/queries/api.ts
+  var okCodes = [304, 401, 403, 429];
+  var api = axios_default.create({
+    // baseURL: 'https://frog02-32047.wykr.es/',
+    baseURL: "https://192.168.1.109:3331/",
+    validateStatus: function(status) {
+      return status >= 200 && status < 300 || okCodes.some((c) => c === status);
+    }
+  });
+  var nothing = {
+    message: "nieudane",
+    command: responseCommand.error.none
+  };
+
+  // src/queries/statistics/memoAnswers.ts
+  var memoAnswers = async () => {
+    const answersDb = await core.idb.answers.getAllData();
+    const answers = [];
+    answersDb.forEach((answer) => {
+      const history = answer[1].history;
+      const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+      const lastSix = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions);
+      if (history.length > 0) {
+        answers.push({
+          id: answer[1].id,
+          history: lastSix
+        });
+      }
+    });
+    if (answers.length > 0) {
+      const result = await api.post(
+        url.statistics.memoAnswers,
+        { answers },
+        { withCredentials: true }
+      );
+      return result.data;
+    }
+    return nothing;
+  };
+
+  // src/queries/statistics/getLastLogTimestamp.ts
+  var getLastLogTimestamp = async () => {
+    const result = await api.get(
+      url.statistics.getLastLogTimestamp,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/statistics/memoLogs.ts
+  var memoLogs = async () => {
+    const convertLog = (log) => ({
+      action: log[1].action,
+      result: log[1].result,
+      timestamp: log[0]
+    });
+    const sentAndGetData = async (logs) => {
+      const result = await api.post(
+        url.statistics.memoLogs,
+        { logs },
+        { withCredentials: true }
+      );
+      return result.data;
+    };
+    const logsDb = await core.idb.logs.getAllData();
+    const timestampLog = await getLastLogTimestamp();
+    if (timestampLog.command === responseCommand.statistics.noLogs) {
+      const logs = logsDb.map((log) => convertLog(log));
+      await sentAndGetData(logs);
+    } else {
+      const logs = logsDb.filter((log) => log[0] > Number(timestampLog.timestamp)).map((log) => convertLog(log));
+      if (logs.length > 0) {
+        await sentAndGetData(logs);
+      }
+    }
+    return nothing;
+  };
+
+  // src/screens/learning/startEnd.ts
+  var start = async () => {
+    await core.store.set(storageNames.sessionStarted, checked.yes);
+    setStyle(elements4.sheet, "opacity", `0`);
+    const vv = window.visualViewport;
+    resize2(vv.width, vv.height);
+    inner(elements4.startEndBtn, "Zako\u0144cz");
+    setStyle(elements4.startEndBtn, "backgroundColor", "var(--mine_4_color)");
+    remove(elements4.startEndBtn, "click", start);
+    add(elements4.startEndBtn, "click", end);
+    await init6();
+    setTimeout(() => {
+      display(elements4.sheet, "block");
+      setQuestion();
+    }, 500);
+  };
+  var end = async () => {
+    await core.store.set(storageNames.sessionStarted, checked.no);
+    display(elements4.sheet, "none");
+    const vv = window.visualViewport;
+    resize2(vv.width, vv.height);
+    inner(elements4.startEndBtn, "Rozpocznij");
+    setStyle(elements4.startEndBtn, "backgroundColor", "var(--mine_color)");
+    remove(elements4.startEndBtn, "click", end);
+    add(elements4.startEndBtn, "click", start);
+    memoAnswers();
+    memoLogs();
+    endSession();
+    data4.answers.origin = null;
+  };
+
+  // src/utils/drawImage.ts
+  var drawImage = () => /* @__PURE__ */ (() => {
+    const data6 = {
+      canvas: null,
+      ctx: null,
+      fitCanvas: null,
+      fitCtx: null,
+      fitWidth: 0
+    };
+    const init18 = (canvas, fitCanvas) => {
+      data6.canvas = canvas;
+      data6.ctx = canvas.getContext("2d");
+      data6.fitCanvas = fitCanvas;
+      data6.fitCtx = fitCanvas.getContext("2d");
+    };
+    const setWidth = (width) => data6.fitWidth = width;
+    const fitToWidth = (img) => {
+      if (!data6.fitCanvas || !data6.fitCtx) return;
+      const scale = data6.fitWidth / img.width;
+      const displayWidth = img.width * scale;
+      const displayHeight = img.height * scale;
+      const dpr = window.devicePixelRatio || 1;
+      data6.fitCanvas.style.width = displayWidth + "px";
+      data6.fitCanvas.style.height = displayHeight + "px";
+      data6.fitCanvas.width = displayWidth * dpr;
+      data6.fitCanvas.height = displayHeight * dpr;
+      data6.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      data6.fitCtx.clearRect(
+        0,
+        0,
+        displayWidth,
+        displayHeight
+      );
+      data6.fitCtx.drawImage(
+        img,
+        0,
+        0,
+        displayWidth,
+        displayHeight
+      );
+    };
+    const draw = /* @__PURE__ */ (() => {
+      let currentUrl = null;
+      return async (source) => {
+        if (!data6.ctx || !data6.canvas) return;
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+          currentUrl = null;
+        }
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = reject;
+          if (typeof source === "string") {
+            img.src = source;
+          } else {
+            currentUrl = URL.createObjectURL(source);
+            img.src = currentUrl;
+          }
+        });
+        data6.canvas.width = img.width;
+        data6.canvas.height = img.height;
+        data6.ctx.clearRect(0, 0, img.width, img.height);
+        data6.ctx.drawImage(img, 0, 0);
+        fitToWidth(img);
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+          currentUrl = null;
+        }
+      };
+    })();
+    return {
+      init: init18,
+      setWidth,
+      draw
+    };
+  })();
+
+  // src/screens/learning/learning.ts
+  var elements4 = {};
+  var init7 = () => {
+    elements4.startEnd = byId("learning-start-end");
+    elements4.startEndBtn = byId("learning-start-end-btn");
+    elements4.sheet = byId("learning-sheet");
+    elements4.measure = byId("learning-measure");
+    elements4.imgBig = byId("learning-img-big");
+    elements4.info = byId("learning-question-info");
+    elements4.separator = byId("learning-sheet-separator");
+    elements4.question = byId("question");
+    elements4.img = byId("learning-img");
+    elements4.answers = byQueryAll(".answer p");
+    elements4.answersFields = byQueryAll(".answer");
+    elements4.checkbox = byQueryAll(".answer input");
+    elements4.checkbox.forEach((c) => c.checked = false);
+    elements4.confirm = byId("learning-confirm-btn");
+    elements4.bottom = byId("learning-bottom-separator");
+    elements4.drawImage = drawImage();
+    const canvas = byId("learning-img-big-canvas");
+    const fitCanvas = byId("learning-img-canvas");
+    elements4.drawImage.init(canvas, fitCanvas);
+    areNotNull(elements4, ["screens", "learning"]);
+    display(elements4.sheet, "none");
+  };
+  var LOW_START_END_BTN = 12 + 28 + 12;
+  var resize2 = (w, h) => {
+    const menuH = core.isMobile ? 121 / 701 * w : 0;
+    data4.tabH = h - 30 - menuH - 20;
+    const tabW = w - (core.isMobile ? 0 : 200);
+    setStyle(elements4.imgBig, "height", getPx(h));
+    setStyle(elements4.imgBig, "width", getPx(tabW));
+    setStyle(elements4.imgBig, "left", getPx(core.isMobile ? 0 : 200));
+    setStyle(elements4.bottom, "height", getPx(menuH));
+    elements4.drawImage.setWidth(tabW - 80);
+    const started = core.store.get(storageNames.sessionStarted);
+    if (started === checked.yes) {
+      setStyle(elements4.startEnd, "height", getPx(LOW_START_END_BTN));
+      setStyle(elements4.startEndBtn, "padding", "12px 0");
+      setSheetHight();
+    } else {
+      setStyle(elements4.sheet, "height", `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
+      setStyle(elements4.startEnd, "height", getPx(h - 30 - menuH - 20));
+      setStyle(elements4.startEndBtn, "padding", "24px 0");
+    }
+  };
+  var showBigImg = () => display(elements4.imgBig, "flex");
+  var hideBigImg = () => display(elements4.imgBig, "none");
+  var active2 = () => {
+    elements4.answersFields.forEach((a, i) => add(a, "click", mark(i)));
+    const started = core.store.get(storageNames.sessionStarted);
+    add(elements4.startEndBtn, "click", started === checked.yes ? end : start);
+    add(elements4.confirm, "click", confirmClick);
+    add(elements4.img, "click", showBigImg);
+    add(elements4.imgBig, "click", hideBigImg);
+  };
+  var deactivate2 = () => {
+    elements4.answersFields.forEach((a, i) => remove(a, "click", mark(i)));
+    remove(elements4.startEndBtn, "click", start);
+    remove(elements4.startEndBtn, "click", end);
+    remove(elements4.confirm, "click", confirmClick);
+    remove(elements4.img, "click", showBigImg);
+    remove(elements4.imgBig, "click", hideBigImg);
+  };
+
+  // src/utils/idToDate.ts
+  var getMonth = (key) => {
+    const idToMonth = {
+      paz: "pazdziernik",
+      cze: "czerwiec",
+      sty: "stycze\u0144",
+      lut: "stycze\u0144",
+      wrz: "wrzesie\u0144"
+    };
+    return idToMonth[key];
+  };
+  var idToDate = (id) => {
+    const splittedId = id.split("-");
+    const year = splittedId[0];
+    const month = getMonth(splittedId[1]);
+    return `${month} ${year}`;
+  };
+  var get2 = (ids2) => {
+    let result = "";
+    ids2.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? "" : ", "));
+    return result;
+  };
+
+  // src/screens/learning/preparation.ts
+  var data4 = {
+    mark: 0,
+    confirm: false,
+    tabH: 0,
+    answers: {
+      // origin: null,
+      // shuffled: [],
+    }
+  };
+  var setSheetHight = () => {
+    setStyle(elements4.separator, "height", ``);
+    setStyle(elements4.sheet, "height", ``);
+    setStyle(elements4.sheet, "opacity", `0`);
+    setTimeout(() => {
+      const vv = window.visualViewport;
+      const menuH = core.isMobile ? 121 / 701 * vv.width : 0;
+      const sheetH = boundRect(elements4.measure).height - menuH;
+      const condition = sheetH < data4.tabH - menuH - 60;
+      setStyle(elements4.bottom, "height", getPx(menuH + (condition ? 0 : 80)));
+      const separatorH = condition ? getPx(data4.tabH - sheetH - 80) : "";
+      setStyle(elements4.separator, "height", separatorH);
+      setStyle(elements4.sheet, "opacity", `1`);
+    }, 300);
+  };
+  var setQuestion = async () => {
+    const item = await getItem();
+    if (item.question.img) {
+      const imgData = await core.idb.images.get(item.question.img);
+      if (imgData === null) {
+        setQuestion();
+        return;
+      }
+    }
+    data4.answers.origin = item;
+    mark(-1)();
+    setStyle(elements4.sheet, "opacity", `0`);
+    setTimeout(() => {
+      const usedList = [item.question.id];
+      item.question.used.forEach((u) => usedList.push(u));
+      setTimeout(() => {
+        inner(elements4.info, `nazwa: <b>${item.question.id}</b><br><br>wyst\u0105pi\u0142o <b>${usedList.length}x</b> w: ${get2(usedList)}.`);
+      }, 100);
+    }, 100);
+    if (item.question.img) {
+      display(elements4.img, "block");
+      const imgData = await core.idb.images.get(item.question.img);
+      elements4.drawImage.draw(imgData.data);
+    } else {
+      display(elements4.img, "none");
+    }
+    inner(elements4.question, item.question.question);
+    const answers = [{
+      content: item.question.answer,
+      correct: true,
+      number: -1
+    }];
+    item.question.falseAnswers.forEach((falseAnswer, index) => {
+      answers.push({
+        content: falseAnswer,
+        correct: false,
+        number: index
+      });
+    });
+    data4.answers.shuffled = shuffle(answers);
+    elements4.answers.forEach((a, i) => {
+      inner(a, data4.answers.shuffled[i].content);
+    });
+    elements4.answersFields.forEach((a) => {
+      setStyle(a, "color", "var(--prime_color)");
+    });
+    setSheetHight();
+  };
+
+  // src/utils/waitFor.ts
+  var waitFor = (condition, fn) => {
+    const check2 = () => {
+      setTimeout(() => {
+        if (condition()) {
+          fn();
+          return;
+        }
+        check2();
+      }, 100);
+    };
+    return check2;
+  };
+
+  // src/screens/statistics/draw.ts
+  var getMetrics = () => {
+    const halfSpace = data2.cell.space / 2;
+    const offset = data2.cell.space + halfSpace;
+    const smallRect = data2.cell.size - offset * 2;
+    return {
+      twoPi: Math.PI * 2,
+      halfSpace,
+      offset,
+      smallRect,
+      center: data2.cell.size / 2,
+      quarter: data2.cell.size / 4
+    };
+  };
+  var themeChange = () => {
+    data2.background = getColorFromStyle("--last_color");
+    data2.base.used.min = getColorFromStyle("--mine_6_color");
+    data2.base.used.max = getColorFromStyle("--mine_color");
+    data2.steps.used = getColorSteps(data2.base.used.min, data2.base.used.max, data.quantities.length);
+    data2.base.bad.min = getColorFromStyle("--off_second_color");
+    data2.base.bad.max = getColorFromStyle("--off_prime_color");
+    data2.steps.bad = getColorSteps(data2.base.bad.min, data2.base.bad.max, determinants.numLastRequiredQuestions);
+    data2.base.good.min = getColorFromStyle("--on_second_color");
+    data2.base.good.max = getColorFromStyle("--on_prime_color");
+    data2.steps.good = getColorSteps(data2.base.good.min, data2.base.good.max, determinants.numLastHighlyRatedQuestions);
+  };
+  var cells = async () => {
+    elements3.ctx.clearRect(0, 0, elements3.monitor.width, elements3.monitor.height);
+    const { twoPi, offset, smallRect, center, quarter } = getMetrics();
+    const answers = data.answers;
+    if (answers === null) return;
+    answers.forEach((answer, index) => {
+      const pozX = index % data2.monitor.size * (data2.cell.size + data2.cell.space);
+      const pozY = Math.floor(index / data2.monitor.size) * (data2.cell.size + data2.cell.space);
+      elements3.ctx.fillStyle = getColor(answer);
+      elements3.ctx.fillRect(pozX, pozY, data2.cell.size, data2.cell.size);
+      const onThisSession = getOnThisSession(answer);
+      if (onThisSession) {
+        elements3.ctx.strokeStyle = data2.background;
+        elements3.ctx.lineWidth = data2.cell.space;
+        const sesX = pozX + offset;
+        const sesY = pozY + offset;
+        const sesSize = smallRect;
+        elements3.ctx.strokeRect(sesX, sesY, sesSize, sesSize);
+      }
+      if (data4.answers.origin?.answer) {
+        const condition = data4.answers.origin.answer.id === answer.id;
+        if (condition) {
+          elements3.ctx.fillStyle = data2.background;
+          const nowX = pozX + center;
+          const nowY = pozY + center;
+          elements3.ctx.beginPath();
+          elements3.ctx.arc(nowX, nowY, quarter, 0, twoPi);
+          elements3.ctx.fill();
+        }
+      }
+    });
+  };
+  var init8 = () => {
+    waitFor(() => data.sume !== 0, () => {
+      themeChange();
+      const vv = window.visualViewport;
+      resize3(vv.width, vv.height);
+    })();
+  };
+  var resize3 = (w, h) => {
+    const bit = data2.monitor.width / (determinants2.cell.size * data2.monitor.size + determinants2.cell.space * (data2.monitor.size - 1));
+    data2.cell.size = determinants2.cell.size * bit;
+    data2.cell.space = determinants2.cell.space * bit;
+    data2.cell.all = data2.cell.size + data2.cell.space;
+    elements3.monitor.width = data2.monitor.width;
+    elements3.monitor.height = data2.monitor.width;
+    const monitorPos = boundRect(elements3.monitor);
+    data2.monitor.pos.x = monitorPos.x;
+    data2.monitor.pos.y = monitorPos.y;
+    cells();
+  };
+
+  // src/screens/statistics/table.ts
+  var colNames = ["good", "bad", "unused"];
+  var rowNames = ["all", "allPercent", "moreOne", "moreOnePercent", "one", "onePercent"];
+  var createTableData = () => {
+    const data6 = {};
+    for (const row of rowNames) {
+      const rowObj = {};
+      for (const col of colNames) {
+        rowObj[col] = 0;
+      }
+      data6[row] = rowObj;
+    }
+    return data6;
+  };
+  var setValues = (row, answer) => {
+    if (answer.rating?.type === rating.bad) {
+      row.bad++;
+    } else if (answer.rating?.type === rating.good) {
+      row.good += (answer.rating.scale + 1) / 3;
+    } else {
+      row.unused++;
+    }
+  };
+  var countPercent = (numRow, percRow, sum) => {
+    Object.keys(numRow).forEach((key) => {
+      const num = numRow[key];
+      percRow[key] = Math.round(sum === 0 ? 0 : num / sum * 1e3) / 10;
+    });
+  };
+  var getElement = (row, col) => byQ(elements3.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
+  var showTableData = (data6) => {
+    const percentNames = ["allPercent", "moreOnePercent", "onePercent"];
+    for (const row of rowNames) {
+      for (const col of colNames) {
+        const value = data6[row][col];
+        const suffix = percentNames.some((pn) => pn === row) ? "%" : "";
+        const elem = getElement(row, col);
+        inner(elem, value.toFixed(1) + suffix);
+      }
+    }
+  };
+  var setData = () => {
+    if (data.answers === null) return;
+    const tableData = createTableData();
+    const sumeMoreOne = data.sume - data.quantities[0];
+    data.answers.forEach((answer) => {
+      if (answer.used > 1) {
+        setValues(tableData.moreOne, answer);
+      } else {
+        setValues(tableData.one, answer);
+      }
+      setValues(tableData.all, answer);
+    });
+    countPercent(tableData.all, tableData.allPercent, data.sume);
+    countPercent(tableData.moreOne, tableData.moreOnePercent, sumeMoreOne);
+    countPercent(tableData.one, tableData.onePercent, data.quantities[0]);
+    showTableData(tableData);
+  };
+
+  // src/screens/statistics/mouse.ts
+  var lastCell = null;
+  var mousemove = ((event) => {
+    const pozX = event.clientX;
+    const pozY = event.clientY;
+    const monitorPos = boundRect(elements3.monitor);
+    const pxX = pozX - monitorPos.x;
+    const pxY = pozY - monitorPos.y;
+    const x = Math.floor(pxX / data2.cell.all);
+    const y = Math.floor(pxY / data2.cell.all);
+    const cellNum = x + y * data2.monitor.size;
+    const cell = cellNum >= data.sume ? null : cellNum;
+    const condition = data2.monitor.width - 250 < pxX;
+    setStyle(elements3.tooltip, "left", `${pozX - (core.isMobile ? 0 : 200) + (condition ? -8 - boundRect(elements3.tooltip).width : 16)}px`);
+    setStyle(elements3.tooltip, "top", `${pozY + 16}px`);
+    if (cell === null) {
+      display(elements3.tooltip, "none");
+      lastCell = -1;
+      return;
+    }
+    if (cell !== lastCell) {
+      lastCell = cell;
+      const answer = data.answers[cell];
+      if (!answer) {
+        return;
+      }
+      const question = data.questions.find((q) => q.id === answer.id);
+      const usedList = [question.id, ...question.used];
+      display(elements3.tooltip, "block");
+      inner(elements3.tooltip, `${get2(usedList)}`);
+    }
+  });
+  var mouseleave = () => {
+    display(elements3.tooltip, "none");
+  };
+  var active3 = () => {
+    if (!core.isMobile) {
+      add(elements3.monitor, "mousemove", mousemove);
+      add(elements3.monitor, "mouseleave", mouseleave);
+    }
+  };
+  var deactivate3 = () => {
+    if (!core.isMobile) {
+      remove(elements3.monitor, "mousemove", mousemove);
+      remove(elements3.monitor, "mouseleave", mouseleave);
+    }
+  };
+
+  // src/screens/statistics/statistics.ts
+  var elements3 = {};
+  var init9 = async () => {
+    elements3.sheet = byId("statistics-sheet");
+    elements3.monitor = byId("statistics-monitor");
+    elements3.ctx = elements3.monitor.getContext("2d");
+    elements3.table = byId("statistics-table");
+    elements3.legend = byId("statistics-colors-legend");
+    elements3.bottom = byId("statistics-bottom");
+    elements3.tooltip = byId("tooltip");
+    areNotNull(elements3, ["screens", "drawing"]);
+    await updateAnswers();
+    init8();
+    waitFor(() => data.answers.length !== 0 && data2.steps.used.length !== 0 && elements3.legend !== null, setMonitorLegend)();
+  };
+  var resize4 = (w, h) => {
+    data2.monitor.width = Math.min(w - 60 - (core.isMobile ? 0 : 220), 660);
+    const menuH = core.isMobile ? 121 / 701 * w : 0;
+    setStyle(elements3.sheet, "height", `calc(${getPx(h)})`);
+    setStyle(elements3.bottom, "height", getPx(menuH));
+    resize3(w, h);
+  };
+  var active4 = () => {
+    waitFor(() => data2.monitor.size !== 0, cells)();
+    waitFor(() => data2.monitor.size !== 0, setData)();
+    active3();
+  };
+  var deactivate4 = () => {
+    deactivate3();
+  };
+  var firstUse = () => {
+    init9();
+    const vv = visualViewport;
+    resize4(vv.width, vv.height);
+    cells();
+  };
+
+  // src/screens/settings/settings.ts
+  var settings_exports = {};
+  __export(settings_exports, {
+    active: () => active6,
+    deactivate: () => deactivate6,
+    init: () => init12,
+    resize: () => resize5
+  });
+
+  // src/screens/settings/info/info.ts
+  var elements5 = {};
+  var state = {
+    settingsAppInfoContentHeight: null,
+    open: false
+  };
+  var init10 = () => {
+    elements5.settingsAppInfo = byId("settings-app-info-title");
+    elements5.settingsAppInfoMore = byId("settings-app-info-more");
+    elements5.settingsAppInfoLess = byId("settings-app-info-less");
+    elements5.settingsAppInfoContent = byId("settings-app-info-content");
+    areNotNull(elements5, ["settings", "info"]);
+    setTimeout(() => {
+      const contentBox = elements5.settingsAppInfoContent.getBoundingClientRect();
+      state.settingsAppInfoContentHeight = contentBox.height;
+      setStyle(elements5.settingsAppInfoLess, "display", "none");
+      setStyle(elements5.settingsAppInfoContent, "height", "0px");
+    }, 100);
+  };
+  var showInfo = () => {
+    if (state.open) {
+      setStyle(elements5.settingsAppInfoLess, "display", "none");
+      setStyle(elements5.settingsAppInfoMore, "display", "initial");
+      setStyle(elements5.settingsAppInfoContent, "height", "0px");
+    } else {
+      setStyle(elements5.settingsAppInfoLess, "display", "initial");
+      setStyle(elements5.settingsAppInfoMore, "display", "none");
+      setStyle(elements5.settingsAppInfoContent, "height", `${state.settingsAppInfoContentHeight}px`);
+    }
+    state.open = !state.open;
+  };
+  var active5 = () => {
+    add(elements5.settingsAppInfo, "click", showInfo);
+  };
+  var deactivate5 = () => {
+    remove(elements5.settingsAppInfo, "click", showInfo);
+  };
+
+  // src/screens/settings/menu/menu.ts
+  var ids = {
+    prefix: "setting-menu-",
+    side: {
+      right: "right",
+      left: "left"
+    }
+  };
+  var valuesList = [checked.no, checked.yes];
+  var menuNames = Object.values(ids.side);
+  var controlMenuData = {
+    prefix: ids.prefix,
+    storeName: storageNames.menuLeft,
+    elementList: menuNames,
+    nameList: valuesList,
+    clickList: []
+  };
+  var menuRatio;
+  var init11 = () => {
+    controlMenuData.clickList = [
+      () => menuSide(checked.no),
+      () => menuSide(checked.yes)
+    ];
+    menuRatio = getRadio(controlMenuData);
+    menuRatio.init();
+  };
+
+  // src/screens/settings/settings.ts
+  var elements6 = {};
+  var resize5 = (w, h) => {
+    setStyle(elements6.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
+  };
+  var init12 = () => {
+    elements6.scrollBox = byQuery("#settings-tab-box .scroll-box");
+    areNotNull(elements6, ["settings"]);
+    init10();
+    init5();
+    ratio.init();
+    init11();
+  };
+  var active6 = () => {
+    active5();
+    ratio.active();
+    ratio.active();
+  };
+  var deactivate6 = () => {
+    deactivate5();
+    ratio.deactivate();
+    ratio.deactivate();
+  };
+
+  // src/tab/tab.ts
+  var WEB_MENU_WIDTH = 200;
+  var elements7 = {};
+  var state2 = {
+    screen: 0,
+    max: 0,
+    carouselLeftPos: 0,
+    tabWidth: 0
+  };
+  var screens = [
+    starter_exports,
+    statistics_exports,
+    learning_exports,
+    // answers,
+    settings_exports
+  ];
+  var getTabLeftPos = () => state2.tabWidth * state2.screen;
+  var setTab = () => {
+    elements7.carousel.style.left = getPx(-getTabLeftPos());
+    screens.forEach((s, i) => i === state2.screen ? s.active() : s.deactivate());
+  };
+  var goLeft = () => {
+    if (state2.screen > 0) {
+      state2.screen--;
+      setTab();
+    }
+  };
+  var goRight = () => {
+    if (state2.screen < state2.max - 1) {
+      state2.screen++;
+      setTab();
+    }
+  };
+  var setWebBtnsColor = (index) => {
+    elements7.menu.items.forEach((item, i) => {
+      if (index === i) {
+        setStyle(item, "backgroundColor", "var(--mine_color)");
+        setStyle(item, "color", "var(--last_color)");
+      } else {
+        setStyle(item, "backgroundColor", "var(--penultimate_color)");
+        setStyle(item, "color", "var(--prime_color)");
+      }
+    });
+  };
+  var getGoTo = (screenNum) => () => {
+    state2.screen = screenNum;
+    setTab();
+    if (core.isMobile) {
+      setIconsColor(screenNum);
+    } else {
+      setWebBtnsColor(screenNum);
+    }
+  };
+  var blur = () => {
+    setStyle(elements7.allTabs, "filter", "blur(5px)");
+  };
+  var unBlur = () => {
+    setStyle(elements7.allTabs, "filter", "blur(0px)");
+  };
+  var init13 = () => {
+    elements7.carousel = byId("carousel");
+    elements7.carouselBox = byId("carousel-box");
+    elements7.allTabs = byId("tabs");
+    elements7.tabs = byQueryAll(".tab");
+    state2.max = elements7.tabs.length;
+    elements7.menu = {};
+    elements7.menu.mobile = byId("menu-mobile");
+    elements7.menu.web = byId("menu-web");
+    if (core.isMobile) {
+      display(elements7.menu.web, "none");
+      elements7.menu.items = [];
+      init3(getGoTo, elements7.menu.items);
+    } else {
+      display(elements7.menu.mobile, "none");
+      state2.carouselLeftPos = WEB_MENU_WIDTH;
+      elements7.menu.items = byQueryAll(".menu-web-item");
+      for (let i = 0; i < elements7.menu.items.length; ++i) {
+        const item = elements7.menu.items[i];
+        add(item, "click", getGoTo(i));
+      }
+    }
+    areNotNull(elements7, ["tab"]);
+  };
+  var resize6 = (w, h) => {
+    state2.tabWidth = w - state2.carouselLeftPos;
+    for (let i = 0; i < elements7.tabs.length; ++i) {
+      const tab = elements7.tabs[i];
+      setStyle(tab, "width", getPx(state2.tabWidth));
+      setStyle(tab, "height", getPx(h));
+    }
+    setStyle(elements7.allTabs, "width", getPx(w));
+    setStyle(elements7.allTabs, "height", getPx(h));
+    setStyle(elements7.carouselBox, "width", getPx(state2.tabWidth));
+    setStyle(elements7.carouselBox, "left", getPx(state2.carouselLeftPos));
+    setStyle(elements7.carousel, "width", getPx(state2.max * state2.tabWidth));
+    setTab();
+  };
+
+  // src/inputs/keys.ts
+  var keysListener = (event) => {
+    switch (event.code) {
+      case "Tab":
+        {
+          event.preventDefault();
+        }
+        break;
+      case "Space":
+        {
+          changeVisibility();
+        }
+        break;
+      case "ArrowRight":
+      case "KeyD":
+        {
+          goRight();
+        }
+        break;
+      case "ArrowLeft":
+      case "KeyA":
+        {
+          goLeft();
+        }
+        break;
+    }
+  };
+  var controllers = {
+    keysListener,
+    initKeys: () => {
+      add(document, "keydown", keysListener);
+    }
+  };
+
+  // src/idb.ts
+  var DB_NAME = "rol04";
+  var STORES = [
+    "questions",
+    "images",
+    "answers",
+    // 'statistics',
+    "logs"
+  ];
+  var DB_VERSION = STORES.length;
+  var dbPromise = null;
+  var promisifyRequest = (request) => new Promise((resolve, reject) => {
+    request.oncomplete = request.onsuccess = () => resolve(request.result);
+    request.onabort = request.onerror = () => reject(request.error);
+  });
+  var openDb = async () => {
+    if (dbPromise) {
+      return dbPromise;
+    }
+    dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        for (const storeName of STORES) {
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName);
+          }
+        }
+      };
+      request.onsuccess = () => {
+        resolve(request.result);
+      };
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+    return dbPromise;
+  };
+  var createStore = (storeName) => {
+    if (!STORES.includes(storeName)) {
+      throw new Error(
+        `Unknown IndexedDB store "${storeName}". Add it to STORES.`
+      );
+    }
+    return async (txMode, callback) => {
+      const db = await openDb();
+      const tx = db.transaction(storeName, txMode);
+      const store = tx.objectStore(storeName);
+      const result = await callback(store);
+      await promisifyRequest(tx);
+      return result;
+    };
+  };
+  var idb = (storeName) => /* @__PURE__ */ (function() {
+    let defaultGetStoreFunc;
+    const defaultGetStore = () => {
+      if (!defaultGetStoreFunc) {
+        defaultGetStoreFunc = createStore(storeName);
+      }
+      return defaultGetStoreFunc;
+    };
+    const get3 = (key, customStore = defaultGetStore()) => {
+      if (key === null || key === void 0) {
+        return Promise.resolve(null);
+      }
+      return customStore(
+        "readonly",
+        async (store) => {
+          const result = await promisifyRequest(
+            store.get(key)
+          );
+          return result ?? null;
+        }
+      );
+    };
+    const set3 = (key, value, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
+      store.put(value, key);
+      return promisifyRequest(store.transaction);
+    });
+    const setMany = (entries, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
+      entries.forEach(([key, value]) => {
+        store.put(value, key);
+      });
+      return promisifyRequest(store.transaction);
+    });
+    const getMany = (keys2, customStore = defaultGetStore()) => customStore(
+      "readonly",
+      (store) => Promise.all(
+        keys2.map(
+          (key) => promisifyRequest(store.get(key))
+        )
+      )
+    );
+    const update = (key, updater, customStore = defaultGetStore()) => customStore(
+      "readwrite",
+      (store) => new Promise((resolve, reject) => {
+        const request = store.get(key);
+        request.onsuccess = () => {
+          try {
+            store.put(
+              updater(request.result),
+              key
+            );
+            resolve(
+              promisifyRequest(store.transaction)
+            );
+          } catch (err) {
+            reject(err);
+          }
+        };
+        request.onerror = () => {
+          reject(request.error);
+        };
+      })
+    );
+    const del = (key, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
+      store.delete(key);
+      return promisifyRequest(store.transaction);
+    });
+    const delMany = (keys2, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
+      keys2.forEach((key) => {
+        store.delete(key);
+      });
+      return promisifyRequest(store.transaction);
+    });
+    const eachCursor = (store, callback) => {
+      store.openCursor().onsuccess = function() {
+        if (!this.result) {
+          return;
+        }
+        callback(this.result);
+        this.result.continue();
+      };
+      return promisifyRequest(store.transaction);
+    };
+    const keys = (customStore = defaultGetStore()) => customStore("readonly", (store) => {
+      if (store.getAllKeys) {
+        return promisifyRequest(
+          store.getAllKeys()
+        );
+      }
+      const items = [];
+      return eachCursor(
+        store,
+        (cursor) => items.push(cursor.key)
+      ).then(() => items);
+    });
+    const values = (customStore = defaultGetStore()) => customStore("readonly", (store) => {
+      if (store.getAll) {
+        return promisifyRequest(
+          store.getAll()
+        );
+      }
+      const items = [];
+      return eachCursor(
+        store,
+        (cursor) => items.push(cursor.value)
+      ).then(() => items);
+    });
+    const getAllData = (customStore = defaultGetStore()) => customStore("readonly", async (store) => {
+      if (store.getAll && store.getAllKeys) {
+        const [keys2, values2] = await Promise.all([
+          promisifyRequest(
+            store.getAllKeys()
+          ),
+          promisifyRequest(
+            store.getAll()
+          )
+        ]);
+        return keys2.map((key, i) => [
+          key,
+          values2[i]
+        ]);
+      }
+      const items = [];
+      return eachCursor(store, (cursor) => {
+        items.push([
+          cursor.key,
+          cursor.value
+        ]);
+      }).then(() => items);
+    });
+    const clear = (customStore = defaultGetStore()) => customStore("readwrite", (store) => {
+      store.clear();
+      return promisifyRequest(store.transaction);
+    });
+    return {
+      get: get3,
+      set: set3,
+      setMany,
+      getMany,
+      update,
+      del,
+      delMany,
+      keys,
+      values,
+      getAllData,
+      clear
+    };
+  })();
+
+  // src/modal/modal.ts
+  var modal_exports = {};
+  __export(modal_exports, {
+    hide: () => hide2,
+    init: () => init16,
+    resize: () => resize7,
+    show: () => show2
+  });
+
+  // src/modal/user/user.ts
+  var elements8 = {};
+  var init14 = () => {
+    elements8.btnNewUser = byId("modal-user-btn-new-user");
+    elements8.modal = byId("modal-user");
+    elements8.idInfo = byId("modal-user-id-info");
+    elements8.idInput = byId("modal-user-id-input");
+    elements8.btnOldUser = byId("modal-user-btn-old-user");
+    areNotNull(elements8, ["modal", "user"]);
+  };
+  var showUserModal = (setNewUser, getValidateUserId, getCheckUserId) => {
+    show2();
+    const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements8;
+    setStyle(modal, "display", "flex");
+    btnOldUser.disabled = true;
+    add(btnNewUser, "click", async () => {
+      await setNewUser();
+      hideUserModal();
+    });
+    const validateUserId = getValidateUserId(idInfo, btnOldUser);
+    add(idInput, "input", validateUserId);
+    const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal);
+    add(btnOldUser, "click", checkUserId);
+  };
+  var hideUserModal = () => {
+    hide2();
+    setStyle(elements8.modal, "display", "none");
+  };
+
+  // src/modal/installer/installer.ts
+  var elements9 = {};
+  var deferredPrompt = null;
+  var beforeInstallPrompt = (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById("installBtn");
+    if (installBtn) {
+      installBtn.style.display = "block";
+    }
+  };
+  var instalClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+    if (choiceResult.outcome === "accepted") {
+      console.log("U\u017Cytkownik zainstalowa\u0142 aplikacj\u0119");
+    } else {
+      console.log("U\u017Cytkownik odrzuci\u0142 instalacj\u0119");
+    }
+    deferredPrompt = null;
+  };
+  var isAppInstalled = () => {
+    const isInstalled = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    return isInstalled;
+  };
+  var init15 = () => {
+    elements9.modal = byId("modal-installer");
+    elements9.installBtn = byId("modal-installer-btn");
+    elements9.noInstallBtn = byId("modal-installer-btn-no");
+    areNotNull(elements9, ["modal", "user"]);
+    setStyle(elements9.modal, "display", "none");
+  };
+  var data5 = {};
+  var showInstallerModal = (hideFn) => {
+    show2();
+    setStyle(elements9.modal, "display", "flex");
+    add(window, "beforeinstallprompt", beforeInstallPrompt);
+    add(elements9.installBtn, "click", instalClick);
+    add(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn = hideFn;
+  };
+  var hideInstallerModal = () => {
+    hide2();
+    setStyle(elements9.modal, "display", "none");
+    remove(window, "beforeinstallprompt", beforeInstallPrompt);
+    remove(elements9.installBtn, "click", instalClick);
+    remove(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn();
+  };
+
+  // src/modal/modal.ts
+  var elements10 = {};
+  var init16 = () => {
+    elements10.modal = byId("modal");
+    elements10.back = byId("modal-back");
+    areNotNull(elements10, ["modal"]);
+    error.init();
+    init14();
+    init15();
+  };
+  var resize7 = (w, h) => {
+    setStyle(elements10.back, "width", getPx(w));
+    setStyle(elements10.back, "height", getPx(h));
+  };
+  var visible = false;
+  var show2 = () => {
+    visible = true;
+    setStyle(elements10.modal, "opacity", "0");
+    setStyle(elements10.modal, "display", "flex");
+    setTimeout(() => {
+      setStyle(elements10.modal, "opacity", "1");
+    }, 30);
+    blur();
+  };
+  var hide2 = () => {
+    visible = false;
+    setStyle(elements10.modal, "opacity", "0");
+    setTimeout(() => {
+      if (!visible) {
+        setStyle(elements10.modal, "display", "none");
+      }
+    }, 330);
+    unBlur();
+  };
+
+  // src/modal/error/error.ts
+  var elements11 = {};
+  var reload = () => window.location.reload();
+  var close = null;
+  var error = {
+    init: () => {
+      elements11.modal = byId("modal-error");
+      elements11.txt = byId("modal-error-txt");
+      elements11.info = byId("modal-error-info");
+      elements11.btn = byId("modal-error-btn");
+    },
+    show: (err, canWork, onClose) => {
+      show2();
+      setStyle(elements11.modal, "display", "flex");
+      close = onClose;
+      if (canWork) {
+        inner(elements11.txt, err);
+        inner(elements11.info, "B\u0119dzie dzia\u0142a\u0107 dzi\u0119ki zapami\u0119tanym danym.");
+        setStyle(elements11.info, "color", "var(--on_prime_color)");
+        inner(elements11.btn, "Dalej");
+        add(elements11.btn, "click", error.hide);
+      } else {
+        inner(elements11.txt, err);
+        inner(elements11.info, "Brak danych aby uruchomi\u0107 aplikacj\u0119.");
+        setStyle(elements11.info, "color", "var(--off_prime_color)");
+        inner(elements11.btn, "Prze\u0142aduj");
+        add(elements11.btn, "click", reload);
+      }
+    },
+    hide: () => {
+      hide2();
+      setStyle(elements11.modal, "display", "none");
+      remove(elements11.btn, "click", reload);
+      remove(elements11.btn, "click", error.hide);
+      if (close) close();
+    }
+  };
+
+  // src/queries/error.ts
+  var responseState = {
+    ok: "ok",
+    noNetwork: "noNetwork",
+    csrf: "csrf",
+    ddos: "ddos",
+    ddosId: "DDoSid",
+    noMahakala: "noMahakala",
+    wrongMahakala: "wrongMahakala",
+    otherProblem: "otherProblem",
+    error: "error"
+  };
+  var baseErrorsChecker = async (promise) => {
+    return await promise().then((response) => {
+      const okCodes2 = [200, 304];
+      if (okCodes2.includes(response?.status)) {
+        return {
+          state: responseState.ok,
+          data: response.data
+        };
+      }
+      if (response?.status === 403) {
+        return {
+          state: responseState.csrf,
+          data: response.data
+        };
+      }
+      if (response?.status === 429) {
+        if (response.data.command === responseCommand.main.ddos) {
+          return {
+            state: responseState.ddos,
+            data: response.data
+          };
+        } else {
+          return {
+            state: responseState.ddosId,
+            data: response.data
+          };
+        }
+      }
+      if (response?.status === 401) {
+        if (response.data.command === responseCommand.secure.noMahakala) {
+          return {
+            state: responseState.noMahakala,
+            data: response.data
+          };
+        } else {
+          return {
+            state: responseState.wrongMahakala,
+            data: response.data
+          };
+        }
+      }
+      return {
+        state: responseState.otherProblem,
+        data: response?.data
+      };
+    }).catch((error2) => {
+      if (error2.code === "ERR_NETWORK" || !error2.response) {
+        const result = {
+          state: responseState.noNetwork,
+          data: null
+        };
+        return result;
+      }
+      const errorState = error2.response?.status ? `${responseState.error}: ${error2.response?.status}` : null;
+      return {
+        state: errorState,
+        data: error2.response?.data ?? null
+      };
+    });
+  };
+  var checkError = async (promise, endpointName) => {
+    const response = await baseErrorsChecker(promise);
+    const canGo = true;
+    if (response.state === responseState.ok) {
+      return response.data;
+    }
+    return new Promise((resolve) => {
+      const onClose = () => {
+        resolve(response?.data);
+        return response.data;
+      };
+      const getShow = (txt) => {
+        if (endpointName) {
+          error.show(`endpoint: .../${endpointName}<br><br>${txt}`, canGo, onClose);
+        } else {
+          error.show(txt, canGo, onClose);
+        }
+      };
+      switch (response.state) {
+        case responseState.noNetwork:
+          getShow("Brak dost\u0119pu do sieci.");
+          break;
+        case responseState.csrf:
+          getShow("CSRF token jest b\u0142\u0119dny.");
+          break;
+        case responseState.ddos:
+          getShow("Przekroczono limit zapyta\u0144 do serwera. Limit zrestartuje si\u0119 za godzin\u0119.");
+          break;
+        case responseState.ddosId:
+          getShow("Przekroczono limit tworzenia uzytkownikow na dzie\u0144.  Limit zrestartuje si\u0119 za 24 godziny");
+          break;
+        case responseState.noMahakala:
+          getShow("Brak mahakala token");
+          break;
+        case responseState.wrongMahakala:
+          getShow("Wadliwy mahakala token");
+          break;
+        case responseState.otherProblem:
+          getShow("Nieznany problem.");
+          break;
+        case responseState.error:
+          getShow(response.state);
+          break;
+      }
+    });
+  };
+
+  // src/queries/secure/secure.ts
+  var getSecure = async () => checkError(async () => {
+    return await api.get(url.secure.get, {
+      withCredentials: true
+    });
+  });
+
+  // src/queries/user/setId.ts
+  var set2 = async () => {
+    const result = await api.post(
+      url.user.set,
+      {},
+      // body
+      { withCredentials: true }
+      // config
+    );
+    return result.data;
+  };
+
+  // src/queries/user/checkId.ts
+  var checkId = async (userId) => {
+    const result = await api.post(
+      url.user.check,
+      { userId },
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/screens/starter/run/user.ts
+  var memoUserId = (userId) => {
+    core.store.set(storageNames.userId, userId);
+    inner(elements2.userId, userId);
+  };
+  var alphabetData = {
+    azSmall: "qwertyuiopasdfghjklzxcvbnm",
+    azBig: "QWERTYUIOPASDFGHJKLZXCVBNM",
+    numbers: "1234567890"
+  };
+  var ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
+  var regex = new RegExp(`^[${ALPHABET}]{21}$`);
+  var init17 = async (dataCheck) => {
+    const go = async (getAnswersFromMemo = false) => {
+      await getSecure();
+      setTimeout(() => dataCheck(getAnswersFromMemo), 100);
+    };
+    const secure = await getSecure();
+    console.log("%c secure:", "background:rgb(0, 42, 255); color: #003300", secure);
+    const startApp = () => {
+      if (secure.command === responseCommand.secure.generateUserId) {
+        const setNewUser = async () => {
+          const userIdSet = await set2();
+          memoUserId(userIdSet.userId || "");
+          go();
+        };
+        const getNo = (info, btn) => (text) => {
+          inner(info, text);
+          setStyle(info, "color", "var(--off_prime_color)");
+          disable(btn);
+        };
+        const validateUserId = (info, btn) => (event) => {
+          const value = event.target.value;
+          const no = getNo(info, btn);
+          if (value.length < 21) {
+            no("Za kr\xF3tki min 21 znak\xF3w");
+            return;
+          }
+          if (value.length > 21) {
+            no("Za d\u0142ugi max 21 znak\xF3w");
+            return;
+          }
+          if (!regex.test(value)) {
+            no("String zawiera niedozwolone znaki");
+            return;
+          }
+          inner(info, "jest OK.");
+          setStyle(info, "color", "var(--on_second_color)");
+          enable(btn);
+        };
+        const checkUserId = (info, btn, input, hide3) => async () => {
+          const userIdSet = await checkId(input.value);
+          const state3 = userIdSet.command;
+          const no = getNo(info, btn);
+          if (state3 === responseCommand.user.ok) {
+            memoUserId(input.value);
+            hide3();
+            go(true);
+          } else {
+            no("Niema takiego u\u017Cytkownika");
+          }
+        };
+        showUserModal(setNewUser, validateUserId, checkUserId);
+      } else if (secure.command === responseCommand.secure.go) {
+        memoUserId(secure.userId || "");
+        go();
+      }
+    };
+    if (!isAppInstalled()) {
+      showInstallerModal(startApp);
+    } else {
+      startApp();
+    }
+  };
+
+  // src/queries/data/version.ts
+  var getVersion = async (version) => {
+    const result = await api.post(
+      url.data.version,
+      { version },
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/config.ts
+  var getConfig = async () => {
+    const result = await api.get(
+      url.data.config,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/questions.ts
+  var getAllQuestions = async () => {
+    const result = await api.get(
+      url.data.questions,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/images.ts
+  var getImage = async (name) => {
+    const result = await api.post(
+      url.data.images,
+      { name },
+      {
+        withCredentials: true,
+        responseType: "blob"
+      }
+    );
+    return result.data;
+  };
+
+  // src/queries/statistics/getAnswers.ts
+  var getAnswers = async () => {
+    const result = await api.get(
+      url.statistics.getAnswers,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/utils/blob.ts
+  var toString3 = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  // src/screens/starter/run/data.ts
+  var check = async (getAnswersFromMemo = false) => {
+    const waitForIntervalClear = (intervalFn, time) => {
+      return new Promise((resolve) => {
+        let interval;
+        const clear = () => {
+          clearInterval(interval);
+          resolve();
+        };
+        const fn = intervalFn(clear);
+        interval = setInterval(fn, time);
+      });
+    };
+    const versionDb = await core.store.get(storageNames.version);
+    const response = await getVersion(versionDb);
+    const versionRes = response.version;
+    if (versionRes !== versionDb) {
+      await core.store.set(storageNames.imgAvailable, checked.no);
+      setStyle(elements2.statusAction, "display", "initial");
+      inner(elements2.statusAction, "wczytywanie pyta\u0144");
+      const configRes = await getConfig();
+      const configTestsDb = await core.store.get(storageNames.configTests);
+      if (configRes.tests !== configTestsDb) {
+        setStyle(elements2.statusNow, "display", "initial");
+        const allQuestionsRes = await getAllQuestions();
+        const allQuestions = allQuestionsRes.map((question) => {
+          if (!question.used) question.used = [];
+          return question;
+        });
+        let index2 = 0;
+        const questionInterval = (clear) => async () => {
+          const question = allQuestions[index2];
+          if (!question) {
+            await core.store.set(storageNames.configTests, configRes.tests);
+            clear();
+            return;
+          }
+          inner(elements2.statusAction, `wczytywanie pyta\u0144 ${index2 + 1}/${allQuestions.length}`);
+          const item = await core.idb.questions.get(index2);
+          if (!item || item.version !== question.version) {
+            await core.idb.questions.set(index2, question);
+          }
+          index2++;
+        };
+        await waitForIntervalClear(questionInterval, 1);
+        if (core.isMobile) showMenu();
+      }
+      inner(elements2.statusAction, `wczytywanie obraz\xF3w`);
+      const imgSToAdd = [];
+      await configRes.img.forEach(async (img) => {
+        const imgDb = await core.idb.images.get(img.name);
+        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img);
+      });
+      let index = 0;
+      const imageInterval = (clear) => async () => {
+        const imageDataRes = imgSToAdd[index];
+        if (!imageDataRes) {
+          await core.store.set(storageNames.imgAvailable, checked.yes);
+          setStyle(elements2.statusNow, "display", "none");
+          setStyle(elements2.statusAction, "display", "none");
+          await core.store.set(storageNames.version, versionRes);
+          clear();
+          return;
+        }
+        inner(elements2.statusAction, `wczytywanie obraz\xF3w ${index + 1}/${imgSToAdd.length}`);
+        index++;
+        const image = await getImage(imageDataRes.name);
+        if (image) {
+          await core.idb.images.set(imageDataRes.name, {
+            version: imageDataRes.version,
+            data: await toString3(image)
+          });
+        }
+      };
+      waitForIntervalClear(imageInterval, 1e3);
+    }
+    const questions = await core.idb.questions.getAllData();
+    let maxUsed = 0;
+    await questions.forEach(async (question, index) => {
+      const key = question[0];
+      const q = question[1];
+      if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1;
+      const answer = await core.idb.answers.get(key);
+      if (!answer) {
+        await core.idb.answers.set(index, {
+          id: q.id,
+          history: [],
+          // expectedUse: 0,
+          used: q.used.length + 1
+        });
+      }
+    });
+    data.quantities = Array(maxUsed).fill(0);
+    data.sume = 0;
+    questions.forEach((q) => {
+      const index = q[1].used.length;
+      data.quantities[index]++;
+      data.sume++;
+    });
+    await updateAnswers();
+    await updateQuestions();
+    data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
+    firstUse();
+    if (getAnswersFromMemo) {
+      const answers = await getAnswers();
+      if (answers !== null) {
+        answers.forEach(async (answer) => {
+          const question = questions.find((q) => q[1].id = answer.id);
+          const index = question[0];
+          const oldAnswer = await core.idb.answers.get(index);
+          oldAnswer.history = answer.history;
+          oldAnswer.rating = getRateHistory(answer.history);
+        });
+      }
+    }
+    if (core.isMobile) showMenu();
+  };
+
+  // src/screens/starter/run/run.ts
+  var run = async () => {
+    waitFor(() => data.sume !== 0, async () => {
+      const started = await core.store.get(storageNames.sessionStarted);
+      if (started === checked.yes) {
+        await memoAnswers();
+        await memoLogs();
+        await core.store.set(storageNames.sessionStarted, checked.no);
+        const vv = window.visualViewport;
+        resize2(vv.width, vv.height);
+      }
+    })();
+    await init17(check);
+  };
+
+  // src/utils/resize.ts
+  var resize8 = () => {
+    const functionList = [];
+    const add2 = (fn) => functionList.push(fn);
+    const run2 = () => {
+      const vv = window.visualViewport;
+      const w = vv.width;
+      const h = vv.height;
+      functionList.forEach((f) => f(w, h));
+    };
+    window.onresize = run2;
+    return {
+      add: add2,
+      run: run2
+    };
+  };
+
+  // src/serviceWorker.ts
+  var serviceWorker = async () => {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        updateViaCache: "none"
+      });
+      await registration.update();
+      if (registration.waiting) {
+        registration.waiting.postMessage({
+          type: "SKIP_WAITING"
+        });
+      }
+      registration.addEventListener("updatefound", () => {
+        const newWorker = registration.installing;
+        if (!newWorker) {
+          return;
+        }
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            newWorker.postMessage({
+              type: "SKIP_WAITING"
+            });
+          }
+        });
+      });
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        () => {
+          if (refreshing) {
+            return;
+          }
+          refreshing = true;
+          window.location.reload();
+        }
+      );
+    } catch (err) {
+      console.error("SW error:", err);
+    }
+  };
+
+  // src/app.ts
+  (function() {
+    axios_default.defaults.xsrfCookieName = "XSRF-TOKEN";
+    axios_default.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
+    axios_default.defaults.withCredentials = true;
     const modules = [
-        ...tab.screens,
-        tab,
-        modal
+      ...screens,
+      tab_exports,
+      modal_exports
     ];
     getStorage().then(async (store) => {
-        core.store = store;
-        core.idb.questions = idb('questions');
-        core.idb.images = idb('images');
-        core.idb.answers = idb('answers');
-        core.idb.statistics = idb('statistics');
-        core.idb.logs = idb('logs');
-        document.addEventListener("DOMContentLoaded", async () => {
-            controllers.initKeys();
-            modules.forEach(m => { if (m.init)
-                m.init(); });
-            const resize = utils.resize();
-            modules.forEach(m => { if (m.resize) {
-                resize.add(m.resize);
-            } });
-            resize.run();
-            await starter.run();
-            setTimeout(async () => {
-                tab.getGoTo(0)();
-                await engine.params.init();
-            }, 100);
+      core.store = store;
+      core.idb.questions = idb("questions");
+      core.idb.images = idb("images");
+      core.idb.answers = idb("answers");
+      core.idb.logs = idb("logs");
+      const domContentLoaded = async () => {
+        controllers.initKeys();
+        modules.forEach((m) => {
+          if (m.init) m.init();
         });
-        setConsole();
-        serviceWorker();
+        const resize9 = resize8();
+        modules.forEach((m) => {
+          if (m.resize) {
+            resize9.add(m.resize);
+          }
+        });
+        resize9.run();
+        await run();
+        const v = byId("settings-version-id");
+        inner(v, "--1.0.27--");
+        setTimeout(async () => {
+          getGoTo(0)();
+          await init();
+        }, 300);
+      };
+      add(document, "DOMContentLoaded", domContentLoaded);
+      setConsole();
+      await serviceWorker();
     });
-}());
+  })();
+})();

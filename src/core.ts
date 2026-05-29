@@ -1,5 +1,5 @@
 type CoreT = {
-    store: Awaited<ReturnType<typeof getStorage>> | null,
+    store: Awaited<ReturnType<typeof getStorage>> | null
     isMobile: boolean
     idb: {
         questions: Idb<QuestionDbSchemaT> | null
@@ -8,6 +8,7 @@ type CoreT = {
         statistics: Idb<any> | null
         logs: Idb<LogDbSchemaT> | null
     }
+    _csrf: string | null
 }
 namespace core {
     export let store: CoreT["store"] = null;
@@ -24,4 +25,6 @@ namespace core {
         statistics: null,
         logs: null,
     }
+
+    export let _csrf: CoreT["_csrf"] = null
 }

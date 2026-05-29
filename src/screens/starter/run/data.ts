@@ -133,13 +133,12 @@ namespace starter {
                 engine.params.data.sume++
             })
 
+            await engine.params.updateAnswers()
+            await engine.params.updateQuestions()
+
             // ilość pytań, aby ułożyć je w kwadrat
             statistics.data.monitor.size = (Math.ceil(Math.sqrt(engine.params.data.sume)))
-
-            await engine.params.updateAnswers()
-            // statistics.init()
-            // statistics.resize(window.visualViewport.width, window.visualViewport.height)
-            // statistics.draw.cells()
+            statistics.firstUse()
 
             // przywracanie jeśli podany użytkownik
             if (getAnswersFromMemo) {

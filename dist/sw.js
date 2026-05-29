@@ -1,3 +1,4 @@
+
 const FONT_URLS = [
   // 100 Thin Italic
   '/fonts/Inter-100-ThinItalic.otf',
@@ -125,68 +126,137 @@ const FONT_URLS = [
   '/fonts/consolas.woff2'
 ];
 
-const CACHE_NAME = "pwa-cache-v1";
+// sw.js
 
-// ------------------------
-// INSTALL EVENT — MERGED
-// ------------------------
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll([
-        "/",              // static assets
-        "/index.html",
-        "/styles.css",
-        "/index.js",
-        "/icon-192.png",
-        "/icon-512.png",
-        ...FONT_URLS      // fonts added here
-      ]);
-    })
-  );
-});
+const CACHE_NAME = 'pwa-cache-v27';
 
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
 
-  // ------------------------------------
-  // 1. Obsługa czcionek z katalogu /fonts/
-  // ------------------------------------
-  if (request.url.includes("/fonts/")) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) {
-          return cached;
-        }
-
-        return fetch(request).then((networkResponse) => {
-          const cloned = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, cloned);
-          });
-          return networkResponse;
-        });
-      })
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll([
+                '/index.html',
+                '/index24.js',
+                '/styles24.css',
+                '/icon-192.png',
+                '/icon-512.png'
+            ]);
+        })
     );
-    return; // zapobiega przejściu do logiki poniżej
-  }
-
-  // ------------------------------------
-  // 2. Standardowa obsługa pozostałych zasobów
-  // ------------------------------------
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(request).then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, networkResponse.clone());
-          return networkResponse;
-        });
-      });
-    })
-  );
 });
 
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        (async () => {
+            const keys = await caches.keys();
+
+            await Promise.all(
+                keys.map((key) => {
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
+                })
+            );
+
+            await self.clients.claim();
+        })()
+    );
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data?.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+self.addEventListener('fetch', (event) => {
+    const request = event.request;
+
+    if (request.method !== 'GET') {
+        return;
+    }
+
+    // HTML -> network first
+    if (
+        request.mode === 'navigate' ||
+        request.destination === 'document'
+    ) {
+        event.respondWith(
+            (async () => {
+                try {
+                    const response = await fetch(request, {
+                        cache: 'no-store'
+                    });
+
+                    const cache = await caches.open(CACHE_NAME);
+                    cache.put(request, response.clone());
+
+                    return response;
+                } catch {
+                    return (
+                        (await caches.match(request)) ||
+                        caches.match('/offline.html')
+                    );
+                }
+            })()
+        );
+
+        return;
+    }
+
+    // JS / CSS -> stale while revalidate
+    if (
+        request.destination === 'script' ||
+        request.destination === 'style'
+    ) {
+        event.respondWith(
+            (async () => {
+                const cache = await caches.open(CACHE_NAME);
+                const cached = await cache.match(request);
+
+                const networkFetch = fetch(request)
+                    .then((response) => {
+                        if (response.status === 200) {
+                            cache.put(request, response.clone());
+                        }
+
+                        return response;
+                    })
+                    .catch(() => cached);
+
+                return cached || networkFetch;
+            })()
+        );
+
+        return;
+    }
+
+    // Images / fonts -> cache first
+    if (
+        request.destination === 'image' ||
+        request.destination === 'font'
+    ) {
+        event.respondWith(
+            caches.match(request).then((cached) => {
+                if (cached) {
+                    return cached;
+                }
+
+                return fetch(request).then((response) => {
+                    if (response.status === 200) {
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(request, response.clone());
+                        });
+                    }
+
+                    return response;
+                });
+            })
+        );
+
+        return;
+    }
+
+    event.respondWith(fetch(request));
+});

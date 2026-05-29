@@ -16,3 +16,4 @@ const options = {
 https.createServer(options, app).listen(PORT, () => {
     console.log(`HTTPS server działa na https://${IPV4}:${PORT}`);
 });
+

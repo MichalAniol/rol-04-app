@@ -23,6 +23,11 @@ namespace statistics {
         good: dom.RgbColorT[]
     }
 
+    type PosT = {
+        x: number
+        y: number
+    }
+
     type DataT = {
         background: dom.HexColorT
         base: BaseHexColorsT
@@ -30,10 +35,12 @@ namespace statistics {
         monitor: {
             size: number
             width: number
+            pos: PosT
         },
         cell: {
             size: number
             space: number
+            all: number
         }
     }
 
@@ -52,11 +59,17 @@ namespace statistics {
         monitor: {
             size: 0,
             width: 0,
+            pos: {
+                x: 0,
+                y: 0,
+            },
+
         },
         cell: {
             size: 0,
             space: 0,
-        }
+            all: 0,
+        },
     }
 
     export const determinants = {

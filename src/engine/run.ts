@@ -27,43 +27,40 @@ namespace engine {
         return result
     }
 
-    const createTensorGenerator = async (): Promise<AsyncGenerator<TensorDataT, void, unknown>> => {
+    const startSession = async () => {
         params.data.session = await getTensors()
+        console.log('%c params.data.session:', 'background:rgb(0, 17, 255); color: #003300', params.data.session)
         params.data.index = 0
-
-        return (async function* (): AsyncGenerator<TensorDataT, void, unknown> {
-            while (true) {
-                if (params.data.index >= params.data.session.length) {
-                    params.data.session = await getTensors()
-                    params.data.index = 0
-                }
-
-                const result: TensorDataT =
-                    params.data.session[params.data.index++]
-
-                yield result
-            }
-        })()
     }
 
-    type GeneratorT = {
-        tensor: AsyncGenerator<TensorDataT, void, unknown> | null
+    export const endSession = async () => {
+        params.data.session = []
+        params.data.index = -1
     }
 
-    const generator: GeneratorT = {
-        tensor: null
+    const getNextQuestion = async () => {
+        if (params.data.index === -1) {
+            await startSession()
+        }
+
+        const result = params.data.session[params.data.index]
+        console.log('%c params.data.index:', 'background:rgb(255, 0, 251); color: #003300', params.data.index)
+        params.data.index++
+
+        if (params.data.index >= params.data.session.length) {
+            await startSession()
+        }
+        return result
     }
 
-    export const init = async () => {
-        generator.tensor = await createTensorGenerator()
-    }
+    export const init = async () => { }
 
     export const getItem = async () => {
-        const tensorItem = await generator.tensor.next()
-        const tensor = tensorItem.value as TensorDataT
+        const tensor = await getNextQuestion()
 
-        const answer = engine.params.data.answers[tensor.index]
-        const question = engine.params.data.questions[answer.index]
+        const answer = engine.params.data.answers.find(a => a.id === tensor.id)
+        const question = engine.params.data.questions.find(q => q.id === tensor.id)
+        console.log('%c question:', 'background: #ffcc00; color: #003300', question)
 
         // const question = engine.params.data.questions[tensor.index]
         // const answer = engine.params.data.answers.find(a => a.index === tensor.index)
@@ -76,6 +73,4 @@ namespace engine {
 
         return result
     }
-
-    export const endSession = () => { params.data.session = [] }
 }

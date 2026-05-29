@@ -15,8 +15,8 @@ body {
     padding: 0;
     background-color: var(--last_color);
     font-family: var(--font);
-    font-size: var(--font_medium);
-    line-height: var(--font_medium);
+    font-size: var(--font_size);
+    line-height: var(--font_size);
     font-style: normal;
     font-weight: var(--regular);
     color: var(--prime_color);

@@ -1,3 +1,7 @@
+import { Axios } from 'axios'
+import * as dom from './dom'
+
+
 interface ModulesT {
     init?: () => void;
     resize?: () => void;
@@ -7,11 +11,13 @@ interface ModulesT {
 
 (function () {
     // @ts-ignore
-    axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
+    Axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
     // @ts-ignore
-    axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
+    Axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
     // @ts-ignore
-    axios.defaults.withCredentials = true
+    Axios.defaults.withCredentials = true
+
+    const { byId, inner } = dom.dom
 
     const modules = [
         ...tab.screens,
@@ -43,23 +49,16 @@ interface ModulesT {
 
             // tests.errorModal()
             // settings.active()
-
-
+            const v = byId('settings-version-id') as HTMLElement
+            inner(v, '--1.0.25--')
 
             setTimeout(async () => {
                 tab.getGoTo(0)()
-
                 await engine.params.init()
-                // await engine.init()
-                // await engine.getItem()
-                // await engine.getItem()
-                // await engine.getItem()
-                // await engine.getItem()
-                // await engine.getItem()
-            }, 100)
+            }, 300)
         })
 
         setConsole()
-        serviceWorker()
+        await serviceWorker()
     })
 }())

@@ -24,7 +24,7 @@ namespace learning {
     }
 
     export namespace preparation {
-        const { setStyle, display, getPx, inner, } = dom
+        const { setStyle, display, getPx, inner, boundRect } = dom
 
         export const setSheetHight = () => {
             setStyle(elements.separator, 'height', ``)
@@ -33,10 +33,10 @@ namespace learning {
             // setStyle(elements.measure, 'height', ``)
             setTimeout(() => {
                 const menuH = core.isMobile ? (121 / 701) * window.visualViewport.width : 0
-                const sheetH = elements.measure.getBoundingClientRect().height - menuH
+                const sheetH = boundRect(elements.measure).height - menuH
 
-                const condition = sheetH < data.tabH - menuH
-                setStyle(elements.bottom, 'height', getPx(menuH + (condition ? 0 : 40)))
+                const condition = sheetH < data.tabH - menuH - 60
+                setStyle(elements.bottom, 'height', getPx(menuH + (condition ? 0 : 80)))
 
                 // const scroll = window.visualViewport.height * .2
                 const separatorH = condition ? getPx(data.tabH - sheetH - 80) : ''
@@ -47,42 +47,8 @@ namespace learning {
             }, 300)
         }
 
-        type MonthKeys = 'paz' | 'cze' | 'sty' | 'wrz' | 'lut'
-        const getMonth = (key: MonthKeys) => {
-            const idToMonth = {
-                paz: 'pazdziernik',
-                cze: 'czerwiec',
-                sty: 'styczeń',
-                lut: 'styczeń',
-                wrz: 'wrzesień',
-            }
-
-            return idToMonth[key]
-        }
-
-        const idToDate = (id: string) => {
-            const splittedId = id.split('-')
-            const year = splittedId[0]
-            const month = getMonth(splittedId[1] as MonthKeys)
-
-            return `${month} ${year}`
-        }
-
-        const idsToDate = (ids: string[]) => {
-            let result = ''
-            ids.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? '' : ', '))
-            return result
-        }
-
         export const setQuestion = async () => {
             const item = await engine.getItem()
-
-            //FIXME - 
-            if (!item.question.img) {
-                setQuestion()
-                return
-            }
-            //FIXME - 
 
             if (item.question.img) {
                 const imgData = await core.idb.images.get(item.question.img)
@@ -98,8 +64,14 @@ namespace learning {
             setStyle(elements.sheet, 'opacity', `0`)
 
             // pytanie info
-            const usedList = [item.question.id, ...item.question.used]
-            inner(elements.info, `wystąpiło <b>${usedList.length}x</b> w: ${idsToDate(usedList)}.`)
+            setTimeout(() => {
+                const usedList = [item.question.id]
+                item.question.used.forEach(u => usedList.push(u))
+
+                setTimeout(() => {
+                    inner(elements.info, `nazwa: <b>${item.question.id}</b><br><br>wystąpiło <b>${usedList.length}x</b> w: ${utils.idToDate.get(usedList)}.`)
+                }, 100)
+            }, 100)
 
             // obrazek
             if (item.question.img) {

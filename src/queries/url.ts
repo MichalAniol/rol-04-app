@@ -1,7 +1,7 @@
 namespace queries {
     export const url = (function () {
         const main = `api/`
-        const rol04 = `rol04/api/`
+        // const rol04 = `rol04/api/`
 
         return {
             test: {
@@ -16,22 +16,22 @@ namespace queries {
                 test: `${main}secure-test`,
             },
             user: {
-                set: `${rol04}set-user`,
-                check: `${rol04}check-user`,
-                getQr: `${rol04}get-user-qr-code`,
-                setQr: `${rol04}set-user-by-qr-code`,
+                set: `${main}set-user`,
+                check: `${main}check-user`,
+                getQr: `${main}get-user-qr-code`,
+                setQr: `${main}set-user-by-qr-code`,
             },
             data: {
-                version: `${rol04}get-version`,
-                config: `${rol04}get-config`,
-                questions: `${rol04}get-questions`,
-                images: `${rol04}get-images`,
+                version: `${main}get-version`,
+                config: `${main}get-config`,
+                questions: `${main}get-questions`,
+                images: `${main}get-images`,
             },
             statistics: {
-                memoAnswers: `${rol04}memo-answers`,
-                getAnswers: `${rol04}get-answers`,
-                getLastLogTimestamp: `${rol04}get-last-log-timestamp`,
-                memoLogs: `${rol04}memo-logs`,
+                memoAnswers: `${main}memo-answers`,
+                getAnswers: `${main}get-answers`,
+                getLastLogTimestamp: `${main}get-last-log-timestamp`,
+                memoLogs: `${main}memo-logs`,
             },
         }
     }())

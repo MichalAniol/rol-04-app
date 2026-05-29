@@ -1,6 +1,6 @@
 namespace statistics {
     export namespace draw {
-        const { getColorFromStyle } = dom
+        const { getColorFromStyle, boundRect } = dom
 
         const getMetrics = () => {
             const halfSpace = data.cell.space / 2
@@ -104,9 +104,14 @@ namespace statistics {
             const bit = data.monitor.width / ((determinants.cell.size * data.monitor.size) + (determinants.cell.space * (data.monitor.size - 1)))
             data.cell.size = determinants.cell.size * bit
             data.cell.space = determinants.cell.space * bit
+            data.cell.all = data.cell.size + data.cell.space
 
             elements.monitor.width = data.monitor.width
             elements.monitor.height = data.monitor.width
+
+            const monitorPos = boundRect(elements.monitor)
+            data.monitor.pos.x = monitorPos.x
+            data.monitor.pos.y = monitorPos.y
 
             cells()
         }

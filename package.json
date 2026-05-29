@@ -7,6 +7,9 @@
   "scripts": {
     "tsb": "copy .env.prod .env && tsc -p tsconfig.json && esbuild prod/index.js --minify --outfile=prod/index.min.js",
     "t": "copy .env.dev .env && tsc -p tsconfig.json --watch",
+    "bu": "esbuild src/app.ts --bundle --format=iife --platform=browser --outfile=dist/index.js",
+    "bu2": "esbuild src/app.ts --bundle --format=iife --platform=browser --outfile=dist/index.js --minify",
+    "bw": "esbuild src/app.ts --bundle --format=iife --platform=browser --outfile=dist/index.js --watch",
     "tsgw": "tsc -p _html-generator/tsconfig-g.json --watch",
     "g": "node ./_html-generator/generator.js",
     "s": "npx live-server dist --host=192.168.1.109 --port=3030 --no-css-inject",
@@ -17,6 +20,7 @@
     "b": "tsc && terser dist/index.js -o dist/index.min.js --compress --mangle"
   },
   "dependencies": {
+    "axios": "^1.16.1",
     "@capacitor/core": "^7.2.0",
     "@ionic/pwa-elements": "^3.3.0",
     "dotenv": "^16.5.0"
@@ -24,7 +28,6 @@
   "devDependencies": {
     "@capacitor/cli": "^7.2.0",
     "@types/jest": "^30.0.0",
-    "axios": "^1.13.2",
     "cheerio": "^1.0.0",
     "chokidar": "^4.0.3",
     "cors": "^2.8.5",
@@ -33,10 +36,9 @@
     "jest": "^30.2.0",
     "msw": "^2.12.3",
     "terser": "^5.44.1",
-    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "4.9",
+    "typescript": "^6.0.3",
     "ws": "^8.18.1"
   }
 }

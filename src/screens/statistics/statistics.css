@@ -6,8 +6,13 @@
     padding: 30px 0px;
 }
 
-.canvas-box monitor {
-    width: 100%;
+.canvas-box {
+    width: min-content;
+    margin: 0 auto 0 auto;
+}
+
+.statistics-monitor-canvas {
+    margin-right: 20px;
 }
 
 .statistics-section {
@@ -55,11 +60,16 @@
     transform: translate(-50%, -50%);
 }
 
+.statistics-box-table-margin {
+    margin-right: 20px;
+}
+
 .statistics-box-table{
-    margin: 0 20px 0 0;
+    margin: 0 auto 0 auto;
     padding: 12px;
     border: 2px solid var(--fourth_from_end_color);
     position: relative;
+    max-width: 660px;
 }
 
 .statistics-table {
@@ -95,4 +105,15 @@
     height: 20px;
     border: none;
     background-color: var(--last_color);
+}
+
+.tooltip {
+    max-width: 250px;
+    background-color: var(--penultimate_color);
+    border: 2px solid var(--fourth_color);
+    position: absolute;
+    z-index: 10;
+    color: var(--prime_color);
+    font-size: var(--font_small_size);
+    padding: 6px 12px;
 }

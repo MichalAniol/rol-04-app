@@ -34,10 +34,5 @@ namespace queries {
     type UserCommandsKeysT = keyof typeof queries.responseCommand.user
 
     type ResponseCommandsT = SecureCommandsKeysT | UserCommandsKeysT | null
-
-    // type ResponseMessageT = {
-    //     message: string
-    //     command: ResponseCommandsT
-    // }
 }
 

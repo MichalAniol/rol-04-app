@@ -3,6 +3,10 @@ namespace learning {
         const { byId, byQueryAll, setStyle, add, remove, display, getPx, inner, disable, enable } = dom
 
         export const mark = (num: number) => () => {
+            if (data.confirm) {
+                return
+            }
+
             if (num === -1) {
                 disable(elements.confirm)
             } else {
@@ -96,7 +100,7 @@ namespace learning {
             disable(elements.confirm)
             setTimeout(() => {
                 enable(elements.confirm)
-            }, 1000)
+            }, 600)
 
             const markedAnswer = data.answers.shuffled[data.mark]
             if (markedAnswer.correct) {
