@@ -1,13 +1,13 @@
-namespace queries {
-    export namespace statistics {
-        export const getAnswers = async (): Promise<AnswersMemoT[]> => {
+import { url } from '../url'
+import { api } from '../api'
+import { AnswersMemoT } from '@/types'
 
-            const result = await api.get<AnswersMemoT[]>(
-                url.statistics.getAnswers,
-                { withCredentials: true, }
-            )
+export const getAnswers = async (): Promise<AnswersMemoT[]> => {
 
-            return result.data
-        }
-    }
+    const result = await api.get<AnswersMemoT[]>(
+        url.statistics.getAnswers,
+        { withCredentials: true, }
+    )
+
+    return result.data
 }

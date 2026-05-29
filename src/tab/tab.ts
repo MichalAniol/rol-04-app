@@ -1,171 +1,172 @@
+import { setIconsColor, init as initSimpleMenu } from './simpleMenu/simpleMenu'
+import { byId, byQueryAll, getPx, setStyle, display, add } from '../dom'
+import { core } from '../core'
+import * as starter from '../screens/starter/starter'
+import * as statistics from '../screens/statistics/statistics'
+import * as learning from '../screens/learning/learning'
+// import * as answers from '../screens/answers/answers'
+import * as settings from '../screens/settings/settings'
+import { areNotNull } from '../utils/isNotNull'
 
+const WEB_MENU_WIDTH = 200
 
-namespace tab {
-    type ElementsT = {
-        carousel: HTMLElement | null
-        carouselBox: HTMLElement | null
-        allTabs: HTMLElement | null
-        tabs: HTMLElement[] | null
-        menu: {
-            web: HTMLElement | null
-            mobile: HTMLElement | null
-            items: HTMLElement[] | null
-        }
-    }
+type MenuT = {
+    web: HTMLElement
+    mobile: HTMLElement
+    items: HTMLElement[]
+}
 
-    const { byId, byQueryAll, getPx, setStyle, display, add } = dom
+type ElementsT = {
+    carousel: HTMLElement
+    carouselBox: HTMLElement
+    allTabs: HTMLElement
+    tabs: HTMLElement[]
+    menu: MenuT
+}
+const elements = {} as ElementsT
 
-    const WEB_MENU_WIDTH = 200
+export const state = {
+    screen: 0,
+    max: 0,
+    carouselLeftPos: 0,
+    tabWidth: 0,
+}
+export interface ModulesT {
+    active: () => void;
+    deactivate: () => void;
+    init?: () => void;
+    resize?: () => void;
+}
 
-    const elements: ElementsT = {
-        carousel: null,
-        carouselBox: null,
-        allTabs: null,
-        tabs: null,
-        menu: {
-            web: null,
-            mobile: null,
-            items: null
-        },
-    }
+export const screens = [
+    starter,
+    statistics,
+    learning,
+    // answers,
+    settings
+] as ModulesT[]
 
-    export const state = {
-        screen: 0,
-        max: 0,
-        carouselLeftPos: 0,
-        tabWidth: 0,
-    }
+const getTabLeftPos = () => (state.tabWidth * state.screen)
+export const setTab = () => {
+    // ekran
+    elements.carousel.style.left = getPx(-getTabLeftPos())
 
-    export const screens = [
-        starter,
-        statistics,
-        learning,
-        answers,
-        settings
-    ] as ModulesT[]
+    // // kolor buttonu z menu
+    // elements.menu.items.forEach((t, i) => {
+    //     if (i === state.screen) {
+    //         setStyle(t, 'backgroundColor', 'var(--mine_color)')
+    //         setStyle(t, 'color', 'var(--last_color)')
+    //     } else {
+    //         setStyle(t, 'backgroundColor', 'var(--penultimate_color)')
+    //         setStyle(t, 'color', 'var(--prime_color)')
+    //     }
+    // })
 
-    const getTabLeftPos = () => (state.tabWidth * state.screen)
-    export const setTab = () => {
-        // ekran
-        elements.carousel.style.left = getPx(-getTabLeftPos())
+    // aktywacja wybranego screena
+    screens.forEach((s, i) => (i === state.screen) ? s.active() : s.deactivate())
+}
 
-        // // kolor buttonu z menu
-        // elements.menu.items.forEach((t, i) => {
-        //     if (i === state.screen) {
-        //         setStyle(t, 'backgroundColor', 'var(--mine_color)')
-        //         setStyle(t, 'color', 'var(--last_color)')
-        //     } else {
-        //         setStyle(t, 'backgroundColor', 'var(--penultimate_color)')
-        //         setStyle(t, 'color', 'var(--prime_color)')
-        //     }
-        // })
-
-        // aktywacja wybranego screena
-        screens.forEach((s, i) => (i === state.screen) ? s.active() : s.deactivate())
-    }
-
-    export const goLeft = () => {
-        if (state.screen > 0) {
-            state.screen--
-            setTab()
-        }
-    }
-
-    export const goRight = () => {
-        if (state.screen < state.max - 1) {
-            state.screen++
-            setTab()
-        }
-    }
-
-    const setWebBtnsColor = (index: number) => {
-        elements.menu.items.forEach((item, i) => {
-            if (index === i) {
-                setStyle(item, 'backgroundColor', 'var(--mine_color)')
-                setStyle(item, 'color', 'var(--last_color)')
-            } else {
-                setStyle(item, 'backgroundColor', 'var(--penultimate_color)')
-                setStyle(item, 'color', 'var(--prime_color)')
-            }
-        })
-    }
-
-    export const getGoTo = (screenNum: number) => () => {
-        state.screen = screenNum
+export const goLeft = () => {
+    if (state.screen > 0) {
+        state.screen--
         setTab()
-        if (core.isMobile) {
-            simpleMenu.setIconsColor(screenNum)
-        } else {
-            setWebBtnsColor(screenNum)
-        }
     }
+}
 
-    export const blur = () => {
-        setStyle(elements.allTabs, 'filter', 'blur(5px)')
-    }
-
-    export const unBlur = () => {
-        setStyle(elements.allTabs, 'filter', 'blur(0px)')
-    }
-
-    export const init = () => {
-        elements.carousel = byId('carousel') as HTMLElement
-        elements.carouselBox = byId('carousel-box') as HTMLElement
-        elements.allTabs = byId('tabs') as HTMLElement
-        elements.tabs = byQueryAll('.tab') as unknown as HTMLElement[]
-
-        state.max = elements.tabs.length
-
-        // elements.menu.mobile = byId('menu-mobile')
-        elements.menu.mobile = byId('menu-mobile') as HTMLElement
-        elements.menu.web = byId('menu-web') as HTMLElement
-
-        if (core.isMobile) {
-            display(elements.menu.web, 'none')
-            // mobile.init()
-            elements.menu.items = []
-            simpleMenu.init(getGoTo, elements.menu.items)
-
-            // elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
-            // for (let i = 0; i < elements.menu.items.length; ++i) {
-            //     const item = elements.menu.items[i]
-            //     add(item, 'click', getGoTo(i))
-            // }
-
-            // mobile.init()
-        } else {
-            display(elements.menu.mobile, 'none')
-            state.carouselLeftPos = WEB_MENU_WIDTH
-
-            elements.menu.items = byQueryAll('.menu-web-item') as unknown as HTMLElement[]
-            for (let i = 0; i < elements.menu.items.length; ++i) {
-                const item = elements.menu.items[i]
-                add(item, 'click', getGoTo(i))
-            }
-        }
-
-        utils.areNotNull(elements, ['tab'])
-    }
-
-    export const resize = (w: number, h: number) => {
-        state.tabWidth = w - state.carouselLeftPos
-
-        for (let i = 0; i < elements.tabs.length; ++i) {
-            const tab = elements.tabs[i]
-            setStyle(tab, 'width', getPx(state.tabWidth))
-            setStyle(tab, 'height', getPx(h))
-        }
-
-        setStyle(elements.allTabs, 'width', getPx(w))
-        setStyle(elements.allTabs, 'height', getPx(h))
-
-        setStyle(elements.carouselBox, 'width', getPx(state.tabWidth))
-        setStyle(elements.carouselBox, 'left', getPx(state.carouselLeftPos))
-
-        setStyle(elements.carousel, 'width', getPx(state.max * state.tabWidth))
-
+export const goRight = () => {
+    if (state.screen < state.max - 1) {
+        state.screen++
         setTab()
-
-        // if (core.isMobile) mobile.resize()
     }
+}
+
+const setWebBtnsColor = (index: number) => {
+    elements.menu.items.forEach((item, i) => {
+        if (index === i) {
+            setStyle(item, 'backgroundColor', 'var(--mine_color)')
+            setStyle(item, 'color', 'var(--last_color)')
+        } else {
+            setStyle(item, 'backgroundColor', 'var(--penultimate_color)')
+            setStyle(item, 'color', 'var(--prime_color)')
+        }
+    })
+}
+
+export const getGoTo = (screenNum: number) => () => {
+    state.screen = screenNum
+    setTab()
+    if (core.isMobile) {
+        setIconsColor(screenNum)
+    } else {
+        setWebBtnsColor(screenNum)
+    }
+}
+
+export const blur = () => {
+    setStyle(elements.allTabs, 'filter', 'blur(5px)')
+}
+
+export const unBlur = () => {
+    setStyle(elements.allTabs, 'filter', 'blur(0px)')
+}
+
+export const init = () => {
+    elements.carousel = byId('carousel') as HTMLElement
+    elements.carouselBox = byId('carousel-box') as HTMLElement
+    elements.allTabs = byId('tabs') as HTMLElement
+    elements.tabs = byQueryAll('.tab') as unknown as HTMLElement[]
+
+    state.max = elements.tabs.length
+
+    elements.menu = {} as MenuT
+    elements.menu.mobile = byId('menu-mobile') as HTMLElement
+    elements.menu.web = byId('menu-web') as HTMLElement
+
+    if (core.isMobile) {
+        display(elements.menu.web, 'none')
+        // mobile.init()
+        elements.menu.items = []
+        initSimpleMenu(getGoTo, elements.menu.items)
+
+        // elements.menu.items = byQueryAll('.menu-mobile-item') as unknown as HTMLElement[]
+        // for (let i = 0; i < elements.menu.items.length; ++i) {
+        //     const item = elements.menu.items[i]
+        //     add(item, 'click', getGoTo(i))
+        // }
+
+        // mobile.init()
+    } else {
+        display(elements.menu.mobile, 'none')
+        state.carouselLeftPos = WEB_MENU_WIDTH
+
+        elements.menu.items = byQueryAll('.menu-web-item') as unknown as HTMLElement[]
+        for (let i = 0; i < elements.menu.items.length; ++i) {
+            const item = elements.menu.items[i] as HTMLElement
+            add(item, 'click', getGoTo(i))
+        }
+    }
+
+    areNotNull(elements, ['tab'])
+}
+
+export const resize = (w: number, h: number) => {
+    state.tabWidth = w - state.carouselLeftPos
+
+    for (let i = 0; i < elements.tabs.length; ++i) {
+        const tab = elements.tabs[i] as HTMLElement
+        setStyle(tab, 'width', getPx(state.tabWidth))
+        setStyle(tab, 'height', getPx(h))
+    }
+
+    setStyle(elements.allTabs, 'width', getPx(w))
+    setStyle(elements.allTabs, 'height', getPx(h))
+
+    setStyle(elements.carouselBox, 'width', getPx(state.tabWidth))
+    setStyle(elements.carouselBox, 'left', getPx(state.carouselLeftPos))
+
+    setStyle(elements.carousel, 'width', getPx(state.max * state.tabWidth))
+
+    setTab()
+
+    // if (core.isMobile) mobile.resize()
 }

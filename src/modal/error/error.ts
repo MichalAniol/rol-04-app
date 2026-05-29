@@ -1,56 +1,51 @@
-namespace modal {
-    const { byId, byQuery, getPx, setStyle, inner, add, remove } = dom
 
-    type ElementsT = {
-        modal: HTMLElement | null
-        txt: HTMLElement | null
-        info: HTMLElement | null
-        btn: HTMLButtonElement | null
-    }
+import { byId, setStyle, inner, add, remove } from '../../dom'
+import { show, hide } from '../modal'
 
-    const elements: ElementsT = {
-        modal: null,
-        txt: null,
-        info: null,
-        btn: null,
-    }
+type ElementsT = {
+    modal: HTMLElement
+    txt: HTMLElement
+    info: HTMLElement
+    btn: HTMLButtonElement
+}
 
-    const reload = () => window.location.reload()
+const elements = {} as ElementsT 
 
-    let close: () => null | null = null
+const reload = () => window.location.reload()
 
-    export const error = {
-        init: () => {
-            elements.modal = byId('modal-error') as HTMLElement
-            elements.txt = byId('modal-error-txt') as HTMLElement
-            elements.info = byId('modal-error-info') as HTMLElement
-            elements.btn = byId('modal-error-btn') as HTMLButtonElement
-        },
-        show: (err: string, canWork: boolean, onClose: () => null) => {
-            show()
-            setStyle(elements.modal, 'display', 'flex')
-            close = onClose
+let close: (() => void) | null = null
 
-            if (canWork) {
-                inner(elements.txt, err)
-                inner(elements.info, "Będzie działać dzięki zapamiętanym danym.")
-                setStyle(elements.info, 'color', 'var(--on_prime_color)')
-                inner(elements.btn, 'Dalej')
-                add(elements.btn, 'click', error.hide)
-            } else {
-                inner(elements.txt, err)
-                inner(elements.info, 'Brak danych aby uruchomić aplikację.')
-                setStyle(elements.info, 'color', 'var(--off_prime_color)')
-                inner(elements.btn, 'Przeładuj')
-                add(elements.btn, 'click', reload)
-            }
-        },
-        hide: () => {
-            hide()
-            setStyle(elements.modal, 'display', 'none')
-            remove(elements.btn, 'click', reload)
-            remove(elements.btn, 'click', error.hide)
-            if (close) close()
+export const error = {
+    init: () => {
+        elements.modal = byId('modal-error') as HTMLElement
+        elements.txt = byId('modal-error-txt') as HTMLElement
+        elements.info = byId('modal-error-info') as HTMLElement
+        elements.btn = byId('modal-error-btn') as HTMLButtonElement
+    },
+    show: (err: string, canWork: boolean, onClose: () => null) => {
+        show()
+        setStyle(elements.modal, 'display', 'flex')
+        close = onClose
+
+        if (canWork) {
+            inner(elements.txt, err)
+            inner(elements.info, "Będzie działać dzięki zapamiętanym danym.")
+            setStyle(elements.info, 'color', 'var(--on_prime_color)')
+            inner(elements.btn, 'Dalej')
+            add(elements.btn, 'click', error.hide)
+        } else {
+            inner(elements.txt, err)
+            inner(elements.info, 'Brak danych aby uruchomić aplikację.')
+            setStyle(elements.info, 'color', 'var(--off_prime_color)')
+            inner(elements.btn, 'Przeładuj')
+            add(elements.btn, 'click', reload)
         }
+    },
+    hide: () => {
+        hide()
+        setStyle(elements.modal, 'display', 'none')
+        remove(elements.btn, 'click', reload)
+        remove(elements.btn, 'click', error.hide)
+        if (close) close()
     }
 }

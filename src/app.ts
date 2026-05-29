@@ -1,23 +1,23 @@
-import { Axios } from 'axios'
-import * as dom from './dom'
+import axios from 'axios'
+import { byId, inner, add } from './dom'
+import { core } from './core'
+import { controllers } from './inputs/keys'
+import { idb } from './idb'
+import { ModulesT } from './tab/tab'
+import { run as starterRun } from './screens/starter/run/run'
+import { AnswersDbSchemaT, ImageDbSchemaT, LogDbSchemaT, QuestionDbSchemaT } from './types'
+import { resize as utilsResize } from './utils/resize'
+import * as tab from './tab/tab'
+import * as modal from './modal/modal'
+import {init as engineParamsInit} from './engine/params'
+import { getStorage } from './storage'
+import { serviceWorker } from './serviceWorker'
 
-
-interface ModulesT {
-    init?: () => void;
-    resize?: () => void;
-    active?: () => void;
-    deactivate?: () => void;
-}
 
 (function () {
-    // @ts-ignore
-    Axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
-    // @ts-ignore
-    Axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
-    // @ts-ignore
-    Axios.defaults.withCredentials = true
-
-    const { byId, inner } = dom.dom
+    axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
+    axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
+    axios.defaults.withCredentials = true
 
     const modules = [
         ...tab.screens,
@@ -31,32 +31,33 @@ interface ModulesT {
         core.idb.questions = idb<QuestionDbSchemaT>('questions')
         core.idb.images = idb<ImageDbSchemaT>('images')
         core.idb.answers = idb<AnswersDbSchemaT>('answers')
-        core.idb.statistics = idb<any>('statistics')
-        core.idb.logs = idb<any>('logs')
+        // core.idb.statistics = idb<any>('statistics')
+        core.idb.logs = idb<LogDbSchemaT>('logs')
 
-        document.addEventListener("DOMContentLoaded", async () => {
+        const domContentLoaded = async () => {
             controllers.initKeys()
 
             modules.forEach(m => { if (m.init) m.init() })
 
-            const resize = utils.resize()
+            const resize = utilsResize()
             modules.forEach(m => { if (m.resize) { resize.add(m.resize) } })
 
             resize.run()
 
             // setTimeout(starter.run, 300)
-            await starter.run()
+            await starterRun()
 
             // tests.errorModal()
             // settings.active()
             const v = byId('settings-version-id') as HTMLElement
-            inner(v, '--1.0.25--')
+            inner(v, '--1.0.27--')
 
             setTimeout(async () => {
                 tab.getGoTo(0)()
-                await engine.params.init()
+                await engineParamsInit()
             }, 300)
-        })
+        }
+        add(document, 'DOMContentLoaded', domContentLoaded)
 
         setConsole()
         await serviceWorker()

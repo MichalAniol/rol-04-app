@@ -1,68 +1,67 @@
-namespace statistics {
-    const { byId, getPx, setStyle } = dom
+import { byId, getPx, setStyle } from '../../dom'
+import { data } from './data'
+import { resize as drawResize, init as drawInit, cells } from './draw'
+import { setData } from './table'
+import { active as mouseActive, deactivate as mouseDeactivate } from './mouse'
+import { areNotNull } from '../../utils/isNotNull'
+import { waitFor } from '../../utils/waitFor'
+import { data as engineData, updateAnswers } from '../../engine/params'
+import { setMonitorLegend } from './legend'
+import { core } from '../../core'
 
-    type ElementsT = {
-        sheet: HTMLElement | null
-        monitor: HTMLCanvasElement | null
-        ctx: CanvasRenderingContext2D | null
-        legend: HTMLElement | null
-        table: HTMLElement | null
-        bottom: HTMLElement | null
-        tooltip: HTMLElement | null
-    }
+type ElementsT = {
+    sheet: HTMLElement
+    monitor: HTMLCanvasElement
+    ctx: CanvasRenderingContext2D
+    legend: HTMLElement
+    table: HTMLElement
+    bottom: HTMLElement
+    tooltip: HTMLElement
+}
 
-    export const elements: ElementsT = {
-        sheet: null,
-        monitor: null,
-        ctx: null,
-        legend: null,
-        table: null,
-        bottom: null,
-        tooltip: null,
-    }
+export const elements = {} as ElementsT
 
+export const init = async () => {
+    elements.sheet = byId('statistics-sheet') as HTMLElement
+    elements.monitor = byId('statistics-monitor') as HTMLCanvasElement
+    elements.ctx = elements.monitor.getContext('2d') as CanvasRenderingContext2D
+    elements.table = byId('statistics-table') as HTMLElement
+    elements.legend = byId('statistics-colors-legend') as HTMLElement
+    elements.bottom = byId('statistics-bottom') as HTMLElement
+    elements.tooltip = byId('tooltip') as HTMLElement
 
-    export const init = async () => {
-        elements.sheet = byId('statistics-sheet') as HTMLElement
-        elements.monitor = byId('statistics-monitor') as HTMLCanvasElement
-        elements.ctx = elements.monitor.getContext('2d')
-        elements.table = byId('statistics-table') as HTMLElement
-        elements.legend = byId('statistics-colors-legend') as HTMLElement
-        elements.bottom = byId('statistics-bottom') as HTMLElement
-        elements.tooltip = byId('tooltip') as HTMLElement
+    areNotNull(elements, ['screens', 'drawing'])
 
-        utils.areNotNull(elements, ['screens', 'drawing'])
+    await updateAnswers()
+    drawInit()
 
-        await engine.params.updateAnswers()
-        draw.init()
+    waitFor(() => engineData.answers.length !== 0 && data.steps.used.length !== 0 && elements.legend !== null, setMonitorLegend)()
+}
 
-        utils.waitFor(() => engine.params.data.answers.length !== 0 && data.steps.used.length !== 0 && elements.legend !== null, legend.setMonitorLegend)()
-    }
+export const resize = (w: number, h: number) => {
+    data.monitor.width = Math.min((w - 60 - (core.isMobile ? 0 : 220)), 660)
 
-    export const resize = (w: number, h: number) => {
-        data.monitor.width = Math.min((w - 60 - (core.isMobile ? 0 : 220)), 660)
+    const menuH = core.isMobile ? (121 / 701) * w : 0
+    setStyle(elements.sheet as HTMLElement, 'height', `calc(${getPx(h)})`)
+    setStyle(elements.bottom as HTMLElement, 'height', getPx(menuH))
 
-        const menuH = core.isMobile ? (121 / 701) * w : 0
-        setStyle(elements.sheet, 'height', `calc(${getPx(h)})`)
-        setStyle(elements.bottom, 'height', getPx(menuH))
+    drawResize(w, h)
+}
 
-        draw.resize(w, h)
-    }
+export const active = () => {
+    waitFor(() => data.monitor.size !== 0, cells)()
+    waitFor(() => data.monitor.size !== 0, setData)()
 
-    export const active = () => {
-        utils.waitFor(() => data.monitor.size !== 0, draw.cells)()
-        utils.waitFor(() => data.monitor.size !== 0, legend.setData)()
+    mouseActive()
+}
 
-        mouse.active()
-    }
+export const deactivate = () => {
+    mouseDeactivate()
+}
 
-    export const deactivate = () => { 
-        mouse.deactivate()
-    }
-
-    export const firstUse = () => {
-        init()
-        resize(window.visualViewport.width, window.visualViewport.height)
-        draw.cells()
-    }
+export const firstUse = () => {
+    init()
+    const vv = visualViewport as VisualViewport
+    resize(vv.width, vv.height)
+    cells()
 }

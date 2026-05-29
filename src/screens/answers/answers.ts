@@ -1,19 +1,15 @@
-namespace answers {
-    const { byId, prepare, setStyle } = dom
+// type ElementsT = {
 
-    type ElementsT = {
+// }
 
-    }
+// const elements: ElementsT = {
 
-    const elements: ElementsT = {
+// }
 
-    }
+// export const init = () => {
 
-    export const init = () => {
+// }
 
-    }
+// export const active = () => { }
 
-    export const active = () => { }
-
-    export const deactivate = () => { }
-}
+// export const deactivate = () => { }

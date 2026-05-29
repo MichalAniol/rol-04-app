@@ -1,166 +1,158 @@
-type WeightsT = {
-    lastUsed: number,
-    nextUse: number,
-    appearance: number,
-    rating: number,
-    littleUsed: number,
-    temperature: number,
+import { generateTriangularSequence } from './helpers'
+import { WeightsT, WeightsKeyT, QuestionDbT, AnswersT, TensorDataT } from '../types'
+import { core } from '../core'
+import { storageNames } from '@/storage'
+
+export const determinants = {
+    questionInSession: 30,
+    numLastRequiredQuestions: 3, // ile razy pod rząd trzeba odpowiedzieć, żeby było uznane, że umiesz (100%)
+    numLastHighlyRatedQuestions: 6, // --//-- , że umiesz super dobrze (200%)
+    // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
+    repetition: generateTriangularSequence(10),
+} as const
+
+export const repeatable: WeightsT = {
+    lastUsed: 0.1, // ostatnie użycie pytania
+    nextUse: 0.3, // następne planowane użycie pytania
+    appearance: 0.1, // w ilu testach pojawiło się pytanie
+    rating: 1.2, // poziom nauki pytań
+    littleUsed: 0, // najmniej powtarzalne pytania
+    temperature: 0.1, // wielkość zbioru do losowania
+} as const
+
+export const single: WeightsT = {
+    lastUsed: 0.1, // ostatnie użycie pytania
+    nextUse: 0.2, // następne planowane użycie pytania
+    appearance: 0.1, // w ilu testach pojawiło się pytanie
+    rating: 5, // poziom nauki pytań
+    littleUsed: 0, // najmniej powtarzalne pytania
+    temperature: 0.05,
+} as const
+// export const single: WeightsT = {
+//     lastUsed: 0.2, // ostatnie użycie pytania
+//     nextUse: 0.5, // następne planowane użycie pytania
+//     appearance: 0.1, // w ilu testach pojawiło się pytanie
+//     rating: 2, // poziom nauki pytań
+//     littleUsed: 0, // najmniej powtarzalne pytania
+//     temperature: 1,
+// } as const
+
+type DataT = {
+    weights: WeightsT | null
+    questions: QuestionDbT[]
+    answers: AnswersT[]
+    repeatableAnswers: AnswersT[]
+    singleAnswers: AnswersT[]
+    quantities: number[]
+    sume: number,
+    normalizedWeights: {
+        repeatable: WeightsT | null
+        single: WeightsT | null
+    }
+    numOfQuestions: {
+        repeatable: number
+        single: number
+    }
+    session: TensorDataT[]
+    index: number
 }
 
-namespace engine {
-    export namespace params {
-        export const determinants = {
-            questionInSession: 30,
-            numLastRequiredQuestions: 3, // ile razy pod rząd trzeba odpowiedzieć, żeby było uznane, że umiesz (100%)
-            numLastHighlyRatedQuestions: 6, // --//-- , że umiesz super dobrze (200%)
-            // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
-            repetition: helpers.generateTriangularSequence(10),
-        } as const
+export const data: DataT = {
+    weights: null,
+    questions: [],
+    answers: [],
+    repeatableAnswers: [],
+    singleAnswers: [],
+    quantities: [],
+    sume: 0,
+    normalizedWeights: {
+        repeatable: null,
+        single: null,
+    },
+    numOfQuestions: {
+        repeatable: 0,
+        single: 0,
+    },
+    session: [],
+    index: -1,
+}
 
-        export const repeatable: WeightsT = {
-            lastUsed: 0.1, // ostatnie użycie pytania
-            nextUse: 0.3, // następne planowane użycie pytania
-            appearance: 0.1, // w ilu testach pojawiło się pytanie
-            rating: 1.2, // poziom nauki pytań
-            littleUsed: 0, // najmniej powtarzalne pytania
-            temperature: 0.1, // wielkość zbioru do losowania
-        } as const
+// Wagi dla cech (suma nie musi być 1, ale lepiej by była)
+const getNormalizedWeights = (weights: WeightsT) => {
+    let sume = 0
+    Object.keys(weights).forEach((key) => sume += weights[key as WeightsKeyT])
+    sume -= weights.temperature
 
-        export const single: WeightsT = {
-            lastUsed: 0.1, // ostatnie użycie pytania
-            nextUse: 0.2, // następne planowane użycie pytania
-            appearance: 0.1, // w ilu testach pojawiło się pytanie
-            rating: 5, // poziom nauki pytań
-            littleUsed: 0, // najmniej powtarzalne pytania
-            temperature: 0.05,
-        } as const
-        // export const single: WeightsT = {
-        //     lastUsed: 0.2, // ostatnie użycie pytania
-        //     nextUse: 0.5, // następne planowane użycie pytania
-        //     appearance: 0.1, // w ilu testach pojawiło się pytanie
-        //     rating: 2, // poziom nauki pytań
-        //     littleUsed: 0, // najmniej powtarzalne pytania
-        //     temperature: 1,
-        // } as const
+    const normalizedWeights = { ...weights }
+    Object.keys(weights).forEach((key) => normalizedWeights[key as WeightsKeyT] = weights[key as WeightsKeyT] / sume)
 
-        type DataT = {
-            weights: WeightsT | null
-            questions: QuestionDbT[]
-            answers: AnswersT[]
-            repeatableAnswers: AnswersT[]
-            singleAnswers: AnswersT[]
-            quantities: number[]
-            sume: number,
-            normalizedWeights: {
-                repeatable: WeightsT | null
-                single: WeightsT | null
-            }
-            numOfQuestions: {
-                repeatable: number
-                single: number
-            }
-            session: TensorDataT[]
-            index: number
+    normalizedWeights.temperature = weights.temperature
+    return normalizedWeights
+}
+
+export const updateQuestions = async () => {
+    const questions = await core.idb.questions.getAllData() as [number, QuestionDbT][]
+    data.questions = []
+
+    questions.forEach(question => {
+        const index = question[0]
+        const item = question[1] as QuestionDbT
+
+        data.questions[index] = item
+    })
+}
+
+export const init = async () => {
+    await updateQuestions()
+    data.normalizedWeights.repeatable = getNormalizedWeights(repeatable)
+    data.normalizedWeights.single = getNormalizedWeights(single)
+
+    // const now = helpers.getDateAtNoonInXDays(1)
+    // const answers = await core.idb.answers.getAllData()
+
+    // wyrównie czasu na opowiedz jeśli minęła
+    // await answers.forEach(async (answer, i) => {
+    //     if (answer[1].expectedUse < now) {
+    //         answer[1].expectedUse = helpers.getDateAtNoonInXDays(0, now)
+    //         await core.idb.answers.set(...answer)
+    //     }
+    // })
+    const questionRatio = Number(core.store.get(storageNames.questionsRatio))
+    const questionNum = determinants.questionInSession
+
+    data.numOfQuestions.repeatable = questionRatio
+    data.numOfQuestions.single = questionNum - questionRatio
+}
+
+export const updateAnswers = async () => {
+    const answersDb = await core.idb.answers.getAllData()
+
+    // mapowanie z indeksem
+    const newAnswers = answersDb.map((answer) => {
+        const index = answer[0]
+        const item = answer[1] as AnswersT
+
+        item.drawn = false
+        item.index = index
+
+        return item
+    })
+    // sortowanie
+    const answers = newAnswers
+        .sort((a, b) => b.used - a.used)
+
+    // zapis do danych silnika
+    data.answers = []
+    data.repeatableAnswers = []
+    data.singleAnswers = []
+
+    answers.forEach((answer, i) => {
+        data.answers[i] = answer
+
+        if (answer.used === 1) {
+            data.singleAnswers.push(answer)
+        } else {
+            data.repeatableAnswers.push(answer)
         }
-
-        export const data: DataT = {
-            weights: null,
-            questions: [],
-            answers: [],
-            repeatableAnswers: [],
-            singleAnswers: [],
-            quantities: [],
-            sume: 0,
-            normalizedWeights: {
-                repeatable: null,
-                single: null,
-            },
-            numOfQuestions: {
-                repeatable: 0,
-                single: 0,
-            },
-            session: [],
-            index: -1,
-        }
-
-        // Wagi dla cech (suma nie musi być 1, ale lepiej by była)
-        const getNormalizedWeights = (weights: WeightsT) => {
-            let sume = 0
-            Object.keys(weights).forEach((key: WeightsKeyT) => sume += weights[key])
-            sume -= weights.temperature
-
-            const normalizedWeights = { ...weights }
-            Object.keys(weights).forEach((key: WeightsKeyT) => normalizedWeights[key] = weights[key] / sume)
-
-            normalizedWeights.temperature = weights.temperature
-            return normalizedWeights
-        }
-
-        export const updateQuestions = async () => {
-            const questions = await core.idb.questions.getAllData()
-            data.questions = []
-
-            questions.forEach(question => {
-                const index = question[0]
-                const item: QuestionDbT = question[1] as QuestionDbT
-
-                data.questions[index] = item
-            })
-        }
-
-        export const init = async () => {
-            await updateQuestions()
-            data.normalizedWeights.repeatable = getNormalizedWeights(repeatable)
-            data.normalizedWeights.single = getNormalizedWeights(single)
-
-            // const now = helpers.getDateAtNoonInXDays(1)
-            // const answers = await core.idb.answers.getAllData()
-
-            // wyrównie czasu na opowiedz jeśli minęła
-            // await answers.forEach(async (answer, i) => {
-            //     if (answer[1].expectedUse < now) {
-            //         answer[1].expectedUse = helpers.getDateAtNoonInXDays(0, now)
-            //         await core.idb.answers.set(...answer)
-            //     }
-            // })
-            const questionRatio = Number(core.store.get(storageNames.questionsRatio))
-            const questionNum = params.determinants.questionInSession
-
-            data.numOfQuestions.repeatable = questionRatio
-            data.numOfQuestions.single = questionNum - questionRatio
-        }
-
-        export const updateAnswers = async () => {
-            const answersDb = await core.idb.answers.getAllData()
-
-            // mapowanie z indeksem
-            const newAnswers = answersDb.map((answer, i) => {
-                const index = answer[0]
-                const item = answer[1] as AnswersT
-
-                item.drawn = false
-                item.index = index
-
-                return item
-            })
-            // sortowanie
-            const answers = newAnswers
-                .sort((a, b) => b.used - a.used)
-
-            // zapis do danych silnika
-            data.answers = []
-            data.repeatableAnswers = []
-            data.singleAnswers = []
-
-            answers.forEach((answer, i) => {
-                data.answers[i] = answer
-
-                if (answer.used === 1) {
-                    data.singleAnswers.push(answer)
-                } else {
-                    data.repeatableAnswers.push(answer)
-                }
-            })
-        }
-    }
+    })
 }

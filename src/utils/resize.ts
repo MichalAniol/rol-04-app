@@ -1,21 +1,20 @@
-namespace utils {
-    export const resize = () => {
-        const functionList: Function[] = []
+export const resize = () => {
+    const functionList: Function[] = []
 
-        const add = (fn: (w: number, h: number) => void) => functionList.push(fn)
+    const add = (fn: (w: number, h: number) => void) => functionList.push(fn)
 
-        const run = () => {
-            const w = window.visualViewport.width
-            const h = window.visualViewport.height
+    const run = () => {
+        const vv = window.visualViewport as VisualViewport
+        const w = vv.width
+        const h = vv.height
 
-            functionList.forEach(f => f(w, h))
-        }
+        functionList.forEach(f => f(w, h))
+    }
 
-        window.onresize = run
+    window.onresize = run
 
-        return {
-            add,
-            run
-        }
+    return {
+        add,
+        run
     }
 }

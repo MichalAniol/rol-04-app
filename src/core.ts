@@ -1,30 +1,26 @@
+import { Idb } from "./idb"
+import { getStorage } from "./storage"
+import { AnswersDbSchemaT, ImageDbSchemaT, LogDbSchemaT, QuestionDbSchemaT } from "./types"
+
 type CoreT = {
-    store: Awaited<ReturnType<typeof getStorage>> | null
+    store: Awaited<ReturnType<typeof getStorage>>
     isMobile: boolean
     idb: {
-        questions: Idb<QuestionDbSchemaT> | null
-        images: Idb<ImageDbSchemaT> | null
-        answers: Idb<AnswersDbSchemaT> | null
-        statistics: Idb<any> | null
-        logs: Idb<LogDbSchemaT> | null
+        questions: Idb<QuestionDbSchemaT>
+        images: Idb<ImageDbSchemaT>
+        answers: Idb<AnswersDbSchemaT>
+        // statistics: Idb<any>
+        logs: Idb<LogDbSchemaT>
     }
-    _csrf: string | null
+    _csrf: string
 }
-namespace core {
-    export let store: CoreT["store"] = null;
 
-    export const isMobile: CoreT["isMobile"] =
+export const core = {
+    // store: null,
+    isMobile:
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10|PlayBook|IEMobile|Windows Phone|Opera Mini|Opera Mobi|Mobile Safari|Fennec|Kindle|Silk|Ubuntu Touch/i
             .test(navigator.userAgent)
-        || window.innerWidth < 768;
-
-    export const idb: CoreT["idb"] = {
-        questions: null,
-        images: null,
-        answers: null,
-        statistics: null,
-        logs: null,
-    }
-
-    export let _csrf: CoreT["_csrf"] = null
-}
+        || window.innerWidth < 768,
+    idb: {},
+    // _csrf: null
+} as CoreT

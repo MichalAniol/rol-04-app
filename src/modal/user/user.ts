@@ -1,79 +1,58 @@
-namespace modal {
-    // const fileAdded = () => {
-    //     if (elements.qrCodeInput.files.length === 0) {
-    //         inner(elements.qrCodeBtn, 'Brak pliku')
-    //         elements.btnOldUser.disabled = true
-    //     } else {
-    //         inner(elements.qrCodeBtn, elements.qrCodeInput.files[0].name)
-    //         elements.btnOldUser.disabled = false
-    //     }
-    // }
-    export namespace user {
-        const { byId, inner, setStyle, add, remove } = dom
+import { areNotNull } from '@/utils/isNotNull'
+import { byId, setStyle, add } from '../../dom'
+import { show, hide } from '../modal'
 
-        type ElementsT = {
-            modal: HTMLElement | null
-            btnNewUser: HTMLButtonElement | null
-            idInfo: HTMLElement | null
-            idInput: HTMLInputElement | null
-            // qrCodeBtn: HTMLElement | null
-            // qrCodeInput: HTMLInputElement | null
-            btnOldUser: HTMLButtonElement | null
-        }
+type ElementsT = {
+    modal: HTMLElement
+    btnNewUser: HTMLButtonElement
+    idInfo: HTMLElement
+    idInput: HTMLInputElement
+    // qrCodeBtn: HTMLElement
+    // qrCodeInput: HTMLInputElement
+    btnOldUser: HTMLButtonElement
+}
 
-        const elements: ElementsT = {
-            modal: null,
-            btnNewUser: null,
-            idInfo: null,
-            idInput: null,
-            // qrCodeBtn: null,
-            // qrCodeInput: null,
-            btnOldUser: null,
-        }
+const elements = {} as ElementsT
 
-        export const init = () => {
-            elements.btnNewUser = byId('modal-user-btn-new-user') as HTMLButtonElement
-            elements.modal = byId('modal-user') as HTMLElement
-            elements.idInfo = byId('modal-user-id-info') as HTMLElement
-            elements.idInput = byId('modal-user-id-input') as HTMLInputElement
-            // elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
-            // elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
-            elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
+export const init = () => {
+    elements.btnNewUser = byId('modal-user-btn-new-user') as HTMLButtonElement
+    elements.modal = byId('modal-user') as HTMLElement
+    elements.idInfo = byId('modal-user-id-info') as HTMLElement
+    elements.idInput = byId('modal-user-id-input') as HTMLInputElement
+    // elements.qrCodeBtn = byId('modal-user-qr-code-btn') as HTMLElement
+    // elements.qrCodeInput = byId('modal-user-qr-code-file') as HTMLInputElement
+    elements.btnOldUser = byId('modal-user-btn-old-user') as HTMLButtonElement
 
-            utils.areNotNull(elements, ['modal', 'user'])
-        }
+    areNotNull(elements, ['modal', 'user'])
+}
 
-        export const showUserModal = (
-            setNewUser: () => void,
-            getValidateUserId: (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => void,
-            getCheckUserId: (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => EventListenerOrEventListenerObject
-        ) => {
-            show()
+export const showUserModal = (
+    setNewUser: () => void,
+    getValidateUserId: (info: HTMLElement, btn: HTMLButtonElement) => (event: Event) => void,
+    getCheckUserId: (info: HTMLElement, btn: HTMLButtonElement, input: HTMLInputElement, hide: () => void) => EventListenerOrEventListenerObject
+) => {
+    show()
 
-            const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements
+    const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements
 
-            setStyle(modal, 'display', 'flex')
-            btnOldUser.disabled = true
-            // add(elements.qrCodeInput, 'change', fileAdded)
+    setStyle(modal, 'display', 'flex')
+    btnOldUser.disabled = true
+    // add(elements.qrCodeInput, 'change', fileAdded)
 
-            add(btnNewUser, 'click', async () => {
-                await setNewUser()
-                hideUserModal()
-            })
+    add(btnNewUser, 'click', async () => {
+        await setNewUser()
+        hideUserModal()
+    })
 
-            const validateUserId = getValidateUserId(idInfo, btnOldUser)
-            add(idInput, 'input', validateUserId)
+    const validateUserId = getValidateUserId(idInfo, btnOldUser)
+    add(idInput, 'input', validateUserId)
 
-            const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal)
-            add(btnOldUser, 'click', checkUserId)
-        }
+    const checkUserId = getCheckUserId(idInfo, btnOldUser, idInput, hideUserModal)
+    add(btnOldUser, 'click', checkUserId)
+}
 
-        export const hideUserModal = () => {
-            hide()
-            setStyle(elements.modal, 'display', 'none')
-            // remove(elements.qrCodeInput, 'change', fileAdded)
-        }
-    }
-
-    // setTimeout(user.show, 100)
+export const hideUserModal = () => {
+    hide()
+    setStyle(elements.modal, 'display', 'none')
+    // remove(elements.qrCodeInput, 'change', fileAdded)
 }
