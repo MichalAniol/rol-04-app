@@ -17,10 +17,13 @@ export const selectByTemperature = (array: TensorDataT[], temperature: number, n
 
     // Oblicz wagi wg odwróconego logarytmu
     const weights = array.map((_, i) => 1 / Math.log(k * i + 2))
+    // console.log('%c weights:', 'background: #ffcc00; color: #003300', weights)
 
     // Losowanie bez powtórzeń wg wag
     const result: TensorDataT[] = []
     const usedIndices = new Set<number>()
+    const TestWeights: number[] = []
+
 
     while (result.length < num) {
         // Suma wag nieużytych
@@ -33,6 +36,7 @@ export const selectByTemperature = (array: TensorDataT[], temperature: number, n
             if (rand <= 0) {
                 result.push(array[i] as TensorDataT)
                 usedIndices.add(i)
+                TestWeights.push(rand)
                 break
             }
         }

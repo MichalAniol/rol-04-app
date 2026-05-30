@@ -1,9 +1,13 @@
 import { changeVisibility } from '@/tab/simpleMenu/visible'
 import { add } from '../dom'
 import { goRight, goLeft } from '@/tab/tab'
+import { core } from '@/core'
+import { storageNames } from '@/storage'
+import { data, setQuestion } from '@/screens/learning/preparation'
+import { HistoryT, LearningT } from '@/types'
+import { clearResults, getRateHistory } from '@/screens/learning/evaluation'
 
-const keysListener = (event: any) => {
-    // console.log('%c event.code:', 'background: #ffcc00; color: #003300', event.code)
+const keysListener = async (event: any) => {
     switch (event.code) {
         case 'Tab': {
             event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
@@ -21,6 +25,39 @@ const keysListener = (event: any) => {
         case 'KeyA': {
             goLeft()
             // console.log('goLeft')
+        } break
+        case 'KeyQ': {
+            if (process.env.DEBUG) {
+                console.log('%c>>> KeyQ <<<', 'background:rgb(0, 55, 255); color: #003300')
+                const sessionStarted = await core.store.get(storageNames.sessionStarted)
+                if (sessionStarted) {
+                    const timestamp = Date.now()
+                    data.answers.origin?.answer.history.push({
+                        timestamp,
+                        result: true,
+                    })
+
+                    const rate = getRateHistory(data.answers.origin?.answer.history as HistoryT[]);
+                    (data.answers.origin as LearningT).answer.rating = rate
+
+                    // zapis w pytaniach
+                    const { drawn, index, ...answerDb } = (data.answers.origin as LearningT).answer
+                    // @ts-ignore
+                    core.idb.answers.update(index, (old) => old = answerDb)
+
+
+                    const log = {
+                        action: (data.answers.origin as LearningT).answer.id,
+                        result: true,
+                    }
+
+                    // zapis loga
+                    core.idb.logs.set(timestamp, log)
+
+                    clearResults()
+                    setQuestion()
+                }
+            }
         } break
     }
 }

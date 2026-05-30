@@ -126,7 +126,7 @@ const showResult = async () => {
     await sumAndMemo()
 }
 
-const clearResults = () => {
+export const clearResults = () => {
     data.confirm = false
 
     inner(elements.confirm, 'Zatwierdź')

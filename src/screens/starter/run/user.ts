@@ -29,7 +29,7 @@ export const init = async (dataCheck: (getAnswersFromMemo: boolean) => Promise<v
     }
 
     const secure = await getSecure()
-    console.log('%c secure:', 'background:rgb(0, 42, 255); color: #003300', secure)
+    console.log('%c=========== secure:', 'background:rgb(0, 42, 255); color: #003300', secure)
 
     const startApp = () => {
         if (secure.command === responseCommand.secure.generateUserId) {
@@ -95,11 +95,16 @@ export const init = async (dataCheck: (getAnswersFromMemo: boolean) => Promise<v
     }
 
     // sprawdzenie czy appka jest zainstalowana
-    if (!isAppInstalled()) {
-        showInstallerModal(startApp)
+    if (!process.env.DEBUG) {
+        if (!isAppInstalled()) {
+            showInstallerModal(startApp)
+        } else {
+            startApp()
+        }
     } else {
         startApp()
     }
+
 
     // if (secure === null) {
     // }

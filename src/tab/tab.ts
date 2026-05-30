@@ -4,7 +4,7 @@ import { core } from '../core'
 import * as starter from '../screens/starter/starter'
 import * as statistics from '../screens/statistics/statistics'
 import * as learning from '../screens/learning/learning'
-// import * as answers from '../screens/answers/answers'
+import * as answers from '../screens/answers/answers'
 import * as settings from '../screens/settings/settings'
 import { areNotNull } from '../utils/isNotNull'
 
@@ -42,7 +42,7 @@ export const screens = [
     starter,
     statistics,
     learning,
-    // answers,
+    answers,
     settings
 ] as ModulesT[]
 
@@ -63,7 +63,9 @@ export const setTab = () => {
     // })
 
     // aktywacja wybranego screena
-    screens.forEach((s, i) => (i === state.screen) ? s.active() : s.deactivate())
+    screens.forEach((s, i) => {
+        (i === state.screen) ? s.active() : s.deactivate()
+    })
 }
 
 export const goLeft = () => {

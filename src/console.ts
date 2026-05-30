@@ -1,4 +1,4 @@
-const setConsole = () => (function () {
+export const setConsole = () => (function () {
     let styles = [
         'background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)',
         'border: 1px solid #3E0E02',

@@ -1,6 +1,6 @@
 import { elements } from './statistics'
 import { byQ, inner } from '../../dom'
-import { data as engineData } from '../../engine/params'
+import { determinants, data as engineData } from '../../engine/params'
 import { AnswersT, rating } from '@/types'
 
 const colNames = ['good', 'bad', 'unused'] as const
@@ -29,7 +29,7 @@ const setValues = (row: RowT, answer: AnswersT) => {
     if (answer.rating?.type === rating.bad) {
         row.bad++
     } else if (answer.rating?.type === rating.good) {
-        row.good += (answer.rating.scale + 1) / 3
+        row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
     } else {
         row.unused++
     }

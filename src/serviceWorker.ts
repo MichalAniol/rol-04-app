@@ -8,7 +8,7 @@ export const serviceWorker = async () => {
             updateViaCache: 'none'
         });
 
-        await registration.update();
+        // await registration.update();
 
         if (registration.waiting) {
             registration.waiting.postMessage({

@@ -1,4 +1,4 @@
-import { elements } from '../starter'
+import { elements, setVersionPos } from '../starter'
 import { core } from '../../../core'
 import { setStyle, inner } from '../../../dom'
 import { getVersion } from '../../../queries/data/version'
@@ -6,7 +6,7 @@ import { ConfigResponseImgT, getConfig } from '../../../queries/data/config'
 import { getAllQuestions } from '../../../queries/data/questions'
 import { getImage } from '../../../queries/data/images'
 import { showMenu } from '../../../tab/simpleMenu/simpleMenu'
-import { data as engineData, updateAnswers, updateQuestions } from '../../../engine/params'
+import { data as engineData, updateAnswers } from '../../../engine/params'
 import { data as statisticsData } from '../../../screens/statistics/data'
 import { getAnswers } from '../../../queries/statistics/getAnswers'
 import { getRateHistory } from '../../learning/evaluation'
@@ -40,6 +40,8 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
 
         setStyle(elements.statusAction, 'display', 'initial')
         inner(elements.statusAction, 'wczytywanie pytań')
+        inner(elements.version, `version: ${versionRes}`)
+        setTimeout(() => setVersionPos(), 200)
 
         // pobieranie config
         const configRes = await getConfig()
@@ -148,7 +150,6 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
     })
 
     await updateAnswers()
-    await updateQuestions()
 
     // ilość pytań, aby ułożyć je w kwadrat
     statisticsData.monitor.size = (Math.ceil(Math.sqrt(engineData.sume)))

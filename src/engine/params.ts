@@ -1,5 +1,5 @@
 import { generateTriangularSequence } from './helpers'
-import { WeightsT, WeightsKeyT, QuestionDbT, AnswersT, TensorDataT } from '../types'
+import { WeightsT, WeightsKeyT, AnswersT, TensorDataT } from '../types'
 import { core } from '../core'
 import { storageNames } from '@/storage'
 
@@ -9,6 +9,7 @@ export const determinants = {
     numLastHighlyRatedQuestions: 6, // --//-- , że umiesz super dobrze (200%)
     // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
     repetition: generateTriangularSequence(10),
+    whenManyToAnswerPercent: 15,
 } as const
 
 export const repeatable: WeightsT = {
@@ -19,6 +20,14 @@ export const repeatable: WeightsT = {
     littleUsed: 0, // najmniej powtarzalne pytania
     temperature: 0.1, // wielkość zbioru do losowania
 } as const
+export const repeatableGood: WeightsT = {
+    lastUsed: 0.1, // ostatnie użycie pytania
+    nextUse: 0.3, // następne planowane użycie pytania
+    appearance: 0.1, // w ilu testach pojawiło się pytanie
+    rating: 0.2, // poziom nauki pytań
+    littleUsed: 0, // najmniej powtarzalne pytania
+    temperature: 1, // wielkość zbioru do losowania
+} as const
 
 export const single: WeightsT = {
     lastUsed: 0.1, // ostatnie użycie pytania
@@ -28,27 +37,30 @@ export const single: WeightsT = {
     littleUsed: 0, // najmniej powtarzalne pytania
     temperature: 0.05,
 } as const
-// export const single: WeightsT = {
-//     lastUsed: 0.2, // ostatnie użycie pytania
-//     nextUse: 0.5, // następne planowane użycie pytania
-//     appearance: 0.1, // w ilu testach pojawiło się pytanie
-//     rating: 2, // poziom nauki pytań
-//     littleUsed: 0, // najmniej powtarzalne pytania
-//     temperature: 1,
-// } as const
+export const singleGood: WeightsT = {
+    lastUsed: 0.1, // ostatnie użycie pytania
+    nextUse: 0.2, // następne planowane użycie pytania
+    appearance: 0.1, // w ilu testach pojawiło się pytanie
+    rating: .3, // poziom nauki pytań
+    littleUsed: 0, // najmniej powtarzalne pytania
+    temperature: 1,
+} as const
+
+export type NormalizedWeightsT = {
+    repeatable: WeightsT
+    repeatableGood: WeightsT
+    single: WeightsT
+    singleGood: WeightsT
+}
 
 type DataT = {
     weights: WeightsT | null
-    questions: QuestionDbT[]
     answers: AnswersT[]
     repeatableAnswers: AnswersT[]
     singleAnswers: AnswersT[]
     quantities: number[]
     sume: number,
-    normalizedWeights: {
-        repeatable: WeightsT | null
-        single: WeightsT | null
-    }
+    normalizedWeights: NormalizedWeightsT
     numOfQuestions: {
         repeatable: number
         single: number
@@ -59,16 +71,12 @@ type DataT = {
 
 export const data: DataT = {
     weights: null,
-    questions: [],
     answers: [],
     repeatableAnswers: [],
     singleAnswers: [],
     quantities: [],
     sume: 0,
-    normalizedWeights: {
-        repeatable: null,
-        single: null,
-    },
+    normalizedWeights: {} as NormalizedWeightsT,
     numOfQuestions: {
         repeatable: 0,
         single: 0,
@@ -90,22 +98,11 @@ const getNormalizedWeights = (weights: WeightsT) => {
     return normalizedWeights
 }
 
-export const updateQuestions = async () => {
-    const questions = await core.idb.questions.getAllData() as [number, QuestionDbT][]
-    data.questions = []
-
-    questions.forEach(question => {
-        const index = question[0]
-        const item = question[1] as QuestionDbT
-
-        data.questions[index] = item
-    })
-}
-
 export const init = async () => {
-    await updateQuestions()
     data.normalizedWeights.repeatable = getNormalizedWeights(repeatable)
+    data.normalizedWeights.repeatableGood = getNormalizedWeights(repeatableGood)
     data.normalizedWeights.single = getNormalizedWeights(single)
+    data.normalizedWeights.singleGood = getNormalizedWeights(singleGood)
 
     // const now = helpers.getDateAtNoonInXDays(1)
     // const answers = await core.idb.answers.getAllData()

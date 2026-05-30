@@ -1,15 +1,13 @@
-// type ElementsT = {
+type ElementsT = {
 
-// }
+}
 
-// const elements: ElementsT = {
+const elements = {} as ElementsT 
 
-// }
+export const init = () => {
 
-// export const init = () => {
+}
 
-// }
+export const active = () => { }
 
-// export const active = () => { }
-
-// export const deactivate = () => { }
+export const deactivate = () => { }
