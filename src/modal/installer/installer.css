@@ -1,0 +1,9 @@
+.modal-installer-btn-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.modal-installer-btn-text svg {
+    margin-left: 12px;
+}

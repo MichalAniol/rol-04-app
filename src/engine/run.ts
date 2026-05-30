@@ -1,39 +1,81 @@
-import { data, repeatable, single, updateAnswers } from './params'
+import { data, determinants, updateAnswers } from './params'
 import { getTensors as analizeGetTensors } from './analize'
 import { selectByTemperature } from './select'
-import { data as engineData } from '../engine/params'
+import { data as engineData } from './params'
 import { shuffle } from '../utils/shuffle'
-import { LearningT, TensorDataT, WeightsT } from '@/types'
+import { AnswersT, LearningT, QuestionDbT, rating, TensorDataT, WeightsT } from '@/types'
+import { core } from '@/core'
+
+const getGoodBadSplit = (answers: AnswersT[], numOfQuestions: number) => {
+    const goodAnswers: AnswersT[] = []
+    const badAnswers: AnswersT[] = []
+    const manyToAnswer = Math.round((determinants.whenManyToAnswerPercent / 100) * numOfQuestions)
+
+    answers.forEach(a => {
+        const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions
+        if (isGood) {
+            goodAnswers.push(a)
+        } else {
+            badAnswers.push(a)
+        }
+    })
+
+    const result = {
+        numGood: 0,
+        numBad: 0,
+        goodAnswers,
+        badAnswers
+    }
+
+    if (badAnswers.length < numOfQuestions - manyToAnswer) {
+        result.numGood = numOfQuestions - badAnswers.length
+        result.numBad = badAnswers.length
+    } else {
+        const good = manyToAnswer > goodAnswers.length ? goodAnswers.length : manyToAnswer
+
+        result.numGood = good
+        result.numBad = numOfQuestions - good
+    }
+
+    return result
+}
+
+const getSpecificTensors = async (answers: AnswersT[], goodWeights: WeightsT, badWeights: WeightsT, numOfQuestions: number) => {
+    const splitted = getGoodBadSplit(answers, numOfQuestions)
+    // console.log('%c splitted:', 'background: #ffcc00; color: #003300', splitted)
+
+    const good = await analizeGetTensors(goodWeights, splitted.goodAnswers)
+
+    const goodTensors = selectByTemperature(
+        good,
+        goodWeights.temperature,
+        splitted.numGood)
+
+    const bad = await analizeGetTensors(badWeights, splitted.badAnswers)
+
+    const badTensors = selectByTemperature(
+        bad,
+        badWeights.temperature,
+        splitted.numBad)
+
+    return [...goodTensors, ...badTensors]
+}
 
 export const getTensors = async () => {
     await updateAnswers()
 
-    const repeatableTensors = await analizeGetTensors(
-        data.normalizedWeights.repeatable as WeightsT,
-        data.repeatableAnswers)
+    const selectedRepeatableTensors = await getSpecificTensors(data.repeatableAnswers, data.normalizedWeights.repeatableGood, data.normalizedWeights.repeatable, data.numOfQuestions.repeatable)
 
-    const selectedRepeatableTensors = selectByTemperature(
-        repeatableTensors,
-        repeatable.temperature,
-        data.numOfQuestions.repeatable)
-
-    const singleTensors = await analizeGetTensors(
-        data.normalizedWeights.single as WeightsT,
-        data.singleAnswers)
-
-    const selectedSingleTensors = selectByTemperature(
-        singleTensors,
-        single.temperature,
-        data.numOfQuestions.single)
+    const selectedSingleTensors = await getSpecificTensors(data.singleAnswers, data.normalizedWeights.singleGood, data.normalizedWeights.single, data.numOfQuestions.single)
 
     const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors])
+    // console.log('%c result:', 'background: #ffcc00; color: #003300', result.length)
 
     return result
 }
 
 const startSession = async () => {
     data.session = await getTensors()
-    console.log('%c params.data.session:', 'background:rgb(0, 17, 255); color: #003300', data.session)
     data.index = 0
 }
 
@@ -48,7 +90,6 @@ const getNextQuestion = async () => {
     }
 
     const result = data.session[data.index]
-    console.log('%c params.data.index:', 'background:rgb(255, 0, 251); color: #003300', data.index)
     data.index++
 
     if (data.index >= data.session.length) {
@@ -61,13 +102,15 @@ export const init = async () => { }
 
 export const getItem = async () => {
     const tensor = await getNextQuestion() as TensorDataT
-
     const answer = engineData.answers.find(a => a.id === tensor.id)
-    const question = engineData.questions.find(q => q.id === tensor.id)
-    console.log('%c question:', 'background: #ffcc00; color: #003300', question)
 
-    // const question = engineData.questions[tensor.index]
-    // const answer = engineData.answers.find(a => a.index === tensor.index)
+    const questions = await core.idb.questions.getAllData()
+    const questionDb = questions.find(q => q[1].id === answer?.id) as [number, QuestionDbT]
+    const question = questionDb[1]
+
+    // const question = answer ? await core.idb.questions.get((answer.index)) : emptyQuestion
+    // const theSame = answer?.id === question?.id
+    // console.log('%c theSame:', 'background: #ffcc00; color: #003300', theSame)
 
     const result = {
         question,

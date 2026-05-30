@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { byId, inner, add } from './dom'
+import { add } from './dom'
 import { core } from './core'
 import { controllers } from './inputs/keys'
 import { idb } from './idb'
@@ -9,9 +9,10 @@ import { AnswersDbSchemaT, ImageDbSchemaT, LogDbSchemaT, QuestionDbSchemaT } fro
 import { resize as utilsResize } from './utils/resize'
 import * as tab from './tab/tab'
 import * as modal from './modal/modal'
-import {init as engineParamsInit} from './engine/params'
+import { init as engineParamsInit } from './engine/params'
 import { getStorage } from './storage'
 import { serviceWorker } from './serviceWorker'
+import { setConsole } from './console'
 
 
 (function () {
@@ -44,13 +45,7 @@ import { serviceWorker } from './serviceWorker'
 
             resize.run()
 
-            // setTimeout(starter.run, 300)
             await starterRun()
-
-            // tests.errorModal()
-            // settings.active()
-            const v = byId('settings-version-id') as HTMLElement
-            inner(v, '--1.0.27--')
 
             setTimeout(async () => {
                 tab.getGoTo(0)()

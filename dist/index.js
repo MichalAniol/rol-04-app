@@ -374,8 +374,8 @@
     return postMessageSupported ? ((token, callbacks) => {
       _global.addEventListener(
         "message",
-        ({ source, data: data6 }) => {
-          if (source === _global && data6 === token) {
+        ({ source, data: data5 }) => {
+          if (source === _global && data5 === token) {
             callbacks.length && callbacks.shift()();
           }
         },
@@ -1216,8 +1216,8 @@
   };
 
   // node_modules/axios/lib/helpers/toURLEncodedForm.js
-  function toURLEncodedForm(data6, options) {
-    return toFormData_default(data6, new platform_default.classes.URLSearchParams(), {
+  function toURLEncodedForm(data5, options) {
+    return toFormData_default(data5, new platform_default.classes.URLSearchParams(), {
       visitor: function(value, key, path, helpers) {
         if (platform_default.isNode && utils_default.isBuffer(value)) {
           this.append(key, value.toString("base64"));
@@ -1301,38 +1301,38 @@
     transitional: transitional_default,
     adapter: ["xhr", "http", "fetch"],
     transformRequest: [
-      function transformRequest(data6, headers) {
+      function transformRequest(data5, headers) {
         const contentType = headers.getContentType() || "";
         const hasJSONContentType = contentType.indexOf("application/json") > -1;
-        const isObjectPayload = utils_default.isObject(data6);
-        if (isObjectPayload && utils_default.isHTMLForm(data6)) {
-          data6 = new FormData(data6);
+        const isObjectPayload = utils_default.isObject(data5);
+        if (isObjectPayload && utils_default.isHTMLForm(data5)) {
+          data5 = new FormData(data5);
         }
-        const isFormData2 = utils_default.isFormData(data6);
+        const isFormData2 = utils_default.isFormData(data5);
         if (isFormData2) {
-          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data6)) : data6;
+          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data5)) : data5;
         }
-        if (utils_default.isArrayBuffer(data6) || utils_default.isBuffer(data6) || utils_default.isStream(data6) || utils_default.isFile(data6) || utils_default.isBlob(data6) || utils_default.isReadableStream(data6)) {
-          return data6;
+        if (utils_default.isArrayBuffer(data5) || utils_default.isBuffer(data5) || utils_default.isStream(data5) || utils_default.isFile(data5) || utils_default.isBlob(data5) || utils_default.isReadableStream(data5)) {
+          return data5;
         }
-        if (utils_default.isArrayBufferView(data6)) {
-          return data6.buffer;
+        if (utils_default.isArrayBufferView(data5)) {
+          return data5.buffer;
         }
-        if (utils_default.isURLSearchParams(data6)) {
+        if (utils_default.isURLSearchParams(data5)) {
           headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
-          return data6.toString();
+          return data5.toString();
         }
         let isFileList2;
         if (isObjectPayload) {
           const formSerializer = own(this, "formSerializer");
           if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
-            return toURLEncodedForm(data6, formSerializer).toString();
+            return toURLEncodedForm(data5, formSerializer).toString();
           }
-          if ((isFileList2 = utils_default.isFileList(data6)) || contentType.indexOf("multipart/form-data") > -1) {
+          if ((isFileList2 = utils_default.isFileList(data5)) || contentType.indexOf("multipart/form-data") > -1) {
             const env = own(this, "env");
             const _FormData = env && env.FormData;
             return toFormData_default(
-              isFileList2 ? { "files[]": data6 } : data6,
+              isFileList2 ? { "files[]": data5 } : data5,
               _FormData && new _FormData(),
               formSerializer
             );
@@ -1340,25 +1340,25 @@
         }
         if (isObjectPayload || hasJSONContentType) {
           headers.setContentType("application/json", false);
-          return stringifySafely(data6);
+          return stringifySafely(data5);
         }
-        return data6;
+        return data5;
       }
     ],
     transformResponse: [
-      function transformResponse(data6) {
+      function transformResponse(data5) {
         const transitional2 = own(this, "transitional") || defaults.transitional;
         const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
         const responseType = own(this, "responseType");
         const JSONRequested = responseType === "json";
-        if (utils_default.isResponse(data6) || utils_default.isReadableStream(data6)) {
-          return data6;
+        if (utils_default.isResponse(data5) || utils_default.isReadableStream(data5)) {
+          return data5;
         }
-        if (data6 && utils_default.isString(data6) && (forcedJSONParsing && !responseType || JSONRequested)) {
+        if (data5 && utils_default.isString(data5) && (forcedJSONParsing && !responseType || JSONRequested)) {
           const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
           const strictJSONParsing = !silentJSONParsing && JSONRequested;
           try {
-            return JSON.parse(data6, own(this, "parseReviver"));
+            return JSON.parse(data5, own(this, "parseReviver"));
           } catch (e) {
             if (strictJSONParsing) {
               if (e.name === "SyntaxError") {
@@ -1368,7 +1368,7 @@
             }
           }
         }
-        return data6;
+        return data5;
       }
     ],
     /**
@@ -1404,12 +1404,12 @@
     const config = this || defaults_default;
     const context = response || config;
     const headers = AxiosHeaders_default.from(context.headers);
-    let data6 = context.data;
+    let data5 = context.data;
     utils_default.forEach(fns, function transform(fn) {
-      data6 = fn.call(config, data6, headers.normalize(), response ? response.status : void 0);
+      data5 = fn.call(config, data5, headers.normalize(), response ? response.status : void 0);
     });
     headers.normalize();
-    return data6;
+    return data5;
   }
 
   // node_modules/axios/lib/cancel/isCancel.js
@@ -1543,7 +1543,7 @@
       const progressBytes = Math.max(0, loaded - bytesNotified);
       const rate = _speedometer(progressBytes);
       bytesNotified = Math.max(bytesNotified, loaded);
-      const data6 = {
+      const data5 = {
         loaded,
         total,
         progress: total ? loaded / total : void 0,
@@ -1554,7 +1554,7 @@
         lengthComputable: total != null,
         [isDownloadStream ? "download" : "upload"]: true
       };
-      listener(data6);
+      listener(data5);
     }, freq);
   };
   var progressEventDecorator = (total, throttled) => {
@@ -1767,7 +1767,7 @@
   var resolveConfig_default = (config) => {
     const newConfig = mergeConfig({}, config);
     const own2 = (key) => utils_default.hasOwnProp(newConfig, key) ? newConfig[key] : void 0;
-    const data6 = own2("data");
+    const data5 = own2("data");
     let withXSRFToken = own2("withXSRFToken");
     const xsrfHeaderName = own2("xsrfHeaderName");
     const xsrfCookieName = own2("xsrfCookieName");
@@ -1788,11 +1788,11 @@
         "Basic " + btoa((auth.username || "") + ":" + (auth.password ? encodeUTF8(auth.password) : ""))
       );
     }
-    if (utils_default.isFormData(data6)) {
+    if (utils_default.isFormData(data5)) {
       if (platform_default.hasStandardBrowserEnv || platform_default.hasStandardBrowserWebWorkerEnv) {
         headers.setContentType(void 0);
-      } else if (utils_default.isFunction(data6.getHeaders)) {
-        setFormDataHeaders(headers, data6.getHeaders(), own2("formDataHeaderPolicy"));
+      } else if (utils_default.isFunction(data5.getHeaders)) {
+        setFormDataHeaders(headers, data5.getHeaders(), own2("formDataHeaderPolicy"));
       }
     }
     if (platform_default.hasStandardBrowserEnv) {
@@ -2251,7 +2251,7 @@
       let {
         url: url2,
         method,
-        data: data6,
+        data: data5,
         signal,
         cancelToken,
         timeout,
@@ -2290,7 +2290,7 @@
           }
         }
         if (hasMaxBodyLength && method !== "get" && method !== "head") {
-          const outboundLength = await resolveBodyLength(headers, data6);
+          const outboundLength = await resolveBodyLength(headers, data5);
           if (typeof outboundLength === "number" && isFinite(outboundLength) && outboundLength > maxBodyLength) {
             throw new AxiosError_default(
               "Request body larger than maxBodyLength limit",
@@ -2300,14 +2300,14 @@
             );
           }
         }
-        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data6)) !== 0) {
+        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data5)) !== 0) {
           let _request = new Request(url2, {
             method: "POST",
-            body: data6,
+            body: data5,
             duplex: "half"
           });
           let contentTypeHeader;
-          if (utils_default.isFormData(data6) && (contentTypeHeader = _request.headers.get("content-type"))) {
+          if (utils_default.isFormData(data5) && (contentTypeHeader = _request.headers.get("content-type"))) {
             headers.setContentType(contentTypeHeader);
           }
           if (_request.body) {
@@ -2315,14 +2315,14 @@
               requestContentLength,
               progressEventReducer(asyncDecorator(onUploadProgress))
             );
-            data6 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
+            data5 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
           }
         }
         if (!utils_default.isString(withCredentials)) {
           withCredentials = withCredentials ? "include" : "omit";
         }
         const isCredentialsSupported = isRequestSupported && "credentials" in Request.prototype;
-        if (utils_default.isFormData(data6)) {
+        if (utils_default.isFormData(data5)) {
           const contentType = headers.getContentType();
           if (contentType && /^multipart\/form-data/i.test(contentType) && !/boundary=/i.test(contentType)) {
             headers.delete("content-type");
@@ -2334,7 +2334,7 @@
           signal: composedSignal,
           method: method.toUpperCase(),
           headers: toByteStringHeaderObject(headers.normalize()),
-          body: data6,
+          body: data5,
           duplex: "half",
           credentials: isCredentialsSupported ? withCredentials : void 0
         };
@@ -2506,7 +2506,7 @@
     }
     if (!adapter2) {
       const reasons = Object.entries(rejectedReasons).map(
-        ([id, state3]) => `adapter ${id} ` + (state3 === false ? "is not supported by the environment" : "is not available in the build")
+        ([id, state4]) => `adapter ${id} ` + (state4 === false ? "is not supported by the environment" : "is not available in the build")
       );
       let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
       throw new AxiosError_default(
@@ -2829,7 +2829,7 @@
   });
   utils_default.forEach(["post", "put", "patch", "query"], function forEachMethodWithData(method) {
     function generateHTTPMethod(isForm) {
-      return function httpMethod(url2, data6, config) {
+      return function httpMethod(url2, data5, config) {
         return this.request(
           mergeConfig(config || {}, {
             method,
@@ -2837,7 +2837,7 @@
               "Content-Type": "multipart/form-data"
             } : {},
             url: url2,
-            data: data6
+            data: data5
           })
         );
       };
@@ -3181,7 +3181,8 @@
     numLastHighlyRatedQuestions: 6,
     // --//-- , że umiesz super dobrze (200%)
     // intelligence: 1 / 3, // prawdopodobieństwo na ile % odpowiada dobrze
-    repetition: generateTriangularSequence(10)
+    repetition: generateTriangularSequence(10),
+    whenManyToAnswerPercent: 15
   };
   var repeatable = {
     lastUsed: 0.1,
@@ -3197,6 +3198,20 @@
     temperature: 0.1
     // wielkość zbioru do losowania
   };
+  var repeatableGood = {
+    lastUsed: 0.1,
+    // ostatnie użycie pytania
+    nextUse: 0.3,
+    // następne planowane użycie pytania
+    appearance: 0.1,
+    // w ilu testach pojawiło się pytanie
+    rating: 0.2,
+    // poziom nauki pytań
+    littleUsed: 0,
+    // najmniej powtarzalne pytania
+    temperature: 1
+    // wielkość zbioru do losowania
+  };
   var single = {
     lastUsed: 0.1,
     // ostatnie użycie pytania
@@ -3210,18 +3225,27 @@
     // najmniej powtarzalne pytania
     temperature: 0.05
   };
+  var singleGood = {
+    lastUsed: 0.1,
+    // ostatnie użycie pytania
+    nextUse: 0.2,
+    // następne planowane użycie pytania
+    appearance: 0.1,
+    // w ilu testach pojawiło się pytanie
+    rating: 0.3,
+    // poziom nauki pytań
+    littleUsed: 0,
+    // najmniej powtarzalne pytania
+    temperature: 1
+  };
   var data = {
     weights: null,
-    questions: [],
     answers: [],
     repeatableAnswers: [],
     singleAnswers: [],
     quantities: [],
     sume: 0,
-    normalizedWeights: {
-      repeatable: null,
-      single: null
-    },
+    normalizedWeights: {},
     numOfQuestions: {
       repeatable: 0,
       single: 0
@@ -3238,19 +3262,11 @@
     normalizedWeights.temperature = weights.temperature;
     return normalizedWeights;
   };
-  var updateQuestions = async () => {
-    const questions = await core.idb.questions.getAllData();
-    data.questions = [];
-    questions.forEach((question) => {
-      const index = question[0];
-      const item = question[1];
-      data.questions[index] = item;
-    });
-  };
   var init = async () => {
-    await updateQuestions();
     data.normalizedWeights.repeatable = getNormalizedWeights(repeatable);
+    data.normalizedWeights.repeatableGood = getNormalizedWeights(repeatableGood);
     data.normalizedWeights.single = getNormalizedWeights(single);
+    data.normalizedWeights.singleGood = getNormalizedWeights(singleGood);
     const questionRatio = Number(core.store.get(storageNames.questionsRatio));
     const questionNum = determinants.questionInSession;
     data.numOfQuestions.repeatable = questionRatio;
@@ -3308,7 +3324,7 @@
     version: "null",
     configTests: "null",
     menuLeft: checked.no,
-    questionsRatio: "null",
+    questionsRatio: 25,
     sessionStarted: checked.no
   };
   var getStorage = async () => {
@@ -3352,8 +3368,8 @@
       const keys = Object.keys(storageNames);
       keys.forEach((key) => {
         const keyName = storageNames[key];
-        const data6 = get3(keyName);
-        if (data6 === null) {
+        const data5 = get3(keyName);
+        if (data5 === null) {
           set3(keyName, defaultData[key]);
         }
       });
@@ -3544,11 +3560,11 @@
     getGoTo: () => getGoTo,
     goLeft: () => goLeft,
     goRight: () => goRight,
-    init: () => init13,
+    init: () => init15,
     resize: () => resize6,
     screens: () => screens,
     setTab: () => setTab,
-    state: () => state2,
+    state: () => state3,
     unBlur: () => unBlur
   });
 
@@ -3559,7 +3575,8 @@
     deactivate: () => deactivate,
     elements: () => elements2,
     init: () => init4,
-    resize: () => resize
+    resize: () => resize,
+    setVersionPos: () => setVersionPos
   });
   var elements2 = {};
   var init4 = async () => {
@@ -3575,12 +3592,19 @@
     elements2.version = byId("starter-version");
     areNotNull(elements2, ["starter", "screen"]);
   };
-  var resize = (w, h) => {
+  var setVersionPos = () => {
+    const w = window.visualViewport?.width;
+    const h = window.visualViewport?.height;
     const menuH = 121 / 701 * w;
     const versionX = w - elements2.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200);
     const versionY = h - 6 - (core.isMobile ? menuH : 0);
     setAttribute(elements2.version, "x", `${getPx(versionX)}`);
     setAttribute(elements2.version, "y", `${getPx(versionY)}`);
+  };
+  var resize = async (w, h) => {
+    const versionDb = await core.store.get(storageNames.version);
+    inner(elements2.version, `version: ${versionDb}`);
+    setTimeout(() => setVersionPos(), 200);
     const svgHeight = `${getPx(h)}`;
     const setTitleSize = (size) => {
       setStyle(elements2.svgTitle, "height", svgHeight);
@@ -3821,19 +3845,19 @@
     });
     const getSaved = () => core.store.get(radioData.storeName);
     const mark2 = (name) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name);
-    const active7 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
-    const deactivate7 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
-    const init18 = () => {
-      active7();
+    const active9 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
+    const deactivate9 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
+    const init20 = () => {
+      active9();
       const saved = getSaved();
       if (radioData.init) radioData.init(saved);
       mark2(saved);
       return saved;
     };
     return {
-      init: init18,
-      active: active7,
-      deactivate: deactivate7
+      init: init20,
+      active: active9,
+      deactivate: deactivate9
     };
   };
 
@@ -4014,10 +4038,15 @@
     if (answer) {
       const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp);
       const lastFew = sortedHistory.slice(0, determinants.numLastRequiredQuestions);
-      const result = lastFew.filter((entry) => !entry.result).length;
-      return result;
+      return {
+        falsies: lastFew.filter((entry) => !entry.result).length,
+        trues: lastFew.filter((entry) => entry.result).length
+      };
     }
-    return 0;
+    return {
+      falsies: 0,
+      trues: 0
+    };
   };
   var prepareData = (reverseLastUse, answers) => {
     const now = getDateAtNoonInXDays(1);
@@ -4034,8 +4063,14 @@
         lastUsed = now - theLastOne;
         nextUse = nextUse - now;
         if (maxNextUse < nextUse) maxNextUse = nextUse;
-        let allFalsies = countLastFewFalse(answer);
-        rating2 = allFalsies / determinants.numLastRequiredQuestions;
+        let lastAnswers = countLastFewFalse(answer);
+        let rating3 = 0;
+        if (lastAnswers.trues >= determinants.numLastRequiredQuestions) {
+          rating3 = -10;
+        } else {
+          rating3 = lastAnswers.falsies / determinants.numLastRequiredQuestions;
+        }
+        console.log("%c rating:", "background: #ffcc00; color: #003300", rating3);
       }
       if (lastUsed < maxLastUse) maxLastUse = lastUsed;
       const appearance = answer.used;
@@ -4052,7 +4087,7 @@
         rating: rating2
       };
     });
-    const data6 = preData.map((p) => {
+    const data5 = preData.map((p) => {
       let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
       if (reverseLastUse) lastUsed = 1 - lastUsed;
       const used = maxUsed === 0 ? 1 : 1 - p.used / maxUsed;
@@ -4070,18 +4105,18 @@
         // 1 czym więcej pomyłek
       };
     });
-    return data6;
+    return data5;
   };
-  var scoringData = (data6, weights) => {
-    const scoredData = data6.map((d) => {
+  var scoringData = (data5, weights) => {
+    const scoredData = data5.map((d) => {
       const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used;
       return { ...d, score };
     });
     return scoredData.sort((a, b) => b.score - a.score);
   };
   var getTensors = async (normalizedWeights, answers) => {
-    const data6 = prepareData(false, answers);
-    const result = scoringData(data6, normalizedWeights);
+    const data5 = prepareData(false, answers);
+    const result = scoringData(data5, normalizedWeights);
     return result;
   };
 
@@ -4099,6 +4134,7 @@
     const weights = array.map((_, i) => 1 / Math.log(k * i + 2));
     const result = [];
     const usedIndices = /* @__PURE__ */ new Set();
+    const TestWeights = [];
     while (result.length < num) {
       const totalWeight = weights.reduce((sum, w, i) => usedIndices.has(i) ? sum : sum + w, 0);
       let rand = Math.random() * totalWeight * temperature;
@@ -4108,6 +4144,7 @@
         if (rand <= 0) {
           result.push(array[i]);
           usedIndices.add(i);
+          TestWeights.push(rand);
           break;
         }
       }
@@ -4132,32 +4169,59 @@
   };
 
   // src/engine/run.ts
+  var getGoodBadSplit = (answers, numOfQuestions) => {
+    const goodAnswers = [];
+    const badAnswers = [];
+    const manyToAnswer = Math.round(determinants.whenManyToAnswerPercent / 100 * numOfQuestions);
+    answers.forEach((a) => {
+      const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions;
+      if (isGood) {
+        goodAnswers.push(a);
+      } else {
+        badAnswers.push(a);
+      }
+    });
+    const result = {
+      numGood: 0,
+      numBad: 0,
+      goodAnswers,
+      badAnswers
+    };
+    if (badAnswers.length < numOfQuestions - manyToAnswer) {
+      result.numGood = numOfQuestions - badAnswers.length;
+      result.numBad = badAnswers.length;
+    } else {
+      const good = manyToAnswer > goodAnswers.length ? goodAnswers.length : manyToAnswer;
+      result.numGood = good;
+      result.numBad = numOfQuestions - good;
+    }
+    return result;
+  };
+  var getSpecificTensors = async (answers, goodWeights, badWeights, numOfQuestions) => {
+    const splitted = getGoodBadSplit(answers, numOfQuestions);
+    const good = await getTensors(goodWeights, splitted.goodAnswers);
+    const goodTensors = selectByTemperature(
+      good,
+      goodWeights.temperature,
+      splitted.numGood
+    );
+    const bad = await getTensors(badWeights, splitted.badAnswers);
+    const badTensors = selectByTemperature(
+      bad,
+      badWeights.temperature,
+      splitted.numBad
+    );
+    return [...goodTensors, ...badTensors];
+  };
   var getTensors2 = async () => {
     await updateAnswers();
-    const repeatableTensors = await getTensors(
-      data.normalizedWeights.repeatable,
-      data.repeatableAnswers
-    );
-    const selectedRepeatableTensors = selectByTemperature(
-      repeatableTensors,
-      repeatable.temperature,
-      data.numOfQuestions.repeatable
-    );
-    const singleTensors = await getTensors(
-      data.normalizedWeights.single,
-      data.singleAnswers
-    );
-    const selectedSingleTensors = selectByTemperature(
-      singleTensors,
-      single.temperature,
-      data.numOfQuestions.single
-    );
+    const selectedRepeatableTensors = await getSpecificTensors(data.repeatableAnswers, data.normalizedWeights.repeatableGood, data.normalizedWeights.repeatable, data.numOfQuestions.repeatable);
+    const selectedSingleTensors = await getSpecificTensors(data.singleAnswers, data.normalizedWeights.singleGood, data.normalizedWeights.single, data.numOfQuestions.single);
     const result = shuffle([...selectedRepeatableTensors, ...selectedSingleTensors]);
     return result;
   };
   var startSession = async () => {
     data.session = await getTensors2();
-    console.log("%c params.data.session:", "background:rgb(0, 17, 255); color: #003300", data.session);
     data.index = 0;
   };
   var endSession = async () => {
@@ -4169,7 +4233,6 @@
       await startSession();
     }
     const result = data.session[data.index];
-    console.log("%c params.data.index:", "background:rgb(255, 0, 251); color: #003300", data.index);
     data.index++;
     if (data.index >= data.session.length) {
       await startSession();
@@ -4181,8 +4244,9 @@
   var getItem = async () => {
     const tensor = await getNextQuestion();
     const answer = data.answers.find((a) => a.id === tensor.id);
-    const question = data.questions.find((q) => q.id === tensor.id);
-    console.log("%c question:", "background: #ffcc00; color: #003300", question);
+    const questions = await core.idb.questions.getAllData();
+    const questionDb = questions.find((q) => q[1].id === answer?.id);
+    const question = questionDb[1];
     const result = {
       question,
       answer,
@@ -4262,13 +4326,15 @@
 
   // src/queries/api.ts
   var okCodes = [304, 401, 403, 429];
-  var api = axios_default.create({
-    // baseURL: 'https://frog02-32047.wykr.es/',
-    baseURL: "https://192.168.1.109:3331/",
-    validateStatus: function(status) {
-      return status >= 200 && status < 300 || okCodes.some((c) => c === status);
+  var api = axios_default.create(
+    // @ts-ignore
+    {
+      baseURL: "https://frog02-32047.wykr.es/",
+      validateStatus: function(status) {
+        return status >= 200 && status < 300 || okCodes.some((c) => c === status);
+      }
     }
-  });
+  );
   var nothing = {
     message: "nieudane",
     command: responseCommand.error.none
@@ -4371,38 +4437,38 @@
 
   // src/utils/drawImage.ts
   var drawImage = () => /* @__PURE__ */ (() => {
-    const data6 = {
+    const data5 = {
       canvas: null,
       ctx: null,
       fitCanvas: null,
       fitCtx: null,
       fitWidth: 0
     };
-    const init18 = (canvas, fitCanvas) => {
-      data6.canvas = canvas;
-      data6.ctx = canvas.getContext("2d");
-      data6.fitCanvas = fitCanvas;
-      data6.fitCtx = fitCanvas.getContext("2d");
+    const init20 = (canvas, fitCanvas) => {
+      data5.canvas = canvas;
+      data5.ctx = canvas.getContext("2d");
+      data5.fitCanvas = fitCanvas;
+      data5.fitCtx = fitCanvas.getContext("2d");
     };
-    const setWidth = (width) => data6.fitWidth = width;
+    const setWidth = (width) => data5.fitWidth = width;
     const fitToWidth = (img) => {
-      if (!data6.fitCanvas || !data6.fitCtx) return;
-      const scale = data6.fitWidth / img.width;
+      if (!data5.fitCanvas || !data5.fitCtx) return;
+      const scale = data5.fitWidth / img.width;
       const displayWidth = img.width * scale;
       const displayHeight = img.height * scale;
       const dpr = window.devicePixelRatio || 1;
-      data6.fitCanvas.style.width = displayWidth + "px";
-      data6.fitCanvas.style.height = displayHeight + "px";
-      data6.fitCanvas.width = displayWidth * dpr;
-      data6.fitCanvas.height = displayHeight * dpr;
-      data6.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      data6.fitCtx.clearRect(
+      data5.fitCanvas.style.width = displayWidth + "px";
+      data5.fitCanvas.style.height = displayHeight + "px";
+      data5.fitCanvas.width = displayWidth * dpr;
+      data5.fitCanvas.height = displayHeight * dpr;
+      data5.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      data5.fitCtx.clearRect(
         0,
         0,
         displayWidth,
         displayHeight
       );
-      data6.fitCtx.drawImage(
+      data5.fitCtx.drawImage(
         img,
         0,
         0,
@@ -4413,7 +4479,7 @@
     const draw = /* @__PURE__ */ (() => {
       let currentUrl = null;
       return async (source) => {
-        if (!data6.ctx || !data6.canvas) return;
+        if (!data5.ctx || !data5.canvas) return;
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
           currentUrl = null;
@@ -4429,10 +4495,10 @@
             img.src = currentUrl;
           }
         });
-        data6.canvas.width = img.width;
-        data6.canvas.height = img.height;
-        data6.ctx.clearRect(0, 0, img.width, img.height);
-        data6.ctx.drawImage(img, 0, 0);
+        data5.canvas.width = img.width;
+        data5.canvas.height = img.height;
+        data5.ctx.clearRect(0, 0, img.width, img.height);
+        data5.ctx.drawImage(img, 0, 0);
         fitToWidth(img);
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
@@ -4441,7 +4507,7 @@
       };
     })();
     return {
-      init: init18,
+      init: init20,
       setWidth,
       draw
     };
@@ -4705,21 +4771,21 @@
   var colNames = ["good", "bad", "unused"];
   var rowNames = ["all", "allPercent", "moreOne", "moreOnePercent", "one", "onePercent"];
   var createTableData = () => {
-    const data6 = {};
+    const data5 = {};
     for (const row of rowNames) {
       const rowObj = {};
       for (const col of colNames) {
         rowObj[col] = 0;
       }
-      data6[row] = rowObj;
+      data5[row] = rowObj;
     }
-    return data6;
+    return data5;
   };
   var setValues = (row, answer) => {
     if (answer.rating?.type === rating.bad) {
       row.bad++;
     } else if (answer.rating?.type === rating.good) {
-      row.good += (answer.rating.scale + 1) / 3;
+      row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions;
     } else {
       row.unused++;
     }
@@ -4731,11 +4797,11 @@
     });
   };
   var getElement = (row, col) => byQ(elements3.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
-  var showTableData = (data6) => {
+  var showTableData = (data5) => {
     const percentNames = ["allPercent", "moreOnePercent", "onePercent"];
     for (const row of rowNames) {
       for (const col of colNames) {
-        const value = data6[row][col];
+        const value = data5[row][col];
         const suffix = percentNames.some((pn) => pn === row) ? "%" : "";
         const elem = getElement(row, col);
         inner(elem, value.toFixed(1) + suffix);
@@ -4845,12 +4911,26 @@
     cells();
   };
 
+  // src/screens/answers/answers.ts
+  var answers_exports = {};
+  __export(answers_exports, {
+    active: () => active5,
+    deactivate: () => deactivate5,
+    init: () => init10
+  });
+  var init10 = () => {
+  };
+  var active5 = () => {
+  };
+  var deactivate5 = () => {
+  };
+
   // src/screens/settings/settings.ts
   var settings_exports = {};
   __export(settings_exports, {
-    active: () => active6,
-    deactivate: () => deactivate6,
-    init: () => init12,
+    active: () => active8,
+    deactivate: () => deactivate8,
+    init: () => init14,
     resize: () => resize5
   });
 
@@ -4860,7 +4940,7 @@
     settingsAppInfoContentHeight: null,
     open: false
   };
-  var init10 = () => {
+  var init11 = () => {
     elements5.settingsAppInfo = byId("settings-app-info-title");
     elements5.settingsAppInfoMore = byId("settings-app-info-more");
     elements5.settingsAppInfoLess = byId("settings-app-info-less");
@@ -4885,11 +4965,49 @@
     }
     state.open = !state.open;
   };
-  var active5 = () => {
+  var active6 = () => {
     add(elements5.settingsAppInfo, "click", showInfo);
   };
-  var deactivate5 = () => {
+  var deactivate6 = () => {
     remove(elements5.settingsAppInfo, "click", showInfo);
+  };
+
+  // src/screens/settings/ratio/ratio.ts
+  var elements6 = {};
+  var state2 = {
+    ratio: 0
+  };
+  var init12 = async () => {
+    elements6.settingsSliderRepeatable = byId("settings-slider-repeatable");
+    elements6.settingsSliderSingle = byId("settings-slider-single");
+    elements6.settingsSliderInput = byId("settings-slider-input");
+    areNotNull(elements6, ["settings", "ratio"]);
+    state2.ratio = Number(await core.store.get(storageNames.questionsRatio));
+    elements6.settingsSliderInput.value = state2.ratio.toString();
+    elements6.settingsSliderInput.max = determinants.questionInSession.toString();
+    inner(elements6.settingsSliderRepeatable, state2.ratio.toString());
+    inner(elements6.settingsSliderSingle, (determinants.questionInSession - state2.ratio).toString());
+  };
+  var showRatio = (event) => {
+    const value = event.target.value;
+    inner(elements6.settingsSliderRepeatable, value);
+    inner(elements6.settingsSliderSingle, (determinants.questionInSession - Number(value)).toString());
+  };
+  var memoRatio = async (event) => {
+    const value = event.target.value;
+    state2.ratio = Number(value);
+    await core.store.set(storageNames.questionsRatio, value);
+    data.numOfQuestions.repeatable = state2.ratio;
+    const single2 = determinants.questionInSession - state2.ratio;
+    data.numOfQuestions.single = single2;
+  };
+  var active7 = () => {
+    add(elements6.settingsSliderInput, "input", showRatio);
+    add(elements6.settingsSliderInput, "change", memoRatio);
+  };
+  var deactivate7 = () => {
+    remove(elements6.settingsSliderInput, "input", showRatio);
+    remove(elements6.settingsSliderInput, "change", memoRatio);
   };
 
   // src/screens/settings/menu/menu.ts
@@ -4910,7 +5028,7 @@
     clickList: []
   };
   var menuRatio;
-  var init11 = () => {
+  var init13 = () => {
     controlMenuData.clickList = [
       () => menuSide(checked.no),
       () => menuSide(checked.yes)
@@ -4920,33 +5038,33 @@
   };
 
   // src/screens/settings/settings.ts
-  var elements6 = {};
+  var elements7 = {};
   var resize5 = (w, h) => {
-    setStyle(elements6.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
+    setStyle(elements7.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
   };
-  var init12 = () => {
-    elements6.scrollBox = byQuery("#settings-tab-box .scroll-box");
-    areNotNull(elements6, ["settings"]);
-    init10();
-    init5();
-    ratio.init();
+  var init14 = () => {
+    elements7.scrollBox = byQuery("#settings-tab-box .scroll-box");
+    areNotNull(elements7, ["settings"]);
     init11();
+    init5();
+    init12();
+    init13();
   };
-  var active6 = () => {
-    active5();
+  var active8 = () => {
+    active6();
     ratio.active();
-    ratio.active();
+    active7();
   };
-  var deactivate6 = () => {
-    deactivate5();
+  var deactivate8 = () => {
+    deactivate6();
     ratio.deactivate();
-    ratio.deactivate();
+    deactivate7();
   };
 
   // src/tab/tab.ts
   var WEB_MENU_WIDTH = 200;
-  var elements7 = {};
-  var state2 = {
+  var elements8 = {};
+  var state3 = {
     screen: 0,
     max: 0,
     carouselLeftPos: 0,
@@ -4956,28 +5074,30 @@
     starter_exports,
     statistics_exports,
     learning_exports,
-    // answers,
+    answers_exports,
     settings_exports
   ];
-  var getTabLeftPos = () => state2.tabWidth * state2.screen;
+  var getTabLeftPos = () => state3.tabWidth * state3.screen;
   var setTab = () => {
-    elements7.carousel.style.left = getPx(-getTabLeftPos());
-    screens.forEach((s, i) => i === state2.screen ? s.active() : s.deactivate());
+    elements8.carousel.style.left = getPx(-getTabLeftPos());
+    screens.forEach((s, i) => {
+      i === state3.screen ? s.active() : s.deactivate();
+    });
   };
   var goLeft = () => {
-    if (state2.screen > 0) {
-      state2.screen--;
+    if (state3.screen > 0) {
+      state3.screen--;
       setTab();
     }
   };
   var goRight = () => {
-    if (state2.screen < state2.max - 1) {
-      state2.screen++;
+    if (state3.screen < state3.max - 1) {
+      state3.screen++;
       setTab();
     }
   };
   var setWebBtnsColor = (index) => {
-    elements7.menu.items.forEach((item, i) => {
+    elements8.menu.items.forEach((item, i) => {
       if (index === i) {
         setStyle(item, "backgroundColor", "var(--mine_color)");
         setStyle(item, "color", "var(--last_color)");
@@ -4988,7 +5108,7 @@
     });
   };
   var getGoTo = (screenNum) => () => {
-    state2.screen = screenNum;
+    state3.screen = screenNum;
     setTab();
     if (core.isMobile) {
       setIconsColor(screenNum);
@@ -4997,52 +5117,52 @@
     }
   };
   var blur = () => {
-    setStyle(elements7.allTabs, "filter", "blur(5px)");
+    setStyle(elements8.allTabs, "filter", "blur(5px)");
   };
   var unBlur = () => {
-    setStyle(elements7.allTabs, "filter", "blur(0px)");
+    setStyle(elements8.allTabs, "filter", "blur(0px)");
   };
-  var init13 = () => {
-    elements7.carousel = byId("carousel");
-    elements7.carouselBox = byId("carousel-box");
-    elements7.allTabs = byId("tabs");
-    elements7.tabs = byQueryAll(".tab");
-    state2.max = elements7.tabs.length;
-    elements7.menu = {};
-    elements7.menu.mobile = byId("menu-mobile");
-    elements7.menu.web = byId("menu-web");
+  var init15 = () => {
+    elements8.carousel = byId("carousel");
+    elements8.carouselBox = byId("carousel-box");
+    elements8.allTabs = byId("tabs");
+    elements8.tabs = byQueryAll(".tab");
+    state3.max = elements8.tabs.length;
+    elements8.menu = {};
+    elements8.menu.mobile = byId("menu-mobile");
+    elements8.menu.web = byId("menu-web");
     if (core.isMobile) {
-      display(elements7.menu.web, "none");
-      elements7.menu.items = [];
-      init3(getGoTo, elements7.menu.items);
+      display(elements8.menu.web, "none");
+      elements8.menu.items = [];
+      init3(getGoTo, elements8.menu.items);
     } else {
-      display(elements7.menu.mobile, "none");
-      state2.carouselLeftPos = WEB_MENU_WIDTH;
-      elements7.menu.items = byQueryAll(".menu-web-item");
-      for (let i = 0; i < elements7.menu.items.length; ++i) {
-        const item = elements7.menu.items[i];
+      display(elements8.menu.mobile, "none");
+      state3.carouselLeftPos = WEB_MENU_WIDTH;
+      elements8.menu.items = byQueryAll(".menu-web-item");
+      for (let i = 0; i < elements8.menu.items.length; ++i) {
+        const item = elements8.menu.items[i];
         add(item, "click", getGoTo(i));
       }
     }
-    areNotNull(elements7, ["tab"]);
+    areNotNull(elements8, ["tab"]);
   };
   var resize6 = (w, h) => {
-    state2.tabWidth = w - state2.carouselLeftPos;
-    for (let i = 0; i < elements7.tabs.length; ++i) {
-      const tab = elements7.tabs[i];
-      setStyle(tab, "width", getPx(state2.tabWidth));
+    state3.tabWidth = w - state3.carouselLeftPos;
+    for (let i = 0; i < elements8.tabs.length; ++i) {
+      const tab = elements8.tabs[i];
+      setStyle(tab, "width", getPx(state3.tabWidth));
       setStyle(tab, "height", getPx(h));
     }
-    setStyle(elements7.allTabs, "width", getPx(w));
-    setStyle(elements7.allTabs, "height", getPx(h));
-    setStyle(elements7.carouselBox, "width", getPx(state2.tabWidth));
-    setStyle(elements7.carouselBox, "left", getPx(state2.carouselLeftPos));
-    setStyle(elements7.carousel, "width", getPx(state2.max * state2.tabWidth));
+    setStyle(elements8.allTabs, "width", getPx(w));
+    setStyle(elements8.allTabs, "height", getPx(h));
+    setStyle(elements8.carouselBox, "width", getPx(state3.tabWidth));
+    setStyle(elements8.carouselBox, "left", getPx(state3.carouselLeftPos));
+    setStyle(elements8.carousel, "width", getPx(state3.max * state3.tabWidth));
     setTab();
   };
 
   // src/inputs/keys.ts
-  var keysListener = (event) => {
+  var keysListener = async (event) => {
     switch (event.code) {
       case "Tab":
         {
@@ -5064,6 +5184,32 @@
       case "KeyA":
         {
           goLeft();
+        }
+        break;
+      case "KeyQ":
+        {
+          if ("false") {
+            console.log("%c>>> KeyQ <<<", "background:rgb(0, 55, 255); color: #003300");
+            const sessionStarted = await core.store.get(storageNames.sessionStarted);
+            if (sessionStarted) {
+              const timestamp = Date.now();
+              data4.answers.origin?.answer.history.push({
+                timestamp,
+                result: true
+              });
+              const rate = getRateHistory(data4.answers.origin?.answer.history);
+              data4.answers.origin.answer.rating = rate;
+              const { drawn, index, ...answerDb } = data4.answers.origin.answer;
+              core.idb.answers.update(index, (old) => old = answerDb);
+              const log = {
+                action: data4.answers.origin.answer.id,
+                result: true
+              };
+              core.idb.logs.set(timestamp, log);
+              clearResults();
+              setQuestion();
+            }
+          }
         }
         break;
     }
@@ -5280,24 +5426,24 @@
   var modal_exports = {};
   __export(modal_exports, {
     hide: () => hide2,
-    init: () => init16,
+    init: () => init18,
     resize: () => resize7,
     show: () => show2
   });
 
   // src/modal/user/user.ts
-  var elements8 = {};
-  var init14 = () => {
-    elements8.btnNewUser = byId("modal-user-btn-new-user");
-    elements8.modal = byId("modal-user");
-    elements8.idInfo = byId("modal-user-id-info");
-    elements8.idInput = byId("modal-user-id-input");
-    elements8.btnOldUser = byId("modal-user-btn-old-user");
-    areNotNull(elements8, ["modal", "user"]);
+  var elements9 = {};
+  var init16 = () => {
+    elements9.btnNewUser = byId("modal-user-btn-new-user");
+    elements9.modal = byId("modal-user");
+    elements9.idInfo = byId("modal-user-id-info");
+    elements9.idInput = byId("modal-user-id-input");
+    elements9.btnOldUser = byId("modal-user-btn-old-user");
+    areNotNull(elements9, ["modal", "user"]);
   };
   var showUserModal = (setNewUser, getValidateUserId, getCheckUserId) => {
     show2();
-    const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements8;
+    const { modal, btnNewUser, idInfo, idInput, btnOldUser } = elements9;
     setStyle(modal, "display", "flex");
     btnOldUser.disabled = true;
     add(btnNewUser, "click", async () => {
@@ -5311,129 +5457,97 @@
   };
   var hideUserModal = () => {
     hide2();
-    setStyle(elements8.modal, "display", "none");
+    setStyle(elements9.modal, "display", "none");
   };
 
   // src/modal/installer/installer.ts
-  var elements9 = {};
+  var elements10 = {};
   var deferredPrompt = null;
   var beforeInstallPrompt = (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    const installBtn = document.getElementById("installBtn");
-    if (installBtn) {
-      installBtn.style.display = "block";
-    }
   };
-  var instalClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const choiceResult = await deferredPrompt.userChoice;
-    if (choiceResult.outcome === "accepted") {
-      console.log("U\u017Cytkownik zainstalowa\u0142 aplikacj\u0119");
-    } else {
-      console.log("U\u017Cytkownik odrzuci\u0142 instalacj\u0119");
-    }
-    deferredPrompt = null;
-  };
-  var isAppInstalled = () => {
-    const isInstalled = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    return isInstalled;
-  };
-  var init15 = () => {
-    elements9.modal = byId("modal-installer");
-    elements9.installBtn = byId("modal-installer-btn");
-    elements9.noInstallBtn = byId("modal-installer-btn-no");
-    areNotNull(elements9, ["modal", "user"]);
-    setStyle(elements9.modal, "display", "none");
-  };
-  var data5 = {};
-  var showInstallerModal = (hideFn) => {
-    show2();
-    setStyle(elements9.modal, "display", "flex");
-    add(window, "beforeinstallprompt", beforeInstallPrompt);
-    add(elements9.installBtn, "click", instalClick);
-    add(elements9.noInstallBtn, "click", hideInstallerModal);
-    data5.hideFn = hideFn;
-  };
-  var hideInstallerModal = () => {
-    hide2();
-    setStyle(elements9.modal, "display", "none");
-    remove(window, "beforeinstallprompt", beforeInstallPrompt);
-    remove(elements9.installBtn, "click", instalClick);
-    remove(elements9.noInstallBtn, "click", hideInstallerModal);
-    data5.hideFn();
+  add(window, "beforeinstallprompt", beforeInstallPrompt);
+  var init17 = () => {
+    elements10.modal = byId("modal-installer");
+    elements10.installBtn = byId("modal-installer-btn");
+    elements10.noInstallBtn = byId("modal-installer-btn-no");
+    elements10.btnText = byId("modal-installer-btn-tex");
+    elements10.btnSvg = byId("modal-installer-btn-loader");
+    areNotNull(elements10, ["modal", "user"]);
+    setStyle(elements10.modal, "display", "none");
+    setStyle(elements10.btnSvg, "display", "none");
   };
 
   // src/modal/modal.ts
-  var elements10 = {};
-  var init16 = () => {
-    elements10.modal = byId("modal");
-    elements10.back = byId("modal-back");
-    areNotNull(elements10, ["modal"]);
+  var elements11 = {};
+  var init18 = () => {
+    elements11.modal = byId("modal");
+    elements11.back = byId("modal-back");
+    areNotNull(elements11, ["modal"]);
     error.init();
-    init14();
-    init15();
+    init16();
+    init17();
   };
   var resize7 = (w, h) => {
-    setStyle(elements10.back, "width", getPx(w));
-    setStyle(elements10.back, "height", getPx(h));
+    setStyle(elements11.back, "width", getPx(w));
+    setStyle(elements11.back, "height", getPx(h));
   };
   var visible = false;
   var show2 = () => {
     visible = true;
-    setStyle(elements10.modal, "opacity", "0");
-    setStyle(elements10.modal, "display", "flex");
+    setStyle(elements11.modal, "opacity", "0");
+    setStyle(elements11.modal, "display", "flex");
     setTimeout(() => {
-      setStyle(elements10.modal, "opacity", "1");
+      setStyle(elements11.modal, "opacity", "1");
     }, 30);
     blur();
   };
   var hide2 = () => {
     visible = false;
-    setStyle(elements10.modal, "opacity", "0");
+    setStyle(elements11.modal, "opacity", "0");
     setTimeout(() => {
       if (!visible) {
-        setStyle(elements10.modal, "display", "none");
+        setStyle(elements11.modal, "display", "none");
       }
     }, 330);
     unBlur();
   };
 
   // src/modal/error/error.ts
-  var elements11 = {};
+  var elements12 = {};
   var reload = () => window.location.reload();
   var close = null;
   var error = {
     init: () => {
-      elements11.modal = byId("modal-error");
-      elements11.txt = byId("modal-error-txt");
-      elements11.info = byId("modal-error-info");
-      elements11.btn = byId("modal-error-btn");
+      elements12.modal = byId("modal-error");
+      elements12.txt = byId("modal-error-txt");
+      elements12.info = byId("modal-error-info");
+      elements12.btn = byId("modal-error-btn");
     },
     show: (err, canWork, onClose) => {
       show2();
-      setStyle(elements11.modal, "display", "flex");
+      setStyle(elements12.modal, "display", "flex");
       close = onClose;
       if (canWork) {
-        inner(elements11.txt, err);
-        inner(elements11.info, "B\u0119dzie dzia\u0142a\u0107 dzi\u0119ki zapami\u0119tanym danym.");
-        setStyle(elements11.info, "color", "var(--on_prime_color)");
-        inner(elements11.btn, "Dalej");
-        add(elements11.btn, "click", error.hide);
+        inner(elements12.txt, err);
+        inner(elements12.info, "B\u0119dzie dzia\u0142a\u0107 dzi\u0119ki zapami\u0119tanym danym.");
+        setStyle(elements12.info, "color", "var(--on_prime_color)");
+        inner(elements12.btn, "Dalej");
+        add(elements12.btn, "click", error.hide);
       } else {
-        inner(elements11.txt, err);
-        inner(elements11.info, "Brak danych aby uruchomi\u0107 aplikacj\u0119.");
-        setStyle(elements11.info, "color", "var(--off_prime_color)");
-        inner(elements11.btn, "Prze\u0142aduj");
-        add(elements11.btn, "click", reload);
+        inner(elements12.txt, err);
+        inner(elements12.info, "Brak danych aby uruchomi\u0107 aplikacj\u0119.");
+        setStyle(elements12.info, "color", "var(--off_prime_color)");
+        inner(elements12.btn, "Prze\u0142aduj");
+        add(elements12.btn, "click", reload);
       }
     },
     hide: () => {
       hide2();
-      setStyle(elements11.modal, "display", "none");
-      remove(elements11.btn, "click", reload);
-      remove(elements11.btn, "click", error.hide);
+      setStyle(elements12.modal, "display", "none");
+      remove(elements12.btn, "click", reload);
+      remove(elements12.btn, "click", error.hide);
       if (close) close();
     }
   };
@@ -5598,13 +5712,13 @@
   };
   var ALPHABET = alphabetData.numbers + alphabetData.azSmall + alphabetData.azBig;
   var regex = new RegExp(`^[${ALPHABET}]{21}$`);
-  var init17 = async (dataCheck) => {
+  var init19 = async (dataCheck) => {
     const go = async (getAnswersFromMemo = false) => {
       await getSecure();
       setTimeout(() => dataCheck(getAnswersFromMemo), 100);
     };
     const secure = await getSecure();
-    console.log("%c secure:", "background:rgb(0, 42, 255); color: #003300", secure);
+    console.log("%c=========== secure:", "background:rgb(0, 42, 255); color: #003300", secure);
     const startApp = () => {
       if (secure.command === responseCommand.secure.generateUserId) {
         const setNewUser = async () => {
@@ -5638,9 +5752,9 @@
         };
         const checkUserId = (info, btn, input, hide3) => async () => {
           const userIdSet = await checkId(input.value);
-          const state3 = userIdSet.command;
+          const state4 = userIdSet.command;
           const no = getNo(info, btn);
-          if (state3 === responseCommand.user.ok) {
+          if (state4 === responseCommand.user.ok) {
             memoUserId(input.value);
             hide3();
             go(true);
@@ -5654,8 +5768,12 @@
         go();
       }
     };
-    if (!isAppInstalled()) {
-      showInstallerModal(startApp);
+    if (false) {
+      if (!isAppInstalled()) {
+        showInstallerModal(startApp);
+      } else {
+        startApp();
+      }
     } else {
       startApp();
     }
@@ -5739,6 +5857,8 @@
       await core.store.set(storageNames.imgAvailable, checked.no);
       setStyle(elements2.statusAction, "display", "initial");
       inner(elements2.statusAction, "wczytywanie pyta\u0144");
+      inner(elements2.version, `version: ${versionRes}`);
+      setTimeout(() => setVersionPos(), 200);
       const configRes = await getConfig();
       const configTestsDb = await core.store.get(storageNames.configTests);
       if (configRes.tests !== configTestsDb) {
@@ -5819,7 +5939,6 @@
       data.sume++;
     });
     await updateAnswers();
-    await updateQuestions();
     data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
     firstUse();
     if (getAnswersFromMemo) {
@@ -5849,7 +5968,7 @@
         resize2(vv.width, vv.height);
       }
     })();
-    await init17(check);
+    await init19(check);
   };
 
   // src/utils/resize.ts
@@ -5878,7 +5997,6 @@
       const registration = await navigator.serviceWorker.register("/sw.js", {
         updateViaCache: "none"
       });
-      await registration.update();
       if (registration.waiting) {
         registration.waiting.postMessage({
           type: "SKIP_WAITING"
@@ -5913,6 +6031,42 @@
     }
   };
 
+  // src/console.ts
+  var setConsole = () => (function() {
+    let styles = [
+      "background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)",
+      "border: 1px solid #3E0E02",
+      "width: 220px",
+      "color: black",
+      "display: block",
+      "text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3)",
+      "box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 5px 3px -5px rgba(0, 0, 0, 0.5), 0 -13px 5px -10px rgba(255, 255, 255, 0.4) inset",
+      "line-height: 30px",
+      "text-align: center",
+      "font-weight: bold",
+      "font-size: 24px",
+      "margin: 10px 0",
+      "padding: 10px 0 15px 0"
+    ].join(";");
+    console.log("%c\u{1F449}rol 04\u{1F448}", styles);
+    let styles2 = [
+      "background: linear-gradient(169deg, #f60707 0%, #ffd600 38%, #edff00 51%, #c4ed18 62%, #00ff19 100%)",
+      "border: 1px solid #3E0E02",
+      "width: 220px",
+      "color: black",
+      "display: block",
+      "text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3)",
+      "box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 5px 3px -5px rgba(0, 0, 0, 0.5), 0 -13px 5px -10px rgba(255, 255, 255, 0.4) inset",
+      "line-height: 18px",
+      "text-align: center",
+      "font-weight: bold",
+      "font-size: 16px",
+      "margin: 10px 0",
+      "padding: 10px 0 15px 0"
+    ].join(";");
+    console.log("%c   \u{1D482}\u{1D496}\u{1D495}\u{1D490}\u{1D493}: \u{1D40C}\u{1D422}\u{1D41C}\u{1D421}\u{1D41A}\u{1D425} \u{1D400}\u{1D427}\u{1D422}\u{1D428}\u{1D425} \u{1F60E}   ", styles2);
+  })();
+
   // src/app.ts
   (function() {
     axios_default.defaults.xsrfCookieName = "XSRF-TOKEN";
@@ -5942,8 +6096,6 @@
         });
         resize9.run();
         await run();
-        const v = byId("settings-version-id");
-        inner(v, "--1.0.27--");
         setTimeout(async () => {
           getGoTo(0)();
           await init();

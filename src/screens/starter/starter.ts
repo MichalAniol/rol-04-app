@@ -1,6 +1,7 @@
-import { byId, getPx, setStyle, setAttribute } from '../../dom'
+import { byId, getPx, setStyle, setAttribute, inner } from '../../dom'
 import { areNotNull } from '../../utils/isNotNull'
 import { core } from '../../core'
+import { storageNames } from '@/storage'
 
 type ElementsT = {
     logoDark: HTMLElement
@@ -33,13 +34,22 @@ export const init = async () => {
     areNotNull(elements, ['starter', 'screen'])
 }
 
-
-export const resize = (w: number, h: number) => {
+export const setVersionPos = () => {
+    const w = window.visualViewport?.width as number
+    const h = window.visualViewport?.height as number
     const menuH = (121 / 701) * w
+
     const versionX = w - elements.version.getComputedTextLength() - 6 - (core.isMobile ? 0 : 200)
     const versionY = h - 6 - (core.isMobile ? menuH : 0)
     setAttribute(elements.version, 'x', `${getPx(versionX)}`)
     setAttribute(elements.version, 'y', `${getPx(versionY)}`)
+}
+
+export const resize = async (w: number, h: number) => {
+
+    const versionDb = await core.store.get(storageNames.version) as string
+    inner(elements.version, `version: ${versionDb}`)
+    setTimeout(() => setVersionPos(), 200)
 
     const svgHeight = `${getPx(h)}`
 

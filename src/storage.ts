@@ -16,7 +16,7 @@ type NamesValueTypeT = {
     version: string
     configTests: string
     menuLeft: CheckedValuesT
-    questionsRatio: string
+    questionsRatio: number
     sessionStarted: CheckedValuesT
 }
 
@@ -48,7 +48,7 @@ const defaultData: NamesValueTypeT = {
     version: 'null',
     configTests: 'null',
     menuLeft: checked.no,
-    questionsRatio: 'null',
+    questionsRatio: 25,
     sessionStarted: checked.no,
 }
 

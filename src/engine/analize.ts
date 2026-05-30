@@ -2,14 +2,25 @@ import { determinants } from './params'
 import { getDateAtNoonInXDays } from './helpers'
 import { AnswersDbT, AnswersT, TensorDataT, WeightsT } from '@/types'
 
+type CountLastFewFalseT = {
+    falsies: number
+    trues: number
+}
+
 const countLastFewFalse = (answer: AnswersDbT) => {
     if (answer) {
         const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp)
         const lastFew = sortedHistory.slice(0, determinants.numLastRequiredQuestions)
-        const result = lastFew.filter(entry => !entry.result).length
-        return result
+
+        return {
+            falsies: lastFew.filter(entry => !entry.result).length,
+            trues: lastFew.filter(entry => entry.result).length,
+        } as CountLastFewFalseT
     }
-    return 0
+    return {
+        falsies: 0,
+        trues: 0,
+    }
 }
 
 const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
@@ -33,9 +44,16 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             nextUse = nextUse - now
             if (maxNextUse < nextUse) maxNextUse = nextUse
 
-            let allFalsies = countLastFewFalse(answer)
-            rating = allFalsies / determinants.numLastRequiredQuestions
+            let lastAnswers = countLastFewFalse(answer)
+            let rating = 0
+            if (lastAnswers.trues >= determinants.numLastRequiredQuestions) {
+                rating = -10
+            } else {
+                rating = lastAnswers.falsies / determinants.numLastRequiredQuestions
+            }
+            console.log('%c rating:', 'background: #ffcc00; color: #003300', rating)
         }
+
         if (lastUsed < maxLastUse) maxLastUse = lastUsed
 
         const appearance = answer.used
@@ -73,43 +91,6 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
 
     return data
 }
-
-// const checkGoodAnswers = () => {
-//     const countLastFewTrue = (answer: AnswersDbT) => {
-//         if (answer) {
-//             const sortedHistory = [...answer.history].sort((a, b) => b.timestamp - a.timestamp)
-//             const lastFew = sortedHistory.slice(0, determinants.numLastRequiredQuestions)
-//             const result = lastFew.filter(entry => !entry.result).length
-//             if (result === 0) return true
-//         }
-//         return false
-//     }
-
-//     let sume = 0
-//     data.answers.forEach(a => {
-//         if (countLastFewTrue(a)) sume++
-//     })
-//     return sume
-// }
-
-
-// const checkWeights = () => {
-//     const goodAnswersRatio = checkGoodAnswers() / params.data.questions.length
-
-//     const fixToFive = (num: number) => Math.round(num * 100000) / 100000
-
-//     if (goodAnswersRatio > GOOD_ANSWERS_RATIO) {
-//         if (fixToFive(params.data.weights.temperature) !== fixToFive(weightsEnding.temperature)) {
-//             // console.log('%c goodAnswersRatio:', 'background: #ffcc00; color: #003300', goodAnswersRatio, weights)
-//             for (const key of Object.keys(weights) as (keyof WeightsT)[]) {
-//                 weights[key] += weightsBit[key]
-//             }
-//             // drawWeightsMonitor(weights)
-//         }
-//     }
-// }
-
-
 
 const scoringData = (data: TensorDataT[], weights: WeightsT) => {
     const scoredData = data.map(d => {

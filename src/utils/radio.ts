@@ -13,7 +13,7 @@ export type RadioDataT = {
 }
 
 export type RatioT = {
-    init: () => any
+    init: () => void
     active: () => void
     deactivate: () => void
 }
@@ -73,5 +73,5 @@ export const getRadio = (radioData: RadioDataT) => {
         init,
         active,
         deactivate,
-    }
+    } as RatioT
 }
