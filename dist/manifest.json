@@ -1,6 +1,13 @@
 {
     "short_name": "SPL-ROL.04",
     "name": "Smart Priority Learn ROL.04",
+    "description": "Aplikacja do nauki i powtórek kwalifikacji ROL.04.",
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "version": "__VERSION__",
+    "lang": "pl-PL",
     "icons": [
         {
             "src": "icon/favicon-192.png",

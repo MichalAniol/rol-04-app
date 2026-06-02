@@ -7,8 +7,11 @@
     <!-- <base href="./" target="_blank"> -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-eval' "> -->
     <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self' 'unsafe-inline';
+    default-src 'self';
+
     script-src 'self' 'unsafe-inline' 'unsafe-eval';
+
+    style-src 'self' 'unsafe-inline';
 
     connect-src
         'self'
@@ -19,9 +22,19 @@
         https://127.0.0.1:7111
         https://frog02-32047.wykr.es;
 
+    worker-src 'self' blob:;
+    child-src 'self' blob:;
+
+    manifest-src 'self';
+
+    font-src 'self' data: blob:;
+
     media-src 'self' blob:;
     img-src 'self' blob: data:;
+
+    base-uri 'self';
     ">
+
     <link rel="icon" href="/icon/favicon.ico" sizes="32x32">
     <link rel="icon" href="/icon/favicon-32.png" sizes="32x32">
     <link rel="icon" href="/icon/favicon-16.png" sizes="16x16">
@@ -30,7 +43,7 @@
     <link rel="apple-touch-icon" href="/icon/apple-touch-icon-120x120.png" sizes="120x120">
     <link rel="apple-touch-icon" href="/icon/apple-touch-icon-180x180.png" sizes="180x180">
 
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/manifest.json?v=__VERSION__" />
     <title>Smart Priority Learn ROL.04</title>
 
     <!-- <meta http-equiv="Content-Security-Policy"
@@ -53,15 +66,17 @@
     <link rel='stylesheet' type='text/css' href='./css/index.css'>
 </head>
 
+<script>
+    navigator.serviceWorker.register('/sw.js?v=__VERSION__');
+</script>
+
 <body>
     <file src="tab/tab.html"></file>
 
     <file src="modal/modal.html"></file>
 
-
     <script type="module" src="/index.js" defer></script>
     <!-- <script type="module" src="/pwa.js"></script> -->
 </body>
-
 
 </html>

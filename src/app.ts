@@ -4,7 +4,7 @@ import { core } from './core'
 import { controllers } from './inputs/keys'
 import { idb } from './idb'
 import { ModulesT } from './tab/tab'
-import { run as starterRun } from './screens/starter/run/run'
+import * as init from './init/init'
 import { AnswersDbSchemaT, ImageDbSchemaT, LogDbSchemaT, QuestionDbSchemaT } from './types'
 import { resize as utilsResize } from './utils/resize'
 import * as tab from './tab/tab'
@@ -32,7 +32,6 @@ import { setConsole } from './console'
         core.idb.questions = idb<QuestionDbSchemaT>('questions')
         core.idb.images = idb<ImageDbSchemaT>('images')
         core.idb.answers = idb<AnswersDbSchemaT>('answers')
-        // core.idb.statistics = idb<any>('statistics')
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
         const domContentLoaded = async () => {
@@ -45,7 +44,7 @@ import { setConsole } from './console'
 
             resize.run()
 
-            await starterRun()
+            await init.init()
 
             setTimeout(async () => {
                 tab.getGoTo(0)()

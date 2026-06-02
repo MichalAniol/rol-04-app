@@ -21,3 +21,10 @@ NOTE - An important note for a specific code section
 REVIEW - An item that requires additional review
 SECTION - Used to define a region (See 'Hierarchical anchors')
 LINK - Used to link to a file that can be opened within the editor (See 'Link Anchors')
+
+
+sprawdź czy działa Node:
+tasklist | findstr node
+
+ubij wszystkie node procesy:
+taskkill /F /IM node.exe
