@@ -2,6 +2,7 @@ import { byQuery, getPx, setStyle } from '../../dom'
 import { init as infoInit, active as initActive, deactivate as infoDeactivate } from './info/info'
 import { init as themeInit, ratio as themeRatio } from './theme/theme'
 import { init as ratioInit, active as ratioActive, deactivate as ratioDeactivate } from './ratio/ratio'
+import { init as optionsInit, active as optionsActive, deactivate as optionsDeactivate } from './options/options'
 import { init as menuInit } from './menu/menu'
 import { areNotNull } from '../../utils/isNotNull'
 
@@ -22,24 +23,21 @@ export const init = () => {
 
     infoInit()
     themeInit()
-    // themeRatio.init()
     ratioInit()
-    // dataControl.init()
     menuInit()
+    optionsInit()
 }
 
 export const active = () => {
     initActive()
     themeRatio.active()
     ratioActive()
-    // dataControl.questionsRatio.active()
-    // dataControl.imgRatio.active()
+    optionsActive()
 }
 
 export const deactivate = () => {
     infoDeactivate()
     themeRatio.deactivate()
     ratioDeactivate()
-    // dataControl.questionsRatio.deactivate()
-    // dataControl.imgRatio.deactivate()
+    optionsDeactivate()
 }

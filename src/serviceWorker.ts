@@ -7,6 +7,7 @@ export const serviceWorker = async () => {
         const registration = await navigator.serviceWorker.register('/sw.js', {
             updateViaCache: 'none'
         });
+        registration.update();
 
         // await registration.update();
 

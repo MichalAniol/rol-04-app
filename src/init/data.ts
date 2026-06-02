@@ -1,21 +1,66 @@
-import { elements, setVersionPos } from '../starter'
-import { core } from '../../../core'
-import { setStyle, inner } from '../../../dom'
-import { getVersion } from '../../../queries/data/version'
-import { ConfigResponseImgT, getConfig } from '../../../queries/data/config'
-import { getAllQuestions } from '../../../queries/data/questions'
-import { getImage } from '../../../queries/data/images'
-import { showMenu } from '../../../tab/simpleMenu/simpleMenu'
-import { data as engineData, updateAnswers } from '../../../engine/params'
-import { data as statisticsData } from '../../../screens/statistics/data'
-import { getAnswers } from '../../../queries/statistics/getAnswers'
-import { getRateHistory } from '../../learning/evaluation'
-import { firstUse } from '../../statistics/statistics'
+import { hideStatus, imgStatus, setStartImgStatus, setVersionPos, initStatus, showStatus, questionsStatus } from '../screens/starter/starter'
+import { core } from '../core'
+import { getVersion } from '../queries/data/version'
+import { ConfigResponseImgT, getConfig } from '../queries/data/config'
+import { getAllQuestions } from '../queries/data/questions'
+import { getImage } from '../queries/data/images'
+import { showMenu } from '../tab/simpleMenu/simpleMenu'
+import { data as engineData, updateAnswers } from '../engine/params'
+import { data as statisticsData } from '../screens/statistics/data'
+import { getAnswers } from '../queries/statistics/getAnswers'
+import { getRateHistory } from '../screens/learning/evaluation'
+import { firstUse } from '../screens/statistics/statistics'
 import { checked, storageNames } from '@/storage'
 import { AnswersDbT, QuestionDbT } from '@/types'
-import { toString as blobToString } from '../../../utils/blob'
+import { toString as blobToString } from '../utils/blob'
+import { showInfoModal } from '@/modal/info/info'
 
-export const check = async (getAnswersFromMemo: boolean = false) => {
+const clearAnswers = async (all: boolean = false) => {
+    const questions = await core.idb.questions.getAllData()
+    let maxUsed = 0
+    await questions.forEach(async (question, index) => {
+        const key = question[0]
+        const q = question[1]
+        if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1
+
+        const answer = await core.idb.answers.get(key)
+        if (!answer || all) {
+            await core.idb.answers.set(index, {
+                id: q.id,
+                history: [],
+                // expectedUse: 0,
+                used: q.used.length + 1
+            })
+        }
+    })
+
+    return maxUsed
+}
+
+export const getAnswersFromServer = async () => {
+    const answers = await getAnswers()
+
+    if (answers !== null) {
+        await clearAnswers(true)
+        const answersOld = await core.idb.answers.getAllData()
+
+        answers.forEach(async answer => {
+            const oldAnswer = await answersOld.find(a => a[1].id === answer.id) as [number, AnswersDbT]
+
+            const index = oldAnswer[0]
+            const rating = getRateHistory(answer.history)
+
+            core.idb.answers.update(index, (old) => old = {
+                id: answer.id,
+                history: answer.history,
+                used: oldAnswer[1].used,
+                rating,
+            })
+        })
+    }
+}
+
+export const check = async () => {
     const waitForIntervalClear = (intervalFn: (clear: () => void) => () => void, time: number) => {
         return new Promise<void>((resolve) => {
             let interval: any
@@ -35,12 +80,17 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
     const response = await getVersion(versionDb)
     const versionRes = response.version
 
+    const infoVersion = core.store.get(storageNames.infoVersion)
+    if (versionRes !== infoVersion) {
+        showInfoModal()
+        core.store.set(storageNames.infoVersion, versionRes)
+    }
+
     if (versionRes !== versionDb) {
+
         await core.store.set(storageNames.imgAvailable, checked.no)
 
-        setStyle(elements.statusAction, 'display', 'initial')
-        inner(elements.statusAction, 'wczytywanie pytań')
-        inner(elements.version, `version: ${versionRes}`)
+        initStatus(versionRes)
         setTimeout(() => setVersionPos(), 200)
 
         // pobieranie config
@@ -48,7 +98,7 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
         const configTestsDb = await core.store.get(storageNames.configTests)
 
         if (configRes.tests !== configTestsDb) {
-            setStyle(elements.statusNow, 'display', 'initial')
+            showStatus()
 
             // pobieranie pytań
             const allQuestionsRes = await getAllQuestions()
@@ -67,7 +117,7 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
                     return
                 }
 
-                inner(elements.statusAction, `wczytywanie pytań ${index + 1}/${allQuestions.length}`)
+                questionsStatus(index + 1, allQuestions.length)
 
                 const item = await core.idb.questions.get(index)
 
@@ -83,7 +133,7 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
 
         }
 
-        inner(elements.statusAction, `wczytywanie obrazów`)
+        setStartImgStatus()
 
         const imgSToAdd: ConfigResponseImgT[] = []
         await configRes.img.forEach(async (img) => {
@@ -98,8 +148,7 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
             if (!imageDataRes) {
                 await core.store.set(storageNames.imgAvailable, checked.yes)
 
-                setStyle(elements.statusNow, 'display', 'none')
-                setStyle(elements.statusAction, 'display', 'none')
+                hideStatus()
 
                 // zapamiętanie wersji
                 await core.store.set(storageNames.version, versionRes)
@@ -108,7 +157,7 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
                 return
             }
 
-            inner(elements.statusAction, `wczytywanie obrazów ${index + 1}/${imgSToAdd.length}`)
+            imgStatus(index + 1, imgSToAdd.length)
             index++
 
             const image = await getImage(imageDataRes.name)
@@ -122,27 +171,13 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
         waitForIntervalClear(imageInterval, 1000)
     }
 
-    const questions = await core.idb.questions.getAllData()
-    let maxUsed = 0
-    await questions.forEach(async (question, index) => {
-        const key = question[0]
-        const q = question[1]
-        if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1
-
-        const answer = await core.idb.answers.get(key)
-        if (!answer) {
-            await core.idb.answers.set(index, {
-                id: q.id,
-                history: [],
-                // expectedUse: 0,
-                used: q.used.length + 1
-            })
-        }
-    })
-
-    // sumy rodzajów pytań
+    const maxUsed = await clearAnswers()
     engineData.quantities = Array(maxUsed).fill(0)
     engineData.sume = 0
+
+    const questions = await core.idb.questions.getAllData()
+
+    // sumy rodzajów pytań
     questions.forEach(q => {
         const index = q[1].used.length;
         (engineData.quantities[index] as number)++
@@ -154,22 +189,6 @@ export const check = async (getAnswersFromMemo: boolean = false) => {
     // ilość pytań, aby ułożyć je w kwadrat
     statisticsData.monitor.size = (Math.ceil(Math.sqrt(engineData.sume)))
     firstUse()
-
-    // przywracanie jeśli podany użytkownik
-    if (getAnswersFromMemo) {
-        const answers = await getAnswers()
-
-        if (answers !== null) {
-            answers.forEach(async answer => {
-                const question = questions.find(q => q[1].id = answer.id) as [number, QuestionDbT]
-                const index = question[0]
-                const oldAnswer = await core.idb.answers.get(index) as AnswersDbT
-                oldAnswer.history = answer.history
-
-                oldAnswer.rating = getRateHistory(answer.history)
-            })
-        }
-    }
 
     if (core.isMobile) showMenu()
 }

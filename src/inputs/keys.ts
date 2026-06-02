@@ -28,7 +28,7 @@ const keysListener = async (event: any) => {
         } break
         case 'KeyQ': {
             if (process.env.DEBUG) {
-                console.log('%c>>> KeyQ <<<', 'background:rgb(0, 55, 255); color: #003300')
+                // console.log('%c>>> KeyQ <<<', 'background:rgb(0, 55, 255); color: #003300')
                 const sessionStarted = await core.store.get(storageNames.sessionStarted)
                 if (sessionStarted) {
                     const timestamp = Date.now()

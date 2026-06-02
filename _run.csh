@@ -1,0 +1,1 @@
+powershell -ExecutionPolicy Bypass -File "A:\______\__________Programing\____________Rolnik\app\_prepare.ps1"

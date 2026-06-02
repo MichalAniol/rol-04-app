@@ -86,7 +86,7 @@
 .statistics-table td {
     padding: 8px;
     text-align: center;
-    font-size: var(--font_big_size);
+    font-size: var(--font_medium);
 }
 
 .statistics-table .statistics-good {

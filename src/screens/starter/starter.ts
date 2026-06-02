@@ -111,6 +111,28 @@ export const resize = async (w: number, h: number) => {
     }
 }
 
+export const initStatus = (versionRes: string) => {
+    setStyle(elements.statusAction, 'display', 'initial')
+    inner(elements.statusAction, 'wczytywanie pytań')
+    inner(elements.version, `version: ${versionRes}`)
+}
+
+export const showStatus = () => setStyle(elements.statusNow, 'display', 'initial')
+
+export const hideStatus = () => {
+    setStyle(elements.statusNow, 'display', 'none')
+    setStyle(elements.statusAction, 'display', 'none')
+}
+
+export const questionsStatus = (num: number, all: number) => inner(elements.statusAction, `wczytywanie pytań ${num}/${all}`)
+
+export const setStartImgStatus = () => inner(elements.statusAction, `wczytywanie obrazów`)
+
+export const imgStatus = (num: number, all: number) => inner(elements.statusAction, `wczytywanie obrazów ${num}/${all}`)
+
+
 export const active = () => { }
 
 export const deactivate = () => { }
+
+export const setUserId = (userId: string) => inner(elements.userId, userId)

@@ -3,6 +3,7 @@ import { byId, getPx, setStyle } from '../dom'
 import { error } from './error/error'
 import { init as userInit } from './user/user'
 import { init as installerInit } from './installer/installer'
+import { init as infoInit } from './info/info'
 import { areNotNull } from '@/utils/isNotNull'
 import { blur, unBlur } from '@/tab/tab'
 
@@ -26,6 +27,7 @@ export const init = () => {
     error.init()
     userInit()
     installerInit()
+    infoInit()
 }
 
 export const resize = (w: number, h: number) => {

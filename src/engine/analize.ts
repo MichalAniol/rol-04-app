@@ -51,7 +51,6 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             } else {
                 rating = lastAnswers.falsies / determinants.numLastRequiredQuestions
             }
-            console.log('%c rating:', 'background: #ffcc00; color: #003300', rating)
         }
 
         if (lastUsed < maxLastUse) maxLastUse = lastUsed
