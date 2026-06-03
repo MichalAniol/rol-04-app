@@ -27,7 +27,7 @@ const keysListener = async (event: any) => {
             // console.log('goLeft')
         } break
         case 'KeyQ': {
-            if (process.env.DEBUG) {
+            if (process.env.DEBUG === "true") {
                 // console.log('%c>>> KeyQ <<<', 'background:rgb(0, 55, 255); color: #003300')
                 const sessionStarted = await core.store.get(storageNames.sessionStarted)
                 if (sessionStarted) {

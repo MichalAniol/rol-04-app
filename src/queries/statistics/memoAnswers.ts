@@ -15,15 +15,16 @@ export const memoAnswers = async (): Promise<MemoAnswersT> => {
 
     answersDb.forEach(answer => {
         const history = answer[1].history
-        const sortedHistory = history
-            .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+        // const sortedHistory = history
+        //     .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
 
-        const lastSix: HistoryT[] = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions)
+        // const lastSix: HistoryT[] = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions)
 
         if (history.length > 0) {
             answers.push({
                 id: answer[1].id,
-                history: lastSix,
+                history,
+                // history: lastSix,
             })
         }
     })

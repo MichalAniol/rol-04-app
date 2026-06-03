@@ -49,7 +49,7 @@ wezterm.on('gui-startup', function()
 
     send_cmd_with_delay(right_pane_1, "npm run dev")
     send_cmd_with_delay(right_pane_2, "npm run g")
-    -- send_cmd_with_delay(right_pane_3, "npm run ns")
+    send_cmd_with_delay(right_pane_3, "npm run prep")
 end)
 
 return {

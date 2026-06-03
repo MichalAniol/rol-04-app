@@ -374,8 +374,8 @@
     return postMessageSupported ? ((token, callbacks) => {
       _global.addEventListener(
         "message",
-        ({ source, data: data5 }) => {
-          if (source === _global && data5 === token) {
+        ({ source, data: data7 }) => {
+          if (source === _global && data7 === token) {
             callbacks.length && callbacks.shift()();
           }
         },
@@ -1216,8 +1216,8 @@
   };
 
   // node_modules/axios/lib/helpers/toURLEncodedForm.js
-  function toURLEncodedForm(data5, options) {
-    return toFormData_default(data5, new platform_default.classes.URLSearchParams(), {
+  function toURLEncodedForm(data7, options) {
+    return toFormData_default(data7, new platform_default.classes.URLSearchParams(), {
       visitor: function(value, key, path, helpers) {
         if (platform_default.isNode && utils_default.isBuffer(value)) {
           this.append(key, value.toString("base64"));
@@ -1301,38 +1301,38 @@
     transitional: transitional_default,
     adapter: ["xhr", "http", "fetch"],
     transformRequest: [
-      function transformRequest(data5, headers) {
+      function transformRequest(data7, headers) {
         const contentType = headers.getContentType() || "";
         const hasJSONContentType = contentType.indexOf("application/json") > -1;
-        const isObjectPayload = utils_default.isObject(data5);
-        if (isObjectPayload && utils_default.isHTMLForm(data5)) {
-          data5 = new FormData(data5);
+        const isObjectPayload = utils_default.isObject(data7);
+        if (isObjectPayload && utils_default.isHTMLForm(data7)) {
+          data7 = new FormData(data7);
         }
-        const isFormData2 = utils_default.isFormData(data5);
+        const isFormData2 = utils_default.isFormData(data7);
         if (isFormData2) {
-          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data5)) : data5;
+          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data7)) : data7;
         }
-        if (utils_default.isArrayBuffer(data5) || utils_default.isBuffer(data5) || utils_default.isStream(data5) || utils_default.isFile(data5) || utils_default.isBlob(data5) || utils_default.isReadableStream(data5)) {
-          return data5;
+        if (utils_default.isArrayBuffer(data7) || utils_default.isBuffer(data7) || utils_default.isStream(data7) || utils_default.isFile(data7) || utils_default.isBlob(data7) || utils_default.isReadableStream(data7)) {
+          return data7;
         }
-        if (utils_default.isArrayBufferView(data5)) {
-          return data5.buffer;
+        if (utils_default.isArrayBufferView(data7)) {
+          return data7.buffer;
         }
-        if (utils_default.isURLSearchParams(data5)) {
+        if (utils_default.isURLSearchParams(data7)) {
           headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
-          return data5.toString();
+          return data7.toString();
         }
         let isFileList2;
         if (isObjectPayload) {
           const formSerializer = own(this, "formSerializer");
           if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
-            return toURLEncodedForm(data5, formSerializer).toString();
+            return toURLEncodedForm(data7, formSerializer).toString();
           }
-          if ((isFileList2 = utils_default.isFileList(data5)) || contentType.indexOf("multipart/form-data") > -1) {
+          if ((isFileList2 = utils_default.isFileList(data7)) || contentType.indexOf("multipart/form-data") > -1) {
             const env = own(this, "env");
             const _FormData = env && env.FormData;
             return toFormData_default(
-              isFileList2 ? { "files[]": data5 } : data5,
+              isFileList2 ? { "files[]": data7 } : data7,
               _FormData && new _FormData(),
               formSerializer
             );
@@ -1340,25 +1340,25 @@
         }
         if (isObjectPayload || hasJSONContentType) {
           headers.setContentType("application/json", false);
-          return stringifySafely(data5);
+          return stringifySafely(data7);
         }
-        return data5;
+        return data7;
       }
     ],
     transformResponse: [
-      function transformResponse(data5) {
+      function transformResponse(data7) {
         const transitional2 = own(this, "transitional") || defaults.transitional;
         const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
         const responseType = own(this, "responseType");
         const JSONRequested = responseType === "json";
-        if (utils_default.isResponse(data5) || utils_default.isReadableStream(data5)) {
-          return data5;
+        if (utils_default.isResponse(data7) || utils_default.isReadableStream(data7)) {
+          return data7;
         }
-        if (data5 && utils_default.isString(data5) && (forcedJSONParsing && !responseType || JSONRequested)) {
+        if (data7 && utils_default.isString(data7) && (forcedJSONParsing && !responseType || JSONRequested)) {
           const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
           const strictJSONParsing = !silentJSONParsing && JSONRequested;
           try {
-            return JSON.parse(data5, own(this, "parseReviver"));
+            return JSON.parse(data7, own(this, "parseReviver"));
           } catch (e) {
             if (strictJSONParsing) {
               if (e.name === "SyntaxError") {
@@ -1368,7 +1368,7 @@
             }
           }
         }
-        return data5;
+        return data7;
       }
     ],
     /**
@@ -1400,16 +1400,16 @@
   var defaults_default = defaults;
 
   // node_modules/axios/lib/core/transformData.js
-  function transformData(fns, response) {
+  function transformData(fns2, response) {
     const config = this || defaults_default;
     const context = response || config;
     const headers = AxiosHeaders_default.from(context.headers);
-    let data5 = context.data;
-    utils_default.forEach(fns, function transform(fn) {
-      data5 = fn.call(config, data5, headers.normalize(), response ? response.status : void 0);
+    let data7 = context.data;
+    utils_default.forEach(fns2, function transform(fn) {
+      data7 = fn.call(config, data7, headers.normalize(), response ? response.status : void 0);
     });
     headers.normalize();
-    return data5;
+    return data7;
   }
 
   // node_modules/axios/lib/cancel/isCancel.js
@@ -1543,7 +1543,7 @@
       const progressBytes = Math.max(0, loaded - bytesNotified);
       const rate = _speedometer(progressBytes);
       bytesNotified = Math.max(bytesNotified, loaded);
-      const data5 = {
+      const data7 = {
         loaded,
         total,
         progress: total ? loaded / total : void 0,
@@ -1554,7 +1554,7 @@
         lengthComputable: total != null,
         [isDownloadStream ? "download" : "upload"]: true
       };
-      listener(data5);
+      listener(data7);
     }, freq);
   };
   var progressEventDecorator = (total, throttled) => {
@@ -1767,7 +1767,7 @@
   var resolveConfig_default = (config) => {
     const newConfig = mergeConfig({}, config);
     const own2 = (key) => utils_default.hasOwnProp(newConfig, key) ? newConfig[key] : void 0;
-    const data5 = own2("data");
+    const data7 = own2("data");
     let withXSRFToken = own2("withXSRFToken");
     const xsrfHeaderName = own2("xsrfHeaderName");
     const xsrfCookieName = own2("xsrfCookieName");
@@ -1788,11 +1788,11 @@
         "Basic " + btoa((auth.username || "") + ":" + (auth.password ? encodeUTF8(auth.password) : ""))
       );
     }
-    if (utils_default.isFormData(data5)) {
+    if (utils_default.isFormData(data7)) {
       if (platform_default.hasStandardBrowserEnv || platform_default.hasStandardBrowserWebWorkerEnv) {
         headers.setContentType(void 0);
-      } else if (utils_default.isFunction(data5.getHeaders)) {
-        setFormDataHeaders(headers, data5.getHeaders(), own2("formDataHeaderPolicy"));
+      } else if (utils_default.isFunction(data7.getHeaders)) {
+        setFormDataHeaders(headers, data7.getHeaders(), own2("formDataHeaderPolicy"));
       }
     }
     if (platform_default.hasStandardBrowserEnv) {
@@ -2251,7 +2251,7 @@
       let {
         url: url2,
         method,
-        data: data5,
+        data: data7,
         signal,
         cancelToken,
         timeout,
@@ -2290,7 +2290,7 @@
           }
         }
         if (hasMaxBodyLength && method !== "get" && method !== "head") {
-          const outboundLength = await resolveBodyLength(headers, data5);
+          const outboundLength = await resolveBodyLength(headers, data7);
           if (typeof outboundLength === "number" && isFinite(outboundLength) && outboundLength > maxBodyLength) {
             throw new AxiosError_default(
               "Request body larger than maxBodyLength limit",
@@ -2300,14 +2300,14 @@
             );
           }
         }
-        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data5)) !== 0) {
+        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data7)) !== 0) {
           let _request = new Request(url2, {
             method: "POST",
-            body: data5,
+            body: data7,
             duplex: "half"
           });
           let contentTypeHeader;
-          if (utils_default.isFormData(data5) && (contentTypeHeader = _request.headers.get("content-type"))) {
+          if (utils_default.isFormData(data7) && (contentTypeHeader = _request.headers.get("content-type"))) {
             headers.setContentType(contentTypeHeader);
           }
           if (_request.body) {
@@ -2315,14 +2315,14 @@
               requestContentLength,
               progressEventReducer(asyncDecorator(onUploadProgress))
             );
-            data5 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
+            data7 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
           }
         }
         if (!utils_default.isString(withCredentials)) {
           withCredentials = withCredentials ? "include" : "omit";
         }
         const isCredentialsSupported = isRequestSupported && "credentials" in Request.prototype;
-        if (utils_default.isFormData(data5)) {
+        if (utils_default.isFormData(data7)) {
           const contentType = headers.getContentType();
           if (contentType && /^multipart\/form-data/i.test(contentType) && !/boundary=/i.test(contentType)) {
             headers.delete("content-type");
@@ -2334,7 +2334,7 @@
           signal: composedSignal,
           method: method.toUpperCase(),
           headers: toByteStringHeaderObject(headers.normalize()),
-          body: data5,
+          body: data7,
           duplex: "half",
           credentials: isCredentialsSupported ? withCredentials : void 0
         };
@@ -2829,7 +2829,7 @@
   });
   utils_default.forEach(["post", "put", "patch", "query"], function forEachMethodWithData(method) {
     function generateHTTPMethod(isForm) {
-      return function httpMethod(url2, data5, config) {
+      return function httpMethod(url2, data7, config) {
         return this.request(
           mergeConfig(config || {}, {
             method,
@@ -2837,7 +2837,7 @@
               "Content-Type": "multipart/form-data"
             } : {},
             url: url2,
-            data: data5
+            data: data7
           })
         );
       };
@@ -3370,8 +3370,8 @@
       const keys = Object.keys(storageNames);
       keys.forEach((key) => {
         const keyName = storageNames[key];
-        const data5 = get3(keyName);
-        if (data5 === null) {
+        const data7 = get3(keyName);
+        if (data7 === null) {
           set3(keyName, defaultData[key]);
         }
       });
@@ -4109,7 +4109,7 @@
         rating: rating2
       };
     });
-    const data5 = preData.map((p) => {
+    const data7 = preData.map((p) => {
       let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
       if (reverseLastUse) lastUsed = 1 - lastUsed;
       const used = maxUsed === 0 ? 1 : 1 - p.used / maxUsed;
@@ -4127,18 +4127,18 @@
         // 1 czym więcej pomyłek
       };
     });
-    return data5;
+    return data7;
   };
-  var scoringData = (data5, weights) => {
-    const scoredData = data5.map((d) => {
+  var scoringData = (data7, weights) => {
+    const scoredData = data7.map((d) => {
       const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used;
       return { ...d, score };
     });
     return scoredData.sort((a, b) => b.score - a.score);
   };
   var getTensors = async (normalizedWeights, answers) => {
-    const data5 = prepareData(false, answers);
-    const result = scoringData(data5, normalizedWeights);
+    const data7 = prepareData(false, answers);
+    const result = scoringData(data7, normalizedWeights);
     return result;
   };
 
@@ -4351,7 +4351,7 @@
   var api = axios_default.create(
     // @ts-ignore
     {
-      baseURL: "https://192.168.1.109:3331/",
+      baseURL: "https://frog02-32047.wykr.es/",
       validateStatus: function(status) {
         return status >= 200 && status < 300 || okCodes.some((c) => c === status);
       }
@@ -4368,12 +4368,11 @@
     const answers = [];
     answersDb.forEach((answer) => {
       const history = answer[1].history;
-      const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-      const lastSix = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions);
       if (history.length > 0) {
         answers.push({
           id: answer[1].id,
-          history: lastSix
+          history
+          // history: lastSix,
         });
       }
     });
@@ -4459,7 +4458,7 @@
 
   // src/utils/drawImage.ts
   var drawImage = () => /* @__PURE__ */ (() => {
-    const data5 = {
+    const data7 = {
       canvas: null,
       ctx: null,
       fitCanvas: null,
@@ -4467,30 +4466,30 @@
       fitWidth: 0
     };
     const init24 = (canvas, fitCanvas) => {
-      data5.canvas = canvas;
-      data5.ctx = canvas.getContext("2d");
-      data5.fitCanvas = fitCanvas;
-      data5.fitCtx = fitCanvas.getContext("2d");
+      data7.canvas = canvas;
+      data7.ctx = canvas.getContext("2d");
+      data7.fitCanvas = fitCanvas;
+      data7.fitCtx = fitCanvas.getContext("2d");
     };
-    const setWidth = (width) => data5.fitWidth = width;
+    const setWidth = (width) => data7.fitWidth = width;
     const fitToWidth = (img) => {
-      if (!data5.fitCanvas || !data5.fitCtx) return;
-      const scale = data5.fitWidth / img.width;
+      if (!data7.fitCanvas || !data7.fitCtx) return;
+      const scale = data7.fitWidth / img.width;
       const displayWidth = img.width * scale;
       const displayHeight = img.height * scale;
       const dpr = window.devicePixelRatio || 1;
-      data5.fitCanvas.style.width = displayWidth + "px";
-      data5.fitCanvas.style.height = displayHeight + "px";
-      data5.fitCanvas.width = displayWidth * dpr;
-      data5.fitCanvas.height = displayHeight * dpr;
-      data5.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      data5.fitCtx.clearRect(
+      data7.fitCanvas.style.width = displayWidth + "px";
+      data7.fitCanvas.style.height = displayHeight + "px";
+      data7.fitCanvas.width = displayWidth * dpr;
+      data7.fitCanvas.height = displayHeight * dpr;
+      data7.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      data7.fitCtx.clearRect(
         0,
         0,
         displayWidth,
         displayHeight
       );
-      data5.fitCtx.drawImage(
+      data7.fitCtx.drawImage(
         img,
         0,
         0,
@@ -4501,7 +4500,7 @@
     const draw = /* @__PURE__ */ (() => {
       let currentUrl = null;
       return async (source) => {
-        if (!data5.ctx || !data5.canvas) return;
+        if (!data7.ctx || !data7.canvas) return;
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
           currentUrl = null;
@@ -4517,10 +4516,10 @@
             img.src = currentUrl;
           }
         });
-        data5.canvas.width = img.width;
-        data5.canvas.height = img.height;
-        data5.ctx.clearRect(0, 0, img.width, img.height);
-        data5.ctx.drawImage(img, 0, 0);
+        data7.canvas.width = img.width;
+        data7.canvas.height = img.height;
+        data7.ctx.clearRect(0, 0, img.width, img.height);
+        data7.ctx.drawImage(img, 0, 0);
         fitToWidth(img);
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
@@ -4767,6 +4766,20 @@
           elements3.ctx.fill();
         }
       }
+      {
+        if (false) {
+          if (answer.history.length > 0) {
+            elements3.ctx.fillStyle = data2.background;
+            elements3.ctx.lineWidth = data2.cell.space;
+            const endX = pozX + data2.cell.size - data2.cell.space * 3;
+            const endY = pozY + data2.cell.size - data2.cell.space * 3;
+            elements3.ctx.beginPath();
+            elements3.ctx.moveTo(pozX + data2.cell.space * 3, pozY + data2.cell.space * 3);
+            elements3.ctx.lineTo(endX, endY);
+            elements3.ctx.stroke();
+          }
+        }
+      }
     });
   };
   var init8 = () => {
@@ -4793,15 +4806,15 @@
   var colNames = ["good", "bad", "unused"];
   var rowNames = ["all", "allPercent", "moreOne", "moreOnePercent", "one", "onePercent"];
   var createTableData = () => {
-    const data5 = {};
+    const data7 = {};
     for (const row of rowNames) {
       const rowObj = {};
       for (const col of colNames) {
         rowObj[col] = 0;
       }
-      data5[row] = rowObj;
+      data7[row] = rowObj;
     }
-    return data5;
+    return data7;
   };
   var setValues = (row, answer) => {
     if (answer.rating?.type === rating.bad) {
@@ -4819,11 +4832,11 @@
     });
   };
   var getElement = (row, col) => byQ(elements3.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
-  var showTableData = (data5) => {
+  var showTableData = (data7) => {
     const percentNames = ["allPercent", "moreOnePercent", "onePercent"];
     for (const row of rowNames) {
       for (const col of colNames) {
-        const value = data5[row][col];
+        const value = data7[row][col];
         const suffix = percentNames.some((pn) => pn === row) ? "%" : "";
         const elem = getElement(row, col);
         inner(elem, value.toFixed(1) + suffix);
@@ -5075,11 +5088,69 @@
     remove(elements7.settingsSliderInput, "change", memoRatio);
   };
 
+  // src/queries/data/version.ts
+  var getVersion = async (version) => {
+    const result = await api.post(
+      url.data.version,
+      { version },
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/config.ts
+  var getConfig = async () => {
+    const result = await api.get(
+      url.data.config,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/questions.ts
+  var getAllQuestions = async () => {
+    const result = await api.get(
+      url.data.questions,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/queries/data/images.ts
+  var getImage = async (name) => {
+    const result = await api.post(
+      url.data.images,
+      { name },
+      {
+        withCredentials: true,
+        responseType: "blob"
+      }
+    );
+    return result.data;
+  };
+
+  // src/queries/statistics/getAnswers.ts
+  var getAnswers = async () => {
+    const result = await api.get(
+      url.statistics.getAnswers,
+      { withCredentials: true }
+    );
+    return result.data;
+  };
+
+  // src/utils/blob.ts
+  var toString3 = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
   // src/modal/modal.ts
   var modal_exports = {};
   __export(modal_exports, {
     hide: () => hide2,
-    init: () => init17,
+    init: () => init19,
     resize: () => resize5,
     show: () => show2
   });
@@ -5120,80 +5191,6 @@
       remove(elements8.btn, "click", error.hide);
       if (close) close();
     }
-  };
-
-  // src/modal/installer/installer.ts
-  var elements9 = {};
-  var deferredPrompt = null;
-  var beforeInstallPrompt = (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  };
-  add(window, "beforeinstallprompt", beforeInstallPrompt);
-  var init14 = () => {
-    elements9.modal = byId("modal-installer");
-    elements9.installBtn = byId("modal-installer-btn");
-    elements9.noInstallBtn = byId("modal-installer-btn-no");
-    elements9.btnText = byId("modal-installer-btn-tex");
-    elements9.btnSvg = byId("modal-installer-btn-loader");
-    areNotNull(elements9, ["modal", "user"]);
-    setStyle(elements9.modal, "display", "none");
-    setStyle(elements9.btnSvg, "display", "none");
-  };
-
-  // src/modal/info/info.ts
-  var elements10 = {};
-  var init15 = () => {
-    elements10.modal = byId("modal-info");
-    elements10.btnClose = byId("modal-info-btn-close");
-    areNotNull(elements10, ["modal", "user"]);
-    display(elements10.modal, "none");
-  };
-  var showInfoModal = () => {
-    show2();
-    display(elements10.modal, "flex");
-    add(elements10.btnClose, "click", closeModal);
-  };
-  var closeModal = () => {
-    hide2();
-    display(elements10.modal, "none");
-    remove(elements10.btnClose, "click", closeModal);
-  };
-
-  // src/modal/modal.ts
-  var elements11 = {};
-  var init17 = () => {
-    elements11.modal = byId("modal");
-    elements11.back = byId("modal-back");
-    areNotNull(elements11, ["modal"]);
-    error.init();
-    init16();
-    init14();
-    init15();
-  };
-  var resize5 = (w, h) => {
-    setStyle(elements11.back, "width", getPx(w));
-    setStyle(elements11.back, "height", getPx(h));
-  };
-  var visible = false;
-  var show2 = () => {
-    visible = true;
-    setStyle(elements11.modal, "opacity", "0");
-    setStyle(elements11.modal, "display", "flex");
-    setTimeout(() => {
-      setStyle(elements11.modal, "opacity", "1");
-    }, 30);
-    blur();
-  };
-  var hide2 = () => {
-    visible = false;
-    setStyle(elements11.modal, "opacity", "0");
-    setTimeout(() => {
-      if (!visible) {
-        setStyle(elements11.modal, "display", "none");
-      }
-    }, 330);
-    unBlur();
   };
 
   // src/queries/user/setId.ts
@@ -5334,194 +5331,56 @@
     });
   });
 
-  // src/queries/data/version.ts
-  var getVersion = async (version) => {
-    const result = await api.post(
-      url.data.version,
-      { version },
-      { withCredentials: true }
-    );
-    return result.data;
+  // src/modal/installer/installer.ts
+  var elements9 = {};
+  var deferredPrompt = null;
+  var isAppInstalled = () => {
+    const isInstalled = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    return isInstalled;
   };
-
-  // src/queries/data/config.ts
-  var getConfig = async () => {
-    const result = await api.get(
-      url.data.config,
-      { withCredentials: true }
-    );
-    return result.data;
+  var beforeInstallPrompt = (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
   };
-
-  // src/queries/data/questions.ts
-  var getAllQuestions = async () => {
-    const result = await api.get(
-      url.data.questions,
-      { withCredentials: true }
-    );
-    return result.data;
-  };
-
-  // src/queries/data/images.ts
-  var getImage = async (name) => {
-    const result = await api.post(
-      url.data.images,
-      { name },
-      {
-        withCredentials: true,
-        responseType: "blob"
-      }
-    );
-    return result.data;
-  };
-
-  // src/queries/statistics/getAnswers.ts
-  var getAnswers = async () => {
-    const result = await api.get(
-      url.statistics.getAnswers,
-      { withCredentials: true }
-    );
-    return result.data;
-  };
-
-  // src/utils/blob.ts
-  var toString3 = (blob) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-
-  // src/init/data.ts
-  var clearAnswers = async (all3 = false) => {
-    const questions = await core.idb.questions.getAllData();
-    let maxUsed = 0;
-    await questions.forEach(async (question, index) => {
-      const key = question[0];
-      const q = question[1];
-      if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1;
-      const answer = await core.idb.answers.get(key);
-      if (!answer || all3) {
-        await core.idb.answers.set(index, {
-          id: q.id,
-          history: [],
-          // expectedUse: 0,
-          used: q.used.length + 1
-        });
-      }
-    });
-    return maxUsed;
-  };
-  var getAnswersFromServer = async () => {
-    const answers = await getAnswers();
-    if (answers !== null) {
-      await clearAnswers(true);
-      const answersOld = await core.idb.answers.getAllData();
-      answers.forEach(async (answer) => {
-        const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
-        const index = oldAnswer[0];
-        const rating2 = getRateHistory(answer.history);
-        core.idb.answers.update(index, (old) => old = {
-          id: answer.id,
-          history: answer.history,
-          used: oldAnswer[1].used,
-          rating: rating2
-        });
-      });
+  add(window, "beforeinstallprompt", beforeInstallPrompt);
+  var instalClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+    if (choiceResult.outcome === "accepted") {
+      console.log("U\u017Cytkownik zainstalowa\u0142 aplikacj\u0119");
+    } else {
+      console.log("U\u017Cytkownik odrzuci\u0142 instalacj\u0119");
     }
+    deferredPrompt = null;
+    setStyle(elements9.btnSvg, "display", "block");
+    inner(elements9.btnText, "instalowanie");
+    waitFor(isAppInstalled, hideInstallerModal);
   };
-  var check = async () => {
-    const waitForIntervalClear = (intervalFn, time) => {
-      return new Promise((resolve) => {
-        let interval;
-        const clear = () => {
-          clearInterval(interval);
-          resolve();
-        };
-        const fn = intervalFn(clear);
-        interval = setInterval(fn, time);
-      });
-    };
-    const versionDb = await core.store.get(storageNames.version);
-    const response = await getVersion(versionDb);
-    const versionRes = response.version;
-    const infoVersion = core.store.get(storageNames.infoVersion);
-    if (versionRes !== infoVersion) {
-      showInfoModal();
-      core.store.set(storageNames.infoVersion, versionRes);
-    }
-    if (versionRes !== versionDb) {
-      await core.store.set(storageNames.imgAvailable, checked.no);
-      initStatus(versionRes);
-      setTimeout(() => setVersionPos(), 200);
-      const configRes = await getConfig();
-      const configTestsDb = await core.store.get(storageNames.configTests);
-      if (configRes.tests !== configTestsDb) {
-        showStatus();
-        const allQuestionsRes = await getAllQuestions();
-        const allQuestions = allQuestionsRes.map((question) => {
-          if (!question.used) question.used = [];
-          return question;
-        });
-        let index2 = 0;
-        const questionInterval = (clear) => async () => {
-          const question = allQuestions[index2];
-          if (!question) {
-            await core.store.set(storageNames.configTests, configRes.tests);
-            clear();
-            return;
-          }
-          questionsStatus(index2 + 1, allQuestions.length);
-          const item = await core.idb.questions.get(index2);
-          if (!item || item.version !== question.version) {
-            await core.idb.questions.set(index2, question);
-          }
-          index2++;
-        };
-        await waitForIntervalClear(questionInterval, 1);
-        if (core.isMobile) showMenu();
-      }
-      setStartImgStatus();
-      const imgSToAdd = [];
-      await configRes.img.forEach(async (img) => {
-        const imgDb = await core.idb.images.get(img.name);
-        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img);
-      });
-      let index = 0;
-      const imageInterval = (clear) => async () => {
-        const imageDataRes = imgSToAdd[index];
-        if (!imageDataRes) {
-          await core.store.set(storageNames.imgAvailable, checked.yes);
-          hideStatus();
-          await core.store.set(storageNames.version, versionRes);
-          clear();
-          return;
-        }
-        imgStatus(index + 1, imgSToAdd.length);
-        index++;
-        const image = await getImage(imageDataRes.name);
-        if (image) {
-          await core.idb.images.set(imageDataRes.name, {
-            version: imageDataRes.version,
-            data: await toString3(image)
-          });
-        }
-      };
-      waitForIntervalClear(imageInterval, 1e3);
-    }
-    const maxUsed = await clearAnswers();
-    data.quantities = Array(maxUsed).fill(0);
-    data.sume = 0;
-    const questions = await core.idb.questions.getAllData();
-    questions.forEach((q) => {
-      const index = q[1].used.length;
-      data.quantities[index]++;
-      data.sume++;
-    });
-    await updateAnswers();
-    data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
-    firstUse();
-    if (core.isMobile) showMenu();
+  var init14 = () => {
+    elements9.modal = byId("modal-installer");
+    elements9.installBtn = byId("modal-installer-btn");
+    elements9.noInstallBtn = byId("modal-installer-btn-no");
+    elements9.btnText = byId("modal-installer-btn-tex");
+    elements9.btnSvg = byId("modal-installer-btn-loader");
+    areNotNull(elements9, ["modal", "user"]);
+    setStyle(elements9.modal, "display", "none");
+    setStyle(elements9.btnSvg, "display", "none");
+  };
+  var data5 = {};
+  var showInstallerModal = (hideFn) => {
+    show2();
+    setStyle(elements9.modal, "display", "flex");
+    add(elements9.installBtn, "click", instalClick);
+    add(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn = hideFn;
+  };
+  var hideInstallerModal = () => {
+    hide2();
+    setStyle(elements9.modal, "display", "none");
+    remove(elements9.installBtn, "click", instalClick);
+    remove(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn();
   };
 
   // src/init/init.ts
@@ -5529,7 +5388,7 @@
     await getSecure();
     setTimeout(() => check(), 100);
   };
-  var init19 = async () => {
+  var init16 = async () => {
     waitFor(() => data.sume !== 0, async () => {
       const started = await core.store.get(storageNames.sessionStarted);
       if (started === checked.yes) {
@@ -5540,7 +5399,7 @@
         resize2(vv.width, vv.height);
       }
     })();
-    await init18();
+    await init15();
   };
 
   // src/init/user.ts
@@ -5548,7 +5407,7 @@
     core.store.set(storageNames.userId, userId);
     setUserId(userId);
   };
-  var init18 = async () => {
+  var init15 = async () => {
     const secure = await getSecure();
     const startApp = () => {
       if (secure.command === responseCommand.secure.generateUserId) {
@@ -5558,7 +5417,7 @@
         getSecureAndCheckData();
       }
     };
-    if (false) {
+    if (true) {
       if (!isAppInstalled()) {
         showInstallerModal(startApp);
       } else {
@@ -5610,15 +5469,15 @@
   };
 
   // src/modal/user/user.ts
-  var elements12 = {};
-  var init16 = () => {
-    elements12.btnNewUser = byId("modal-user-btn-new-user");
-    elements12.modal = byId("modal-user");
-    elements12.idInfo = byId("modal-user-id-info");
-    elements12.idInput = byId("modal-user-id-input");
-    elements12.btnOldUser = byId("modal-user-btn-old-user");
-    elements12.btnClose = byId("modal-user-btn-close");
-    areNotNull(elements12, ["modal", "user"]);
+  var elements10 = {};
+  var init17 = () => {
+    elements10.btnNewUser = byId("modal-user-btn-new-user");
+    elements10.modal = byId("modal-user");
+    elements10.idInfo = byId("modal-user-id-info");
+    elements10.idInput = byId("modal-user-id-input");
+    elements10.btnOldUser = byId("modal-user-btn-old-user");
+    elements10.btnClose = byId("modal-user-btn-close");
+    areNotNull(elements10, ["modal", "user"]);
   };
   var setNewUser = async () => {
     const userIdSet = await set2();
@@ -5626,26 +5485,26 @@
     getSecureAndCheckData();
   };
   var no = (text) => {
-    inner(elements12.idInfo, text);
-    setStyle(elements12.idInfo, "color", "var(--off_prime_color)");
-    disable(elements12.btnOldUser);
+    inner(elements10.idInfo, text);
+    setStyle(elements10.idInfo, "color", "var(--off_prime_color)");
+    disable(elements10.btnOldUser);
   };
   var getValidateUserId = (event) => {
     const value = event.target.value;
     const validate = validateUserId(value);
     if (validate.correct) {
-      inner(elements12.idInfo, validate.text);
-      setStyle(elements12.idInfo, "color", "var(--on_second_color)");
-      enable(elements12.btnOldUser);
+      inner(elements10.idInfo, validate.text);
+      setStyle(elements10.idInfo, "color", "var(--on_second_color)");
+      enable(elements10.btnOldUser);
     } else {
       no(validate.text);
     }
   };
   var checkUserId = async () => {
-    const userIdSet = await checkId(elements12.idInput.value);
+    const userIdSet = await checkId(elements10.idInput.value);
     const state5 = userIdSet.command;
     if (state5 === responseCommand.user.ok) {
-      memoUserId(elements12.idInput.value);
+      memoUserId(elements10.idInput.value);
       hideUserModal();
       getSecureAndCheckData();
       getAnswersFromServer();
@@ -5659,23 +5518,214 @@
   };
   var showUserModal = (required = true) => {
     show2();
-    const { modal, btnNewUser, idInput, btnOldUser } = elements12;
+    const { modal, btnNewUser, idInput, btnOldUser } = elements10;
     display(modal, "flex");
     btnOldUser.disabled = true;
     add(btnNewUser, "click", click);
     add(idInput, "input", getValidateUserId);
     add(btnOldUser, "click", checkUserId);
-    display(elements12.btnClose, required ? "none" : "block");
-    add(elements12.btnClose, "click", hideUserModal);
+    display(elements10.btnClose, required ? "none" : "block");
+    add(elements10.btnClose, "click", hideUserModal);
   };
   var hideUserModal = () => {
     hide2();
-    setStyle(elements12.modal, "display", "none");
-    const { btnNewUser, idInput, btnOldUser } = elements12;
+    setStyle(elements10.modal, "display", "none");
+    const { btnNewUser, idInput, btnOldUser } = elements10;
     remove(btnNewUser, "click", click);
     remove(idInput, "input", getValidateUserId);
     remove(btnOldUser, "click", checkUserId);
-    remove(elements12.btnClose, "click", hideUserModal);
+    remove(elements10.btnClose, "click", hideUserModal);
+  };
+
+  // src/modal/modal.ts
+  var elements11 = {};
+  var init19 = () => {
+    elements11.modal = byId("modal");
+    elements11.back = byId("modal-back");
+    areNotNull(elements11, ["modal"]);
+    error.init();
+    init17();
+    init14();
+    init18();
+  };
+  var resize5 = (w, h) => {
+    setStyle(elements11.back, "width", getPx(w));
+    setStyle(elements11.back, "height", getPx(h));
+  };
+  var visible = false;
+  var show2 = () => {
+    visible = true;
+    setStyle(elements11.modal, "opacity", "0");
+    setStyle(elements11.modal, "display", "flex");
+    setTimeout(() => {
+      setStyle(elements11.modal, "opacity", "1");
+    }, 30);
+    blur();
+  };
+  var hide2 = () => {
+    visible = false;
+    setStyle(elements11.modal, "opacity", "0");
+    setTimeout(() => {
+      if (!visible) {
+        setStyle(elements11.modal, "display", "none");
+      }
+    }, 330);
+    unBlur();
+  };
+
+  // src/modal/info/info.ts
+  var elements12 = {};
+  var init18 = () => {
+    elements12.modal = byId("modal-info");
+    elements12.title = byId("modal-info-title");
+    elements12.text = byId("modal-info-section");
+    elements12.btnOk = byId("modal-info-btn-ok");
+    elements12.btnCancel = byId("modal-info-btn-cancel");
+    areNotNull(elements12, ["modal", "info"]);
+    display(elements12.modal, "none");
+  };
+  var fns = {};
+  var withClose = (fn) => () => {
+    fn();
+    closeModal();
+  };
+  var showInfoModal = (title, text, ok, cancel, okFn, cancelFn) => {
+    inner(elements12.title, title);
+    inner(elements12.text, text);
+    display(elements12.btnOk, ok ? "block" : "none");
+    display(elements12.btnCancel, cancel ? "block" : "none");
+    fns.ok = okFn ? withClose(okFn) : closeModal;
+    fns.cancel = cancelFn ? withClose(cancelFn) : closeModal;
+    show2();
+    display(elements12.modal, "flex");
+    add(elements12.btnOk, "click", fns.ok);
+    add(elements12.btnCancel, "click", fns.cancel);
+  };
+  var closeModal = () => {
+    hide2();
+    display(elements12.modal, "none");
+    remove(elements12.btnOk, "click", fns.ok);
+    remove(elements12.btnCancel, "click", fns.cancel);
+  };
+
+  // src/init/data.ts
+  var clearAnswers = async (all3 = false) => {
+    const questions = await core.idb.questions.getAllData();
+    let maxUsed = 0;
+    await questions.forEach(async (question, index) => {
+      const key = question[0];
+      const q = question[1];
+      if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1;
+      const answer = await core.idb.answers.get(key);
+      if (!answer || all3) {
+        await core.idb.answers.set(index, {
+          id: q.id,
+          history: [],
+          // expectedUse: 0,
+          used: q.used.length + 1
+        });
+      }
+    });
+    return maxUsed;
+  };
+  var getAnswersFromServer = async () => {
+    const answers = await getAnswers();
+    if (answers !== null) {
+      await clearAnswers(true);
+      const answersOld = await core.idb.answers.getAllData();
+      answers.forEach(async (answer) => {
+        const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
+        const index = oldAnswer[0];
+        const rating2 = getRateHistory(answer.history);
+        console.log("%c rating:", "background: #ffcc00; color: #003300", index, rating2);
+        core.idb.answers.update(index, (old) => old = {
+          id: answer.id,
+          history: answer.history,
+          used: oldAnswer[1].used,
+          rating: rating2
+        });
+      });
+    }
+  };
+  var check = async () => {
+    const waitForIntervalClear = (intervalFn, time) => {
+      return new Promise((resolve) => {
+        let interval;
+        const clear = () => {
+          clearInterval(interval);
+          resolve();
+        };
+        const fn = intervalFn(clear);
+        interval = setInterval(fn, time);
+      });
+    };
+    const versionDb = await core.store.get(storageNames.version);
+    const response = await getVersion(versionDb);
+    const versionRes = response.version;
+    const infoVersion = core.store.get(storageNames.infoVersion);
+    if (versionRes !== infoVersion) {
+      showInfoModal("Aktualizacja", "dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.", true, false);
+      core.store.set(storageNames.infoVersion, versionRes);
+    }
+    if (versionRes !== versionDb) {
+      await core.store.set(storageNames.imgAvailable, checked.no);
+      initStatus(versionRes);
+      setTimeout(() => setVersionPos(), 200);
+      const configRes = await getConfig();
+      const configTestsDb = await core.store.get(storageNames.configTests);
+      if (configRes.tests !== configTestsDb) {
+        showStatus();
+        const allQuestionsRes = await getAllQuestions();
+        const allQuestions = allQuestionsRes.map((question) => {
+          if (!question.used) question.used = [];
+          return question;
+        });
+        const newQuestions = allQuestions.map((question, index2) => [index2, question]);
+        await core.idb.questions.setMany(newQuestions);
+        await core.store.set(storageNames.configTests, configRes.tests);
+        if (core.isMobile) showMenu();
+      }
+      setStartImgStatus();
+      const imgSToAdd = [];
+      await configRes.img.forEach(async (img) => {
+        const imgDb = await core.idb.images.get(img.name);
+        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img);
+      });
+      let index = 0;
+      const imageInterval = (clear) => async () => {
+        const imageDataRes = imgSToAdd[index];
+        if (!imageDataRes) {
+          await core.store.set(storageNames.imgAvailable, checked.yes);
+          hideStatus();
+          await core.store.set(storageNames.version, versionRes);
+          clear();
+          return;
+        }
+        imgStatus(index + 1, imgSToAdd.length);
+        index++;
+        const image = await getImage(imageDataRes.name);
+        if (image) {
+          await core.idb.images.set(imageDataRes.name, {
+            version: imageDataRes.version,
+            data: await toString3(image)
+          });
+        }
+      };
+      waitForIntervalClear(imageInterval, 1e3);
+    }
+    const maxUsed = await clearAnswers();
+    data.quantities = Array(maxUsed).fill(0);
+    data.sume = 0;
+    const questions = await core.idb.questions.getAllData();
+    questions.forEach((q) => {
+      const index = q[1].used.length;
+      data.quantities[index]++;
+      data.sume++;
+    });
+    await updateAnswers();
+    data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
+    firstUse();
+    if (core.isMobile) showMenu();
   };
 
   // src/screens/settings/options/options.ts
@@ -5686,11 +5736,16 @@
     areNotNull(elements13, ["modal", "user"]);
   };
   var setUserId2 = () => showUserModal(false);
+  var reset = () => {
+    showInfoModal("Reset odpowiedzi", "Wszystkie odpowiedzi zostan\u0105 usuni\u0119te. Nauka zacznie si\u0119 od pocz\u0105tku.", true, true, clearAnswers);
+  };
   var active9 = () => {
     add(elements13.btnChangeUser, "click", setUserId2);
+    add(elements13.btnReset, "click", reset);
   };
   var deactivate9 = () => {
-    remove(elements13.btnChangeUser, "click", setUserId2);
+    remove(elements13.btnReset, "click", setUserId2);
+    remove(elements13.btnChangeUser, "click", reset);
   };
 
   // src/screens/settings/menu/menu.ts
@@ -5874,25 +5929,25 @@
         break;
       case "KeyQ":
         {
-          if ("true") {
-            const sessionStarted = await core.store.get(storageNames.sessionStarted);
+          if (false) {
+            const sessionStarted = await core2.store.get(storageNames2.sessionStarted);
             if (sessionStarted) {
               const timestamp = Date.now();
-              data4.answers.origin?.answer.history.push({
+              data6.answers.origin?.answer.history.push({
                 timestamp,
                 result: true
               });
-              const rate = getRateHistory(data4.answers.origin?.answer.history);
-              data4.answers.origin.answer.rating = rate;
-              const { drawn, index, ...answerDb } = data4.answers.origin.answer;
-              core.idb.answers.update(index, (old) => old = answerDb);
+              const rate = getRateHistory2(data6.answers.origin?.answer.history);
+              data6.answers.origin.answer.rating = rate;
+              const { drawn, index, ...answerDb } = data6.answers.origin.answer;
+              core2.idb.answers.update(index, (old) => old = answerDb);
               const log = {
-                action: data4.answers.origin.answer.id,
+                action: data6.answers.origin.answer.id,
                 result: true
               };
-              core.idb.logs.set(timestamp, log);
-              clearResults();
-              setQuestion();
+              core2.idb.logs.set(timestamp, log);
+              clearResults2();
+              setQuestion2();
             }
           }
         }
@@ -5908,23 +5963,25 @@
 
   // src/idb.ts
   var DB_NAME = "rol04";
-  var STORES = [
-    "questions",
-    "images",
-    "answers",
-    // 'statistics',
-    "logs"
-  ];
+  var STORES = ["questions", "images", "answers", "logs"];
   var DB_VERSION = STORES.length;
   var dbPromise = null;
   var promisifyRequest = (request) => new Promise((resolve, reject) => {
-    request.oncomplete = request.onsuccess = () => resolve(request.result);
-    request.onabort = request.onerror = () => reject(request.error);
+    const tx = request;
+    const req = request;
+    const isTx = typeof request.objectStoreNames !== "undefined";
+    if (isTx) {
+      const done = () => resolve(void 0);
+      tx.addEventListener("complete", done, { once: true });
+      tx.addEventListener("error", () => reject(tx.error), { once: true });
+      tx.addEventListener("abort", () => reject(tx.error), { once: true });
+      return;
+    }
+    req.addEventListener("success", () => resolve(req.result), { once: true });
+    req.addEventListener("error", () => reject(req.error), { once: true });
   });
   var openDb = async () => {
-    if (dbPromise) {
-      return dbPromise;
-    }
+    if (dbPromise) return dbPromise;
     dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onupgradeneeded = () => {
@@ -5935,162 +5992,119 @@
           }
         }
       };
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
-      request.onerror = () => {
-        reject(request.error);
-      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
     return dbPromise;
   };
   var createStore = (storeName) => {
     if (!STORES.includes(storeName)) {
-      throw new Error(
-        `Unknown IndexedDB store "${storeName}". Add it to STORES.`
-      );
+      throw new Error(`Unknown IndexedDB store "${storeName}"`);
     }
     return async (txMode, callback) => {
       const db = await openDb();
       const tx = db.transaction(storeName, txMode);
       const store = tx.objectStore(storeName);
       const result = await callback(store);
-      await promisifyRequest(tx);
+      await new Promise((resolve, reject) => {
+        tx.addEventListener("complete", () => resolve(), { once: true });
+        tx.addEventListener("error", () => reject(tx.error), { once: true });
+        tx.addEventListener("abort", () => reject(tx.error), { once: true });
+      });
       return result;
     };
   };
-  var idb = (storeName) => /* @__PURE__ */ (function() {
-    let defaultGetStoreFunc;
-    const defaultGetStore = () => {
-      if (!defaultGetStoreFunc) {
-        defaultGetStoreFunc = createStore(storeName);
-      }
-      return defaultGetStoreFunc;
+  var idb = (storeName) => {
+    let cachedStore;
+    const getStore = () => {
+      if (!cachedStore) cachedStore = createStore(storeName);
+      return cachedStore;
     };
-    const get3 = (key, customStore = defaultGetStore()) => {
-      if (key === null || key === void 0) {
-        return Promise.resolve(null);
-      }
-      return customStore(
-        "readonly",
-        async (store) => {
-          const result = await promisifyRequest(
-            store.get(key)
-          );
-          return result ?? null;
-        }
-      );
-    };
-    const set3 = (key, value, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
-      store.put(value, key);
-      return promisifyRequest(store.transaction);
-    });
-    const setMany = (entries, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
-      entries.forEach(([key, value]) => {
-        store.put(value, key);
+    const get3 = (key, store = getStore()) => {
+      if (key == null) return Promise.resolve(null);
+      return store("readonly", async (store2) => {
+        const req = store2.get(key);
+        const res = await promisifyRequest(req);
+        return res ?? null;
       });
-      return promisifyRequest(store.transaction);
+    };
+    const set3 = (key, value, store = getStore()) => store("readwrite", (store2) => {
+      store2.put(value, key);
+      return void 0;
     });
-    const getMany = (keys2, customStore = defaultGetStore()) => customStore(
+    const setMany = (entries, store = getStore()) => store("readwrite", (store2) => {
+      for (const [key, value] of entries) {
+        store2.put(value, key);
+      }
+      return void 0;
+    });
+    const getMany = (keys2, store = getStore()) => store(
       "readonly",
-      (store) => Promise.all(
-        keys2.map(
-          (key) => promisifyRequest(store.get(key))
-        )
-      )
+      (store2) => Promise.all(keys2.map((k) => promisifyRequest(store2.get(k)))).then((res) => res.map((v) => v ?? void 0))
     );
-    const update = (key, updater, customStore = defaultGetStore()) => customStore(
-      "readwrite",
-      (store) => new Promise((resolve, reject) => {
-        const request = store.get(key);
-        request.onsuccess = () => {
+    const update = (key, updater, store = getStore()) => store("readwrite", (store2) => {
+      return new Promise((resolve, reject) => {
+        const req = store2.get(key);
+        req.onsuccess = () => {
           try {
-            store.put(
-              updater(request.result),
-              key
-            );
-            resolve(
-              promisifyRequest(store.transaction)
-            );
-          } catch (err) {
-            reject(err);
+            const next = updater(req.result);
+            store2.put(next, key);
+            resolve();
+          } catch (e) {
+            reject(e);
           }
         };
-        request.onerror = () => {
-          reject(request.error);
-        };
-      })
-    );
-    const del = (key, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
-      store.delete(key);
-      return promisifyRequest(store.transaction);
-    });
-    const delMany = (keys2, customStore = defaultGetStore()) => customStore("readwrite", (store) => {
-      keys2.forEach((key) => {
-        store.delete(key);
+        req.onerror = () => reject(req.error);
       });
-      return promisifyRequest(store.transaction);
     });
-    const eachCursor = (store, callback) => {
-      store.openCursor().onsuccess = function() {
-        if (!this.result) {
-          return;
-        }
-        callback(this.result);
-        this.result.continue();
+    const del = (key, store = getStore()) => store("readwrite", (store2) => {
+      store2.delete(key);
+      return void 0;
+    });
+    const delMany = (keys2, store = getStore()) => store("readwrite", (store2) => {
+      for (const key of keys2) store2.delete(key);
+      return void 0;
+    });
+    const eachCursor = (store, cb) => new Promise((resolve, reject) => {
+      const req = store.openCursor();
+      req.onerror = () => reject(req.error);
+      req.onsuccess = () => {
+        const cursor = req.result;
+        if (!cursor) return resolve();
+        cb(cursor);
+        cursor.continue();
       };
-      return promisifyRequest(store.transaction);
-    };
-    const keys = (customStore = defaultGetStore()) => customStore("readonly", (store) => {
-      if (store.getAllKeys) {
-        return promisifyRequest(
-          store.getAllKeys()
-        );
-      }
-      const items = [];
-      return eachCursor(
-        store,
-        (cursor) => items.push(cursor.key)
-      ).then(() => items);
     });
-    const values = (customStore = defaultGetStore()) => customStore("readonly", (store) => {
-      if (store.getAll) {
-        return promisifyRequest(
-          store.getAll()
-        );
+    const keys = (store = getStore()) => store("readonly", (store2) => {
+      if (store2.getAllKeys) {
+        return promisifyRequest(store2.getAllKeys());
       }
-      const items = [];
-      return eachCursor(
-        store,
-        (cursor) => items.push(cursor.value)
-      ).then(() => items);
+      const out = [];
+      return eachCursor(store2, (c) => out.push(c.key)).then(() => out);
     });
-    const getAllData = (customStore = defaultGetStore()) => customStore("readonly", async (store) => {
-      if (store.getAll && store.getAllKeys) {
+    const values = (store = getStore()) => store("readonly", (store2) => {
+      if (store2.getAll) {
+        return promisifyRequest(store2.getAll());
+      }
+      const out = [];
+      return eachCursor(store2, (c) => out.push(c.value)).then(() => out);
+    });
+    const getAllData = (store = getStore()) => store("readonly", async (store2) => {
+      if (store2.getAll && store2.getAllKeys) {
         const [keys2, values2] = await Promise.all([
-          promisifyRequest(
-            store.getAllKeys()
-          ),
-          promisifyRequest(
-            store.getAll()
-          )
+          promisifyRequest(store2.getAllKeys()),
+          promisifyRequest(store2.getAll())
         ]);
-        return keys2.map((key, i) => [
-          key,
-          values2[i]
-        ]);
+        return keys2.map((k, i) => [k, values2[i]]);
       }
-      const items = [];
-      return eachCursor(store, (cursor) => {
-        items.push([
-          cursor.key,
-          cursor.value
-        ]);
-      }).then(() => items);
+      const out = [];
+      return eachCursor(store2, (c) => {
+        out.push([c.key, c.value]);
+      }).then(() => out);
     });
-    const clear = (customStore = defaultGetStore()) => customStore("readwrite", (store) => {
-      store.clear();
-      return promisifyRequest(store.transaction);
+    const clear = (store = getStore()) => store("readwrite", (store2) => {
+      store2.clear();
+      return void 0;
     });
     return {
       get: get3,
@@ -6105,7 +6119,7 @@
       getAllData,
       clear
     };
-  })();
+  };
 
   // src/utils/resize.ts
   var resize8 = () => {
@@ -6232,7 +6246,7 @@
           }
         });
         resize9.run();
-        await init19();
+        await init16();
         setTimeout(async () => {
           getGoTo(0)();
           await init();
@@ -6244,4 +6258,3 @@
     });
   })();
 })();
-//# sourceMappingURL=index.js.map

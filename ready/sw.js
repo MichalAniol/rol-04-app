@@ -126,7 +126,7 @@ const FONT_URLS = [
     '/fonts/consolas.woff2'
 ];
 
-const CACHE_NAME = 'pwa-cache-v1.1.10';
+const CACHE_NAME = 'pwa-cache-v1.2.39';
 
 self.addEventListener("install", event => {
     self.skipWaiting(); // 🔥 natychmiastowa instalacja nowego SW
@@ -135,8 +135,8 @@ self.addEventListener("install", event => {
         caches.open(CACHE_NAME).then(cache => {
             return cache.addAll([
                 '/index.html',
-                '/index-1001010.js',
-                '/style-1001010.css',
+                '/index-1002039.js',
+                '/style-1002039.css',
                 '/icon/favicon-192.png',
                 '/icon/favicon-512.png',
                 ...FONT_URLS

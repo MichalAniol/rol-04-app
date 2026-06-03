@@ -95,13 +95,29 @@ export const cells = async () => {
                 elements.ctx.fill()
             }
         }
+        {
+            if (process.env.DEBUG === "true") {
+                if (answer.history.length > 0) {
+                    elements.ctx.fillStyle = data.background
+                    elements.ctx.lineWidth = data.cell.space
+
+                    const endX = pozX + data.cell.size - (data.cell.space * 3)
+                    const endY = pozY + data.cell.size - (data.cell.space * 3)
+
+                    elements.ctx.beginPath()
+                    elements.ctx.moveTo(pozX + (data.cell.space * 3), pozY + (data.cell.space * 3))
+                    elements.ctx.lineTo(endX, endY)
+                    elements.ctx.stroke()
+                }
+            }
+        }
     })
 }
 
 export const init = () => {
     waitFor(() => paramsData.sume !== 0, () => {
         themeChange()
-        const vv = window.visualViewport as VisualViewport 
+        const vv = window.visualViewport as VisualViewport
         resize(vv.width, vv.height)
     })()
 }

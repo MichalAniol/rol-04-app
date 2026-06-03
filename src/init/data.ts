@@ -15,7 +15,7 @@ import { AnswersDbT, QuestionDbT } from '@/types'
 import { toString as blobToString } from '../utils/blob'
 import { showInfoModal } from '@/modal/info/info'
 
-const clearAnswers = async (all: boolean = false) => {
+export const clearAnswers = async (all: boolean = false) => {
     const questions = await core.idb.questions.getAllData()
     let maxUsed = 0
     await questions.forEach(async (question, index) => {
@@ -49,6 +49,7 @@ export const getAnswersFromServer = async () => {
 
             const index = oldAnswer[0]
             const rating = getRateHistory(answer.history)
+            console.log('%c rating:', 'background: #ffcc00; color: #003300', index, rating)
 
             core.idb.answers.update(index, (old) => old = {
                 id: answer.id,
@@ -82,7 +83,7 @@ export const check = async () => {
 
     const infoVersion = core.store.get(storageNames.infoVersion)
     if (versionRes !== infoVersion) {
-        showInfoModal()
+        showInfoModal('Aktualizacja', 'dodano w ustawieniach przyciski wczytania użytkownika i restart pytań.', true, false)
         core.store.set(storageNames.infoVersion, versionRes)
     }
 
@@ -107,30 +108,12 @@ export const check = async () => {
                 return question
             })
 
-            let index = 0
             // zapis pytań
-            const questionInterval = (clear: () => void) => async () => {
-                const question = allQuestions[index]
-                if (!question) {
-                    await core.store.set(storageNames.configTests, configRes.tests)
-                    clear()
-                    return
-                }
-
-                questionsStatus(index + 1, allQuestions.length)
-
-                const item = await core.idb.questions.get(index)
-
-                if (!item || item.version !== question.version) {
-                    await core.idb.questions.set(index, question as QuestionDbT)
-                }
-
-                index++
-            }
-            await waitForIntervalClear(questionInterval, 1)
+            const newQuestions = allQuestions.map((question, index) => [index, question] as [number, QuestionDbT])
+            await core.idb.questions.setMany(newQuestions)
+            await core.store.set(storageNames.configTests, configRes.tests)
 
             if (core.isMobile) showMenu()
-
         }
 
         setStartImgStatus()

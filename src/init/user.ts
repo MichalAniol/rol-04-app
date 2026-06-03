@@ -26,7 +26,7 @@ export const init = async () => {
     }
 
     // sprawdzenie czy appka jest zainstalowana
-    if (!process.env.DEBUG) {
+    if (!(process.env.DEBUG === "true")) {
         if (!isAppInstalled()) {
             showInstallerModal(startApp)
         } else {

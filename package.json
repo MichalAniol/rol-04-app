@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "node build.mjs dev",
     "prod": "node build.mjs prod",
-    "prep": "powershell -ExecutionPolicy Bypass -File ./_prepare.ps1",
-    "prepo": "node ./_prep.js",
+    "prepo": "powershell -ExecutionPolicy Bypass -File ./_prepare.ps1",
+    "prep": "node ./_prep.js",
     "g": "node ./_html-generator/generator.js",
     "s": "npx live-server dist --host=192.168.1.109 --port=3030 --no-css-inject",
     "ns": "node ./server.js",

@@ -1,10 +1,8 @@
-import { add, byId, disable, enable, inner, remove, setStyle } from "@/dom"
-import { memoUserId } from "@/init/user"
+import { add, byId, remove } from "@/dom"
+import { clearAnswers } from "@/init/data"
+import { showInfoModal } from "@/modal/info/info"
 import { showUserModal } from "@/modal/user/user"
-import { responseCommand } from "@/queries/responseCommand"
-import { checkId } from "@/queries/user/checkId"
 import { areNotNull } from "@/utils/isNotNull"
-import { validateUserId } from "@/utils/validateUserId"
 
 type ElementsT = {
     btnChangeUser: HTMLButtonElement
@@ -21,12 +19,15 @@ export const init = () => {
 }
 
 const setUserId = () => showUserModal(false)
+const reset = () => {showInfoModal('Reset odpowiedzi', 'Wszystkie odpowiedzi zostaną usunięte. Nauka zacznie się od początku.', true, true, clearAnswers)}
 
 export const active = () => {
     add(elements.btnChangeUser, 'click', setUserId)
+    add(elements.btnReset, 'click', reset)
     // add(elements.btnChangeUser, 'click', () => showChangeUserModal(setInfoUserId, checkUserId))
 }
 
 export const deactivate = () => {
-    remove(elements.btnChangeUser, 'click', setUserId)
+    remove(elements.btnReset, 'click', setUserId)
+    remove(elements.btnChangeUser, 'click', reset)
 }

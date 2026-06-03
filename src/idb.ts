@@ -19,42 +19,42 @@ export type Idb<Schema extends DBShape> = {
 
 type UseStore = <T>(
     txMode: IDBTransactionMode,
-    callback: (store: IDBObjectStore) => T | PromiseLike<T>,
+    callback: (store: IDBObjectStore) => T | PromiseLike<T>
 ) => Promise<T>
 
 const DB_NAME = 'rol04'
 
-/**
- * CENTRAL SCHEMA
- */
-const STORES = [
-    'questions',
-    'images',
-    'answers',
-    // 'statistics',
-    'logs',
-] as const
+const STORES = ['questions', 'images', 'answers', 'logs'] as const
 
 const DB_VERSION = STORES.length
 
 let dbPromise: Promise<IDBDatabase> | null = null
 
-const promisifyRequest = <T = undefined>(
-    request: IDBRequest<T> | IDBTransaction,
+const promisifyRequest = <T = unknown>(
+    request: IDBRequest<T> | IDBTransaction
 ): Promise<T> =>
     new Promise<T>((resolve, reject) => {
-        // @ts-ignore
-        request.oncomplete = request.onsuccess = () => resolve(request.result)
+        const tx = request as IDBTransaction
+        const req = request as IDBRequest<T>
 
-        // @ts-ignore
-        request.onabort = request.onerror = () => reject(request.error)
+        const isTx = typeof (request as any).objectStoreNames !== 'undefined'
+
+        if (isTx) {
+            const done = () => resolve(undefined as T)
+
+            tx.addEventListener('complete', done, { once: true })
+            tx.addEventListener('error', () => reject(tx.error), { once: true })
+            tx.addEventListener('abort', () => reject(tx.error), { once: true })
+
+            return
+        }
+
+        req.addEventListener('success', () => resolve(req.result), { once: true })
+        req.addEventListener('error', () => reject(req.error), { once: true })
     })
 
 const openDb = async (): Promise<IDBDatabase> => {
-
-    if (dbPromise) {
-        return dbPromise
-    }
+    if (dbPromise) return dbPromise
 
     dbPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -63,263 +63,197 @@ const openDb = async (): Promise<IDBDatabase> => {
             const db = request.result
 
             for (const storeName of STORES) {
-
                 if (!db.objectStoreNames.contains(storeName)) {
                     db.createObjectStore(storeName)
                 }
             }
         }
 
-        request.onsuccess = () => {
-            resolve(request.result)
-        }
-
-        request.onerror = () => {
-            reject(request.error)
-        }
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
     })
 
     return dbPromise
 }
 
-const createStore = (
-    storeName: string,
-): UseStore => {
-
+const createStore = (storeName: string): UseStore => {
     if (!STORES.includes(storeName as any)) {
-        throw new Error(
-            `Unknown IndexedDB store "${storeName}". Add it to STORES.`,
-        )
+        throw new Error(`Unknown IndexedDB store "${storeName}"`)
     }
 
     return async (txMode, callback) => {
         const db = await openDb()
         const tx = db.transaction(storeName, txMode)
         const store = tx.objectStore(storeName)
+
         const result = await callback(store)
-        await promisifyRequest(tx)
+
+        await new Promise<void>((resolve, reject) => {
+            tx.addEventListener('complete', () => resolve(), { once: true })
+            tx.addEventListener('error', () => reject(tx.error), { once: true })
+            tx.addEventListener('abort', () => reject(tx.error), { once: true })
+        })
 
         return result
     }
 }
 
-export const idb = <Schema extends DBShape>(
-    storeName: string,
-) => (function () {
+export const idb = <Schema extends DBShape>(storeName: string) => {
+    let cachedStore: UseStore | undefined
 
-    let defaultGetStoreFunc: UseStore | undefined
-
-    const defaultGetStore = (): UseStore => {
-
-        if (!defaultGetStoreFunc) {
-            defaultGetStoreFunc = createStore(storeName)
-        }
-
-        return defaultGetStoreFunc
+    const getStore = (): UseStore => {
+        if (!cachedStore) cachedStore = createStore(storeName)
+        return cachedStore
     }
 
     const get = <T = any>(
         key: IDBValidKey | null | undefined,
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<T | null> => {
+        if (key == null) return Promise.resolve(null)
 
-        if (key === null || key === undefined) {
-            return Promise.resolve(null)
-        }
-
-        return customStore(
-            'readonly',
-            async (store) => {
-                const result = await promisifyRequest<T | undefined>(
-                    store.get(key),
-                )
-
-                return result ?? null
-            },
-        )
+        return store('readonly', async store => {
+            const req = store.get(key)
+            const res = await promisifyRequest<T | undefined>(req)
+            return res ?? null
+        })
     }
 
     const set = (
         key: IDBValidKey,
         value: any,
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<void> =>
-        customStore('readwrite', (store) => {
+        store('readwrite', store => {
             store.put(value, key)
-            return promisifyRequest(store.transaction)
+            return undefined
         })
 
     const setMany = (
         entries: [IDBValidKey, any][],
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<void> =>
-        customStore('readwrite', (store) => {
-
-            entries.forEach(([key, value]) => {
+        store('readwrite', store => {
+            for (const [key, value] of entries) {
                 store.put(value, key)
-            })
-
-            return promisifyRequest(store.transaction)
+            }
+            return undefined
         })
 
     const getMany = <T = any>(
         keys: IDBValidKey[],
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<T[]> =>
-        customStore('readonly', (store) =>
-            Promise.all(
-                keys.map((key) =>
-                    promisifyRequest(store.get(key)),
-                ),
-            ),
+        store('readonly', store =>
+            Promise.all(keys.map(k => promisifyRequest<T | undefined>(store.get(k))))
+                .then(res => res.map(v => (v ?? undefined) as T))
         )
 
     const update = <T = any>(
         key: IDBValidKey,
         updater: (oldValue: T | undefined) => T,
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<void> =>
-        customStore('readwrite', (store) =>
-            new Promise((resolve, reject) => {
-                const request = store.get(key)
-                request.onsuccess = () => {
+        store('readwrite', store => {
+            return new Promise((resolve, reject) => {
+                const req = store.get(key)
+
+                req.onsuccess = () => {
                     try {
-                        store.put(
-                            updater(request.result),
-                            key,
-                        )
-                        resolve(
-                            promisifyRequest(store.transaction),
-                        )
-                    } catch (err) {
-                        reject(err)
+                        const next = updater(req.result)
+                        store.put(next, key)
+                        resolve()
+                    } catch (e) {
+                        reject(e)
                     }
                 }
 
-                request.onerror = () => {
-                    reject(request.error)
-                }
-            }),
-        )
+                req.onerror = () => reject(req.error)
+            })
+        })
 
-    const del = (
-        key: IDBValidKey,
-        customStore = defaultGetStore(),
-    ): Promise<void> =>
-        customStore('readwrite', (store) => {
+    const del = (key: IDBValidKey, store = getStore()): Promise<void> =>
+        store('readwrite', store => {
             store.delete(key)
-            return promisifyRequest(store.transaction)
+            return undefined
         })
 
     const delMany = (
         keys: IDBValidKey[],
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<void> =>
-        customStore('readwrite', (store) => {
-            keys.forEach((key) => {
-                store.delete(key)
-            })
-
-            return promisifyRequest(store.transaction)
+        store('readwrite', store => {
+            for (const key of keys) store.delete(key)
+            return undefined
         })
 
     const eachCursor = (
         store: IDBObjectStore,
-        callback: (cursor: IDBCursorWithValue) => void,
-    ): Promise<void> => {
+        cb: (cursor: IDBCursorWithValue) => void
+    ): Promise<void> =>
+        new Promise((resolve, reject) => {
+            const req = store.openCursor()
 
-        store.openCursor().onsuccess = function () {
-            if (!this.result) {
-                return
+            req.onerror = () => reject(req.error)
+
+            req.onsuccess = () => {
+                const cursor = req.result
+                if (!cursor) return resolve()
+                cb(cursor)
+                cursor.continue()
             }
+        })
 
-            callback(this.result)
-
-            this.result.continue()
-        }
-
-        return promisifyRequest(store.transaction)
-    }
-
-    const keys = <KeyType extends IDBValidKey>(
-        customStore = defaultGetStore(),
-    ): Promise<KeyType[]> =>
-        customStore('readonly', (store) => {
+    const keys = <K extends IDBValidKey>(
+        store = getStore()
+    ): Promise<K[]> =>
+        store('readonly', store => {
             if (store.getAllKeys) {
-
-                return promisifyRequest(
-                    store.getAllKeys() as unknown as IDBRequest<KeyType[]>,
-                )
+                return promisifyRequest(store.getAllKeys() as any)
             }
 
-            const items: KeyType[] = []
+            const out: K[] = []
 
-            return eachCursor(
-                store,
-                (cursor) => items.push(cursor.key as KeyType),
-            ).then(() => items)
+            return eachCursor(store, c => out.push(c.key as K)).then(() => out)
         })
 
     const values = <T = any>(
-        customStore = defaultGetStore(),
+        store = getStore()
     ): Promise<T[]> =>
-        customStore('readonly', (store) => {
-
+        store('readonly', store => {
             if (store.getAll) {
-                return promisifyRequest(
-                    store.getAll() as IDBRequest<T[]>,
-                )
+                return promisifyRequest(store.getAll() as any)
             }
 
-            const items: T[] = []
+            const out: T[] = []
 
-            return eachCursor(
-                store,
-                (cursor) => items.push(cursor.value as T),
-            ).then(() => items)
+            return eachCursor(store, c => out.push(c.value as T)).then(() => out)
         })
 
-    const getAllData = <
-        KeyType extends IDBValidKey,
-        ValueType = any,
-    >(
-        customStore = defaultGetStore(),
-    ): Promise<[KeyType, ValueType | undefined][]> =>
-        customStore('readonly', async (store) => {
+    const getAllData = <K extends IDBValidKey, V = any>(
+        store = getStore()
+    ): Promise<[K, V | undefined][]> =>
+        store('readonly', async store => {
             if (store.getAll && store.getAllKeys) {
-
                 const [keys, values] = await Promise.all([
-                    promisifyRequest(
-                        store.getAllKeys() as unknown as IDBRequest<KeyType[]>,
-                    ),
-                    promisifyRequest(
-                        store.getAll() as IDBRequest<ValueType[]>,
-                    ),
+                    promisifyRequest<K[]>(store.getAllKeys() as any),
+                    promisifyRequest<V[]>(store.getAll() as any)
                 ])
 
-                return keys.map((key, i) => [
-                    key,
-                    values[i],
-                ])
+                return keys.map((k, i) => [k, values[i]])
             }
 
-            const items: [KeyType, ValueType][] = []
+            const out: [K, V][] = []
 
-            return eachCursor(store, (cursor) => {
-
-                items.push([
-                    cursor.key as KeyType,
-                    cursor.value,
-                ])
-            }).then(() => items)
+            return eachCursor(store, c => {
+                out.push([c.key as K, c.value as V])
+            }).then(() => out)
         })
 
-    const clear = (
-        customStore = defaultGetStore(),
-    ): Promise<void> =>
-        customStore('readwrite', (store) => {
+    const clear = (store = getStore()): Promise<void> =>
+        store('readwrite', store => {
             store.clear()
-            return promisifyRequest(store.transaction)
+            return undefined
         })
 
     return {
@@ -333,7 +267,6 @@ export const idb = <Schema extends DBShape>(
         keys,
         values,
         getAllData,
-        clear,
+        clear
     }
-
-}()) as Idb<Schema>
+} 
