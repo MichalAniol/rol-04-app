@@ -5163,41 +5163,77 @@
   });
 
   // src/screens/settings/info/info.ts
+  var names = ["info", "version", "privacy-policy"];
   var elements6 = {};
-  var state2 = {
-    settingsAppInfoContentHeight: null,
+  function fromNames(names2, createValue) {
+    return Object.fromEntries(
+      names2.map((name2) => [name2, createValue(name2)])
+    );
+  }
+  var state2 = fromNames(names, () => ({
+    height: null,
     open: false
+  }));
+  var stateNames = names;
+  var clicks = fromNames(names, () => null);
+  var clicksNames = names;
+  var getElements = (name2) => {
+    return {
+      base: byId(`settings-app-${name2}-title`),
+      more: byId(`settings-app-${name2}-more`),
+      less: byId(`settings-app-${name2}-less`),
+      content: byId(`settings-app-${name2}-content`)
+    };
+  };
+  var initElements = (name2) => {
+    const content = elements6[name2].content;
+    const contentBoxInfo = content.getBoundingClientRect();
+    state2[name2].height = contentBoxInfo.height;
+    setStyle(elements6[name2].less, "display", "none");
+    setStyle(elements6[name2].content, "height", "0px");
+  };
+  var getClick = (name2) => () => {
+    if (state2[name2].open) {
+      setStyle(elements6[name2].less, "display", "none");
+      setStyle(elements6[name2].more, "display", "initial");
+      setStyle(elements6[name2].content, "height", "0px");
+    } else {
+      setStyle(elements6[name2].less, "display", "initial");
+      setStyle(elements6[name2].more, "display", "none");
+      setStyle(elements6[name2].content, "height", `${state2[name2].height}px`);
+    }
+    state2[name2].open = !state2[name2].open;
   };
   var init13 = () => {
-    elements6.settingsAppInfo = byId("settings-app-info-title");
-    elements6.settingsAppInfoMore = byId("settings-app-info-more");
-    elements6.settingsAppInfoLess = byId("settings-app-info-less");
-    elements6.settingsAppInfoContent = byId("settings-app-info-content");
-    areNotNull(elements6, ["settings", "info"]);
+    names.forEach((name2) => {
+      elements6[name2] = getElements(name2);
+    });
+    console.log("%c elements:", "background: #ffcc00; color: #003300", elements6);
+    names.forEach((name2) => areNotNull(elements6, ["settings", `info.${name2}`]));
     setTimeout(() => {
-      const contentBox = elements6.settingsAppInfoContent.getBoundingClientRect();
-      state2.settingsAppInfoContentHeight = contentBox.height;
-      setStyle(elements6.settingsAppInfoLess, "display", "none");
-      setStyle(elements6.settingsAppInfoContent, "height", "0px");
+      stateNames.forEach((name2) => initElements(name2));
     }, 100);
-  };
-  var showInfo2 = () => {
-    if (state2.open) {
-      setStyle(elements6.settingsAppInfoLess, "display", "none");
-      setStyle(elements6.settingsAppInfoMore, "display", "initial");
-      setStyle(elements6.settingsAppInfoContent, "height", "0px");
-    } else {
-      setStyle(elements6.settingsAppInfoLess, "display", "initial");
-      setStyle(elements6.settingsAppInfoMore, "display", "none");
-      setStyle(elements6.settingsAppInfoContent, "height", `${state2.settingsAppInfoContentHeight}px`);
-    }
-    state2.open = !state2.open;
+    clicksNames.forEach((clickName) => {
+      clicks[clickName] = getClick(clickName);
+    });
   };
   var active7 = () => {
-    add(elements6.settingsAppInfo, "click", showInfo2);
+    stateNames.forEach(
+      (name2) => add(
+        elements6[name2].base,
+        "click",
+        clicks[name2]
+      )
+    );
   };
   var deactivate7 = () => {
-    remove(elements6.settingsAppInfo, "click", showInfo2);
+    stateNames.forEach(
+      (name2) => remove(
+        elements6[name2].base,
+        "click",
+        clicks[name2]
+      )
+    );
   };
 
   // src/screens/settings/ratio/ratio.ts
