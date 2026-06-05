@@ -126,7 +126,7 @@ const FONT_URLS = [
     '/fonts/consolas.woff2'
 ];
 
-const CACHE_NAME = 'pwa-cache-v1.2.63';
+const CACHE_NAME = 'pwa-cache-v1.2.64';
 
 self.addEventListener("install", event => {
     self.skipWaiting();
@@ -149,8 +149,8 @@ self.addEventListener("install", event => {
 
             await cache.addAll([
                 '/index.html',
-                '/index-1002063.js',
-                '/style-1002063.css',
+                '/index-1002064.js',
+                '/style-1002064.css',
                 '/icon/favicon-192.png',
                 '/icon/favicon-512.png',
                 ...FONT_URLS

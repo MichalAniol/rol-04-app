@@ -4406,6 +4406,8 @@
     remove(elements4.startEndBtn, "click", start);
     add(elements4.startEndBtn, "click", end);
     cleanSessionData();
+    mark(-1)();
+    clearResults();
     await init6();
     setTimeout(() => {
       display(elements4.sheet, "block");
