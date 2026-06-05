@@ -13,7 +13,7 @@ type CoreT = {
         logs: Idb<LogDbSchemaT>
     }
     _csrf: string
-    info: string
+    info: string[]
 }
 
 export const core = {
