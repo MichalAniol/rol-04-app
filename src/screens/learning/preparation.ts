@@ -1,4 +1,4 @@
-import { setStyle, display, getPx, inner, boundRect } from '../../dom'
+import { setStyle, display, getPx, inner, boundRect, prepare } from '../../dom'
 import { elements } from './learning'
 import { mark } from './evaluation'
 import { core } from '../../core'
@@ -24,6 +24,7 @@ type DataT = {
     confirm: boolean,
     tabH: number,
     answers: EngineAnswersT
+    dots: HTMLElement[]
 }
 
 export const data: DataT = {
@@ -33,8 +34,9 @@ export const data: DataT = {
     answers: {
         // origin: null,
         // shuffled: [],
-    }
-} as DataT
+    } as EngineAnswersT,
+    dots: []
+}
 
 export const setSheetHight = () => {
     setStyle(elements.separator, 'height', ``)
@@ -59,6 +61,7 @@ export const setSheetHight = () => {
 }
 
 export const setQuestion = async () => {
+    console.log('%c name:', 'background:rgb(68, 0, 255); color: #003300', name)
     const item = await getItem()
 
     if (item.question.img) {
@@ -74,6 +77,10 @@ export const setQuestion = async () => {
     mark(-1)()
     setStyle(elements.sheet, 'opacity', `0`)
 
+    // history
+    data.dots.forEach(dot => prepare(dot, { delete: true }))
+    data.dots = []
+
     // pytanie info
     setTimeout(() => {
         const usedList: string[] = [item.question.id]
@@ -82,6 +89,17 @@ export const setQuestion = async () => {
         setTimeout(() => {
             inner(elements.info, `nazwa: <b>${item.question.id}</b><br><br>wystąpiło <b>${usedList.length}x</b> w: ${idToDateGet(usedList)}.`)
         }, 100)
+
+        console.log('%c data.answers.origin?.answer.history:', 'background: #ffcc00; color: #003300', data.answers.origin?.answer.history)
+        data.dots = data.answers.origin?.answer.history.map(h => {
+            const classes = [`learning-question-history-${h.result ? 'good' : 'bad'}`]
+
+            return prepare('div', {
+                classes,
+            }) as HTMLElement
+        }) || []
+        prepare(elements.history, { children: data.dots })
+        console.log('%c data.dots:', 'background: #ffcc00; color: #003300', data.dots)
     }, 100)
 
     // obrazek

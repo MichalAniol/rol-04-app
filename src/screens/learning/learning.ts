@@ -23,6 +23,7 @@ type ElementsT = {
     measure: HTMLElement
     imgBig: HTMLElement
     info: HTMLElement
+    history: HTMLElement
     separator: HTMLElement
     question: HTMLElement
     img: HTMLElement
@@ -55,6 +56,7 @@ export const init = () => {
     elements.measure = byId('learning-measure') as HTMLElement
     elements.imgBig = byId('learning-img-big') as HTMLElement
     elements.info = byId('learning-question-info') as HTMLElement
+    elements.history = byId('learning-question-history') as HTMLElement
     elements.separator = byId('learning-sheet-separator') as HTMLElement
     elements.question = byId('question') as HTMLElement
     elements.img = byId('learning-img') as HTMLElement
