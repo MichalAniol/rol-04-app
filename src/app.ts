@@ -34,13 +34,12 @@ import { setConsole } from './console'
         core.idb.answers = idb<AnswersDbSchemaT>('answers')
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
-        core.info = `
-            1. dodano w ustawieniach przyciski wczytania użytkownika i restart pytań.
-            <br><br>
-            2. dodano podsumowanie sesji po jej zakończeniu.
-            <br><br>
-            3. przy losowaniu uwzględniono datę ostatniego uzycia pytania - nowsze częściej występują w nowych testach.
-        `
+        core.info = [
+            '1. dodano w ustawieniach przyciski wczytania użytkownika i restart pytań.',
+            '2. dodano podsumowanie sesji po jej zakończeniu.',
+            '3. przy losowaniu uwzględniono datę ostatniego uzycia pytania - nowsze częściej występują w nowych testach.',
+            '4. dodano wizualizację historię odpowiedzi',
+        ]
 
         const domContentLoaded = async () => {
             controllers.initKeys()

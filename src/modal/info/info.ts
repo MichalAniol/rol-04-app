@@ -1,4 +1,4 @@
-import { add, byId, display, inner, remove } from "@/dom"
+import { add, byId, display, inner, prepare, remove } from "@/dom"
 import { areNotNull } from "@/utils/isNotNull"
 import { hide, show } from "../modal"
 
@@ -34,9 +34,18 @@ const withClose = (fn: () => void) => () => {
     closeModal()
 }
 
-export const showInfoModal = (title: string, text: string, ok: boolean, cancel: boolean, okFn?: () => void, cancelFn?: () => void) => {
+export const showInfoModal = (title: string, text: string[], ok: boolean, cancel: boolean, okFn?: () => void, cancelFn?: () => void) => {
     inner(elements.title, title)
-    inner(elements.text, text)
+
+    elements.text.replaceChildren()
+    const infoTexts = text.map(txt => {
+        return prepare('p', {
+            classes: ['modal-info-section-paragraph'],
+            inner: txt,
+        }) as HTMLElement
+    })
+    prepare(elements.text, { children: infoTexts })
+
     display(elements.btnOk, ok ? 'block' : 'none')
     display(elements.btnCancel, cancel ? 'block' : 'none')
 

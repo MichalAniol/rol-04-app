@@ -5708,7 +5708,14 @@
   };
   var showInfoModal = (title, text, ok, cancel, okFn, cancelFn) => {
     inner(elements12.title, title);
-    inner(elements12.text, text);
+    elements12.text.replaceChildren();
+    const infoTexts = text.map((txt) => {
+      return prepare("p", {
+        classes: ["modal-info-section-paragraph"],
+        inner: txt
+      });
+    });
+    prepare(elements12.text, { children: infoTexts });
     display(elements12.btnOk, ok ? "block" : "none");
     display(elements12.btnCancel, cancel ? "block" : "none");
     fns.ok = okFn ? withClose(okFn) : closeModal;
@@ -5816,7 +5823,7 @@
     const response = await getVersion(versionDb);
     const versionRes = response.version;
     const infoVersion = core.store.get(storageNames.infoVersion);
-    if (versionRes !== infoVersion && core.info) {
+    if (versionRes !== infoVersion && core.info.length > 0) {
       showInfoModal("Aktualizacja", core.info, true, false);
       core.store.set(storageNames.infoVersion, versionRes);
     }
@@ -6433,13 +6440,12 @@
       core.idb.images = idb("images");
       core.idb.answers = idb("answers");
       core.idb.logs = idb("logs");
-      core.info = `
-            1. dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.
-            <br><br>
-            2. dodano podsumowanie sesji po jej zako\u0144czeniu.
-            <br><br>
-            3. przy losowaniu uwzgl\u0119dniono dat\u0119 ostatniego uzycia pytania - nowsze cz\u0119\u015Bciej wyst\u0119puj\u0105 w nowych testach.
-        `;
+      core.info = [
+        "1. dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.",
+        "2. dodano podsumowanie sesji po jej zako\u0144czeniu.",
+        "3. przy losowaniu uwzgl\u0119dniono dat\u0119 ostatniego uzycia pytania - nowsze cz\u0119\u015Bciej wyst\u0119puj\u0105 w nowych testach.",
+        "4. dodano wizualizacj\u0119 histori\u0119 odpowiedzi"
+      ];
       const domContentLoaded = async () => {
         controllers.initKeys();
         modules.forEach((m) => {
