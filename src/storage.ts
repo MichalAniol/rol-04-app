@@ -5,6 +5,14 @@ export const checked = {
     no: 'no',
 } as const
 
+export type SessionDataT = {
+    time: number
+    mediocre: number
+    all: number
+    good: number
+    bad: number
+}
+
 export type CheckedValuesT = typeof checked[keyof typeof checked]
 
 type NamesValueTypeT = {
@@ -14,11 +22,12 @@ type NamesValueTypeT = {
     imgAvailable: CheckedValuesT
     userId: string
     version: string
+    infoVersion: string
     configTests: string
     menuLeft: CheckedValuesT
     questionsRatio: number
     sessionStarted: CheckedValuesT
-    infoVersion: string
+    lastSession: SessionDataT
 }
 
 export const storageNames = {
@@ -28,14 +37,15 @@ export const storageNames = {
     imgAvailable: 'img-available',  //
     userId: 'user-id',
     version: 'version',
+    infoVersion: 'info-version',
     configTests: 'config-tests',
     menuLeft: 'menu-left',
     questionsRatio: 'questions-ratio',
     sessionStarted: 'session-started',
-    infoVersion: 'info-version'
+    lastSession: 'last-session',
 } as const
 
-type DataNamesKeysT = keyof typeof storageNames 
+type DataNamesKeysT = keyof typeof storageNames
 export type DataNamesValuesT = typeof storageNames[DataNamesKeysT]
 
 const START_QUESTIONS_RATIO = .85
@@ -48,11 +58,18 @@ const defaultData: NamesValueTypeT = {
     imgAvailable: checked.no,
     userId: 'null',
     version: 'null',
+    infoVersion: 'null',
     configTests: 'null',
     menuLeft: checked.no,
     questionsRatio: 25,
     sessionStarted: checked.no,
-    infoVersion: 'null',
+    lastSession: {
+        time: 0,
+        mediocre: 0,
+        all: 0,
+        good: 0,
+        bad: 0,
+    } as SessionDataT,
 }
 
 export const getStorage = async () => {

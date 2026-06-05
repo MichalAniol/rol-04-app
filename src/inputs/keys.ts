@@ -5,15 +5,15 @@ import { core } from '@/core'
 import { storageNames } from '@/storage'
 import { data, setQuestion } from '@/screens/learning/preparation'
 import { HistoryT, LearningT } from '@/types'
-import { clearResults, getRateHistory } from '@/screens/learning/evaluation'
+import { clearResults, confirmClick, getRateHistory, mark } from '@/screens/learning/evaluation'
 
 const keysListener = async (event: any) => {
+    console.log('%c event.code:', 'background:rgb(234, 0, 255); color: #003300', event.code)
     switch (event.code) {
+        // case 'Tab': {
+        //     event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
+        // } break
         case 'Tab': {
-            event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
-        } break
-        case 'Space': {
-            // tab.mobile.changeVisibility()
             changeVisibility()
         } break
         case 'ArrowRight':
@@ -26,8 +26,30 @@ const keysListener = async (event: any) => {
             goLeft()
             // console.log('goLeft')
         } break
-        case 'KeyQ': {
-            if (process.env.DEBUG === "true") {
+
+    }
+
+    if (process.env.DEBUG === "true") {
+
+        switch (event.code) {
+            case 'Digit1': {
+                mark(0)()
+            } break
+            case 'Digit2': {
+                mark(1)()
+            } break
+            case 'Digit3': {
+                mark(2)()
+            } break
+            case 'Digit4': {
+                mark(3)()
+            } break
+            case 'Space': {
+                if (data.mark > -1) {
+                    confirmClick()
+                }
+            } break
+            case 'KeyQ': {
                 // console.log('%c>>> KeyQ <<<', 'background:rgb(0, 55, 255); color: #003300')
                 const sessionStarted = await core.store.get(storageNames.sessionStarted)
                 if (sessionStarted) {
@@ -56,9 +78,10 @@ const keysListener = async (event: any) => {
 
                     clearResults()
                     setQuestion()
-                }
+
+                } break
             }
-        } break
+        }
     }
 }
 

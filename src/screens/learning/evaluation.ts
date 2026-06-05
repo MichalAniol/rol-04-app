@@ -6,6 +6,7 @@ import { core } from '../../core'
 import { determinants } from '../../engine/params'
 import { HistoryT, LearningT, rating, RatingT } from '@/types'
 import { get as settingsThemeGet, theme as themeOrigin } from '../settings/theme/theme'
+import { addBad, addGood } from './startEnd'
 
 export const mark = (num: number) => () => {
     if (data.confirm) {
@@ -17,8 +18,12 @@ export const mark = (num: number) => () => {
     } else {
         enable(elements.confirm)
     }
+    if (process.env.DEBUG === "true") {
+        elements.confirm.focus()
+    }
 
     data.mark = num
+    // console.log('%c data.mark:', 'background:rgb(0, 34, 255); color: #003300', data.mark)
     elements.checkbox.forEach((a, i) => a.checked = (i === num))
     elements.answersFields.forEach((a, i) => i === num ? setStyle(a, 'border', '2px solid var(--mine_color)') : setStyle(a, 'border', '2px solid transparent'))
 }
@@ -77,12 +82,12 @@ const sumAndMemo = async () => {
     (data.answers.origin as LearningT).answer.rating = rate
 
     // zapis w pytaniach
-    const { drawn, index, ...answerDb } = (data.answers.origin as LearningT ).answer
+    const { drawn, index, ...answerDb } = (data.answers.origin as LearningT).answer
     // @ts-ignore
     core.idb.answers.update(index, (old) => old = answerDb)
 
     const log = {
-        action: (data.answers.origin as LearningT ).answer.id,
+        action: (data.answers.origin as LearningT).answer.id,
         result: answer.correct,
     }
 
@@ -106,11 +111,12 @@ const showResult = async () => {
     disable(elements.confirm)
     setTimeout(() => {
         enable(elements.confirm)
-    }, 600)
+    }, 100)
 
     const markedAnswer = data.answers.shuffled[data.mark] as ShuffledT
     if (markedAnswer.correct) {
         setGreen(elements.answersFields[data.mark] as HTMLElement)
+        addGood()
     } else {
         elements.answersFields.forEach((field, index) => {
             if (index === data.mark) {
@@ -121,6 +127,7 @@ const showResult = async () => {
                 setGreen(field)
             }
         })
+        addBad()
     }
 
     await sumAndMemo()

@@ -1,0 +1,31 @@
+.learning-session-results .title{
+    text-align: center;
+}
+
+
+.learning-session-table {
+    font-size: var(--font_big_size);
+    margin: 0 auto;
+}
+
+.learning-session-table tr td{
+    vertical-align:  bottom;
+    padding: 6px 12px 6px 0;
+    line-height: var(--font_big_size);
+}
+
+.learning-session-table tr td:first-child {
+    text-align: right;
+}
+
+.learning-session-table tbody tr:nth-child(3) td {
+    color: var(--mine_color);
+}
+
+.learning-session-table tbody tr:nth-child(4) td {
+    color: var(--on_prime_color);
+}
+
+.learning-session-table tbody tr:nth-child(5) td {
+    color: var(--off_prime_color);
+}

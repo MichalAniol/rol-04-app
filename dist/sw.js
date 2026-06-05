@@ -129,11 +129,25 @@ const FONT_URLS = [
 const CACHE_NAME = 'pwa-cache-v__VERSION__';
 
 self.addEventListener("install", event => {
-    self.skipWaiting(); // 🔥 natychmiastowa instalacja nowego SW
+    self.skipWaiting();
 
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll([
+        (async () => {
+            const clients = await self.clients.matchAll({
+                type: "window",
+                includeUncontrolled: true
+            });
+
+            clients.forEach(client => {
+                client.postMessage({
+                    type: "UPDATE_STAGE",
+                    stage: "installing"
+                });
+            });
+
+            const cache = await caches.open(CACHE_NAME);
+
+            await cache.addAll([
                 '/index.html',
                 '/index.js',
                 '/style.css',
@@ -141,15 +155,34 @@ self.addEventListener("install", event => {
                 '/icon/favicon-512.png',
                 ...FONT_URLS
             ]);
-        })
+
+            clients.forEach(client => {
+                client.postMessage({
+                    type: "UPDATE_STAGE",
+                    stage: "cached"
+                });
+            });
+        })()
     );
 });
 
 self.addEventListener("activate", event => {
     event.waitUntil(
         (async () => {
-            // 🔥 usuń stare cache
+            const clients = await self.clients.matchAll({
+                type: "window",
+                includeUncontrolled: true
+            });
+
+            clients.forEach(client => {
+                client.postMessage({
+                    type: "UPDATE_STAGE",
+                    stage: "activating"
+                });
+            });
+
             const keys = await caches.keys();
+
             await Promise.all(
                 keys.map(key => {
                     if (key !== CACHE_NAME) {
@@ -158,8 +191,15 @@ self.addEventListener("activate", event => {
                 })
             );
 
-            // 🔥 przejmij kontrolę nad stroną od razu
             await self.clients.claim();
+
+            clients.forEach(client => {
+                client.postMessage({
+                    type: "UPDATE_STAGE",
+                    stage: "activated",
+                    version: CACHE_NAME
+                });
+            });
         })()
     );
 });

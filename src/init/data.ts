@@ -83,7 +83,7 @@ export const check = async () => {
 
     const infoVersion = core.store.get(storageNames.infoVersion)
     if (versionRes !== infoVersion) {
-        showInfoModal('Aktualizacja', 'dodano w ustawieniach przyciski wczytania użytkownika i restart pytań.', true, false)
+        showInfoModal('Aktualizacja', 'dodano podsumowanie sesji po jej zakończeniu.', true, false)
         core.store.set(storageNames.infoVersion, versionRes)
     }
 

@@ -3308,11 +3308,12 @@
     //
     userId: "user-id",
     version: "version",
+    infoVersion: "info-version",
     configTests: "config-tests",
     menuLeft: "menu-left",
     questionsRatio: "questions-ratio",
     sessionStarted: "session-started",
-    infoVersion: "info-version"
+    lastSession: "last-session"
   };
   var START_QUESTIONS_RATIO = 0.85;
   var getQuestionsRatio = () => Math.floor(determinants.questionInSession * START_QUESTIONS_RATIO).toString();
@@ -3323,11 +3324,18 @@
     imgAvailable: checked.no,
     userId: "null",
     version: "null",
+    infoVersion: "null",
     configTests: "null",
     menuLeft: checked.no,
     questionsRatio: 25,
     sessionStarted: checked.no,
-    infoVersion: "null"
+    lastSession: {
+      time: 0,
+      mediocre: 0,
+      all: 0,
+      good: 0,
+      bad: 0
+    }
   };
   var getStorage = async () => {
     const isValidJSONStringify = (value) => {
@@ -3562,7 +3570,7 @@
     getGoTo: () => getGoTo,
     goLeft: () => goLeft,
     goRight: () => goRight,
-    init: () => init23,
+    init: () => init24,
     resize: () => resize7,
     screens: () => screens,
     setTab: () => setTab,
@@ -3688,7 +3696,7 @@
     deactivate: () => deactivate4,
     elements: () => elements3,
     firstUse: () => firstUse,
-    init: () => init9,
+    init: () => init10,
     resize: () => resize4
   });
 
@@ -3781,7 +3789,7 @@
     active: () => active2,
     deactivate: () => deactivate2,
     elements: () => elements4,
-    init: () => init7,
+    init: () => init8,
     resize: () => resize2
   });
 
@@ -3867,18 +3875,18 @@
       });
     });
     const getSaved = () => core.store.get(radioData.storeName);
-    const mark2 = (name) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name);
+    const mark3 = (name) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name);
     const active11 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
     const deactivate11 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
-    const init24 = () => {
+    const init25 = () => {
       active11();
       const saved = getSaved();
       if (radioData.init) radioData.init(saved);
-      mark2(saved);
+      mark3(saved);
       return saved;
     };
     return {
-      init: init24,
+      init: init25,
       active: active11,
       deactivate: deactivate11
     };
@@ -3944,116 +3952,6 @@
   var init5 = async () => {
     ratio = getRadio(themeData);
     ratio.init();
-  };
-
-  // src/screens/learning/evaluation.ts
-  var mark = (num) => () => {
-    if (data4.confirm) {
-      return;
-    }
-    if (num === -1) {
-      disable(elements4.confirm);
-    } else {
-      enable(elements4.confirm);
-    }
-    data4.mark = num;
-    elements4.checkbox.forEach((a, i) => a.checked = i === num);
-    elements4.answersFields.forEach((a, i) => i === num ? setStyle(a, "border", "2px solid var(--mine_color)") : setStyle(a, "border", "2px solid transparent"));
-  };
-  var setResult = (result, history) => {
-    history.forEach((h) => {
-      if (h.result) {
-        result.good++;
-      } else {
-        result.bad++;
-      }
-    });
-    return result;
-  };
-  var getRateHistory = (history) => {
-    const getResult = () => ({ good: 0, bad: 0 });
-    const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-    const lastThree = sortedHistory.slice(-determinants.numLastRequiredQuestions);
-    const resultOne = setResult(getResult(), lastThree);
-    if (resultOne.bad > 0) {
-      return {
-        type: rating.bad,
-        scale: resultOne.bad - 1
-      };
-    } else {
-      const lastSix = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions);
-      const resultTwo = setResult(getResult(), lastSix);
-      return {
-        type: rating.good,
-        scale: resultTwo.good - 1
-      };
-    }
-  };
-  var sumAndMemo = async () => {
-    const answer = data4.answers.shuffled[data4.mark];
-    const timestamp = Date.now();
-    data4.answers.origin?.answer.history.push({
-      timestamp,
-      result: answer.correct
-    });
-    const rate = getRateHistory(data4.answers.origin?.answer.history);
-    data4.answers.origin.answer.rating = rate;
-    const { drawn, index, ...answerDb } = data4.answers.origin.answer;
-    core.idb.answers.update(index, (old) => old = answerDb);
-    const log = {
-      action: data4.answers.origin.answer.id,
-      result: answer.correct
-    };
-    core.idb.logs.set(timestamp, log);
-  };
-  var setGreen = (field) => {
-    setStyle(field, "backgroundColor", "var(--on_prime_color)");
-    const theme2 = get();
-    if (theme2 === theme.dark) {
-      setStyle(field, "color", "var(--last_color)");
-    }
-  };
-  var showResult = async () => {
-    data4.confirm = true;
-    inner(elements4.confirm, "Nast\u0119pne");
-    disable(elements4.confirm);
-    setTimeout(() => {
-      enable(elements4.confirm);
-    }, 600);
-    const markedAnswer = data4.answers.shuffled[data4.mark];
-    if (markedAnswer.correct) {
-      setGreen(elements4.answersFields[data4.mark]);
-    } else {
-      elements4.answersFields.forEach((field, index) => {
-        if (index === data4.mark) {
-          setStyle(field, "backgroundColor", "var(--off_prime_color)");
-        }
-        const correct = data4.answers.shuffled[index].correct;
-        if (correct) {
-          setGreen(field);
-        }
-      });
-    }
-    await sumAndMemo();
-  };
-  var clearResults = () => {
-    data4.confirm = false;
-    inner(elements4.confirm, "Zatwierd\u017A");
-    setQuestion();
-    elements4.answersFields.forEach((field, index) => {
-      if (index % 2 === 0) {
-        setStyle(field, "backgroundColor", "var(--penultimate_color)");
-      } else {
-        setStyle(field, "backgroundColor", "var(--third_from_end_color)");
-      }
-    });
-  };
-  var confirmClick = async () => {
-    if (data4.confirm) {
-      clearResults();
-    } else {
-      await showResult();
-    }
   };
 
   // src/engine/analize.ts
@@ -4426,15 +4324,82 @@
   };
 
   // src/screens/learning/startEnd.ts
+  var sessionData = {
+    timeStart: 0,
+    time: 0,
+    mediocre: 0,
+    all: 0,
+    good: 0,
+    bad: 0
+  };
+  var cleanSessionData = () => {
+    sessionData.timeStart = (/* @__PURE__ */ new Date()).getTime();
+    sessionData.time = 0;
+    sessionData.mediocre = 0;
+    sessionData.all = 0;
+    sessionData.good = 0;
+    sessionData.bad = 0;
+  };
+  var addGood = () => {
+    sessionData.all++;
+    sessionData.good++;
+  };
+  var addBad = () => {
+    sessionData.all++;
+    sessionData.bad++;
+  };
+  var getSessionDataFromMemo = () => {
+    const data7 = core.store.get(storageNames.lastSession);
+    sessionData.time = data7.time;
+    sessionData.mediocre = data7.mediocre;
+    sessionData.all = data7.all;
+    sessionData.good = data7.good;
+    sessionData.bad = data7.bad;
+  };
+  var setSessionDataToMemo = () => {
+    if (sessionData.all > 0) {
+      core.store.set(storageNames.lastSession, {
+        time: sessionData.time,
+        mediocre: sessionData.mediocre,
+        all: sessionData.all,
+        good: sessionData.good,
+        bad: sessionData.bad
+      });
+    }
+  };
+  var formatTimestamp = (timestamp) => {
+    const totalSeconds = Math.floor(timestamp / 1e3);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (n) => n.toString().padStart(2, "0");
+    return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+  };
+  var countTime = () => {
+    const now = (/* @__PURE__ */ new Date()).getTime();
+    sessionData.time = now - sessionData.timeStart;
+    if (sessionData.all > 0) {
+      sessionData.mediocre = sessionData.time / sessionData.all;
+    }
+  };
+  var showSessionData = () => {
+    inner(elements4.time, formatTimestamp(sessionData.time));
+    inner(elements4.mediocreTime, sessionData.all > 0 ? formatTimestamp(sessionData.mediocre) : "-");
+    inner(elements4.all, sessionData.all.toString());
+    inner(elements4.good, sessionData.good.toString());
+    inner(elements4.bad, sessionData.bad.toString());
+  };
   var start = async () => {
     await core.store.set(storageNames.sessionStarted, checked.yes);
     setStyle(elements4.sheet, "opacity", `0`);
     const vv = window.visualViewport;
     resize2(vv.width, vv.height);
+    display(elements4.results, "none");
     inner(elements4.startEndBtn, "Zako\u0144cz");
     setStyle(elements4.startEndBtn, "backgroundColor", "var(--mine_4_color)");
     remove(elements4.startEndBtn, "click", start);
     add(elements4.startEndBtn, "click", end);
+    cleanSessionData();
     await init6();
     setTimeout(() => {
       display(elements4.sheet, "block");
@@ -4446,14 +4411,142 @@
     display(elements4.sheet, "none");
     const vv = window.visualViewport;
     resize2(vv.width, vv.height);
+    display(elements4.results, "block");
     inner(elements4.startEndBtn, "Rozpocznij");
     setStyle(elements4.startEndBtn, "backgroundColor", "var(--mine_color)");
     remove(elements4.startEndBtn, "click", end);
     add(elements4.startEndBtn, "click", start);
+    if (sessionData.all > 0) {
+      countTime();
+      showSessionData();
+      setSessionDataToMemo();
+    } else {
+      getSessionDataFromMemo();
+      showSessionData();
+    }
     memoAnswers();
     memoLogs();
     endSession();
     data4.answers.origin = null;
+  };
+  var init7 = () => {
+    getSessionDataFromMemo();
+    showSessionData();
+  };
+
+  // src/screens/learning/evaluation.ts
+  var mark = (num) => () => {
+    if (data4.confirm) {
+      return;
+    }
+    if (num === -1) {
+      disable(elements4.confirm);
+    } else {
+      enable(elements4.confirm);
+    }
+    if (false) {
+      elements4.confirm.focus();
+    }
+    data4.mark = num;
+    elements4.checkbox.forEach((a, i) => a.checked = i === num);
+    elements4.answersFields.forEach((a, i) => i === num ? setStyle(a, "border", "2px solid var(--mine_color)") : setStyle(a, "border", "2px solid transparent"));
+  };
+  var setResult = (result, history) => {
+    history.forEach((h) => {
+      if (h.result) {
+        result.good++;
+      } else {
+        result.bad++;
+      }
+    });
+    return result;
+  };
+  var getRateHistory = (history) => {
+    const getResult = () => ({ good: 0, bad: 0 });
+    const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    const lastThree = sortedHistory.slice(-determinants.numLastRequiredQuestions);
+    const resultOne = setResult(getResult(), lastThree);
+    if (resultOne.bad > 0) {
+      return {
+        type: rating.bad,
+        scale: resultOne.bad - 1
+      };
+    } else {
+      const lastSix = sortedHistory.slice(-determinants.numLastHighlyRatedQuestions);
+      const resultTwo = setResult(getResult(), lastSix);
+      return {
+        type: rating.good,
+        scale: resultTwo.good - 1
+      };
+    }
+  };
+  var sumAndMemo = async () => {
+    const answer = data4.answers.shuffled[data4.mark];
+    const timestamp = Date.now();
+    data4.answers.origin?.answer.history.push({
+      timestamp,
+      result: answer.correct
+    });
+    const rate = getRateHistory(data4.answers.origin?.answer.history);
+    data4.answers.origin.answer.rating = rate;
+    const { drawn, index, ...answerDb } = data4.answers.origin.answer;
+    core.idb.answers.update(index, (old) => old = answerDb);
+    const log = {
+      action: data4.answers.origin.answer.id,
+      result: answer.correct
+    };
+    core.idb.logs.set(timestamp, log);
+  };
+  var setGreen = (field) => {
+    setStyle(field, "backgroundColor", "var(--on_prime_color)");
+    const theme2 = get();
+    if (theme2 === theme.dark) {
+      setStyle(field, "color", "var(--last_color)");
+    }
+  };
+  var showResult = async () => {
+    data4.confirm = true;
+    inner(elements4.confirm, "Nast\u0119pne");
+    disable(elements4.confirm);
+    setTimeout(() => {
+      enable(elements4.confirm);
+    }, 100);
+    const markedAnswer = data4.answers.shuffled[data4.mark];
+    if (markedAnswer.correct) {
+      setGreen(elements4.answersFields[data4.mark]);
+      addGood();
+    } else {
+      elements4.answersFields.forEach((field, index) => {
+        if (index === data4.mark) {
+          setStyle(field, "backgroundColor", "var(--off_prime_color)");
+        }
+        const correct = data4.answers.shuffled[index].correct;
+        if (correct) {
+          setGreen(field);
+        }
+      });
+      addBad();
+    }
+    await sumAndMemo();
+  };
+  var clearResults = () => {
+    data4.confirm = false;
+    inner(elements4.confirm, "Zatwierd\u017A");
+    setQuestion();
+    elements4.answersFields.forEach((field, index) => {
+      if (index % 2 === 0) {
+        setStyle(field, "backgroundColor", "var(--penultimate_color)");
+      } else {
+        setStyle(field, "backgroundColor", "var(--third_from_end_color)");
+      }
+    });
+  };
+  var confirmClick = async () => {
+    if (data4.confirm) {
+      clearResults();
+    } else {
+      await showResult();
+    }
   };
 
   // src/utils/drawImage.ts
@@ -4465,7 +4558,7 @@
       fitCtx: null,
       fitWidth: 0
     };
-    const init24 = (canvas, fitCanvas) => {
+    const init25 = (canvas, fitCanvas) => {
       data7.canvas = canvas;
       data7.ctx = canvas.getContext("2d");
       data7.fitCanvas = fitCanvas;
@@ -4528,7 +4621,7 @@
       };
     })();
     return {
-      init: init24,
+      init: init25,
       setWidth,
       draw
     };
@@ -4536,7 +4629,13 @@
 
   // src/screens/learning/learning.ts
   var elements4 = {};
-  var init7 = () => {
+  var init8 = () => {
+    elements4.results = byId("learning-session-results");
+    elements4.time = byId("learning-session-table-time");
+    elements4.mediocreTime = byId("learning-session-table-mediocre-time");
+    elements4.all = byId("learning-session-table-all");
+    elements4.good = byId("learning-session-table-good");
+    elements4.bad = byId("learning-session-table-bad");
     elements4.startEnd = byId("learning-start-end");
     elements4.startEndBtn = byId("learning-start-end-btn");
     elements4.sheet = byId("learning-sheet");
@@ -4558,6 +4657,7 @@
     elements4.drawImage.init(canvas, fitCanvas);
     areNotNull(elements4, ["screens", "learning"]);
     display(elements4.sheet, "none");
+    init7();
   };
   var LOW_START_END_BTN = 12 + 28 + 12;
   var resize2 = (w, h) => {
@@ -4575,8 +4675,11 @@
       setStyle(elements4.startEndBtn, "padding", "12px 0");
       setSheetHight();
     } else {
+      setTimeout(() => {
+        const resultHeight = boundRect(elements4.results).height;
+        setStyle(elements4.startEnd, "height", getPx(h - 30 - menuH - 20 - resultHeight));
+      }, 200);
       setStyle(elements4.sheet, "height", `calc(${getPx(h - LOW_START_END_BTN - menuH)})`);
-      setStyle(elements4.startEnd, "height", getPx(h - 30 - menuH - 20));
       setStyle(elements4.startEndBtn, "padding", "24px 0");
     }
   };
@@ -4782,7 +4885,7 @@
       }
     });
   };
-  var init8 = () => {
+  var init9 = () => {
     waitFor(() => data.sume !== 0, () => {
       themeChange();
       const vv = window.visualViewport;
@@ -4911,7 +5014,7 @@
 
   // src/screens/statistics/statistics.ts
   var elements3 = {};
-  var init9 = async () => {
+  var init10 = async () => {
     elements3.sheet = byId("statistics-sheet");
     elements3.monitor = byId("statistics-monitor");
     elements3.ctx = elements3.monitor.getContext("2d");
@@ -4921,7 +5024,7 @@
     elements3.tooltip = byId("tooltip");
     areNotNull(elements3, ["screens", "drawing"]);
     await updateAnswers();
-    init8();
+    init9();
     waitFor(() => data.answers.length !== 0 && data2.steps.used.length !== 0 && elements3.legend !== null, setMonitorLegend)();
   };
   var resize4 = (w, h) => {
@@ -4940,7 +5043,7 @@
     deactivate3();
   };
   var firstUse = () => {
-    init9();
+    init10();
     const vv = visualViewport;
     resize4(vv.width, vv.height);
     cells();
@@ -4951,7 +5054,7 @@
   __export(answers_exports, {
     active: () => active6,
     deactivate: () => deactivate6,
-    init: () => init11
+    init: () => init12
   });
 
   // src/screens/answers/filter/filter.ts
@@ -4960,7 +5063,7 @@
     answersFilterContentHeight: null,
     open: false
   };
-  var init10 = () => {
+  var init11 = () => {
     elements5.answersFilter = byId("answers-filter-title");
     elements5.answersFilterMore = byId("answer-filter-more");
     elements5.answersFilterLess = byId("answer-filter-less");
@@ -4993,8 +5096,8 @@
   };
 
   // src/screens/answers/answers.ts
-  var init11 = () => {
-    init10();
+  var init12 = () => {
+    init11();
   };
   var active6 = () => {
     active5();
@@ -5008,7 +5111,7 @@
   __export(settings_exports, {
     active: () => active10,
     deactivate: () => deactivate10,
-    init: () => init22,
+    init: () => init23,
     resize: () => resize6
   });
 
@@ -5018,7 +5121,7 @@
     settingsAppInfoContentHeight: null,
     open: false
   };
-  var init12 = () => {
+  var init13 = () => {
     elements6.settingsAppInfo = byId("settings-app-info-title");
     elements6.settingsAppInfoMore = byId("settings-app-info-more");
     elements6.settingsAppInfoLess = byId("settings-app-info-less");
@@ -5055,7 +5158,7 @@
   var state3 = {
     ratio: 0
   };
-  var init13 = async () => {
+  var init14 = async () => {
     elements7.settingsSliderRepeatable = byId("settings-slider-repeatable");
     elements7.settingsSliderSingle = byId("settings-slider-single");
     elements7.settingsSliderInput = byId("settings-slider-input");
@@ -5150,7 +5253,7 @@
   var modal_exports = {};
   __export(modal_exports, {
     hide: () => hide2,
-    init: () => init19,
+    init: () => init20,
     resize: () => resize5,
     show: () => show2
   });
@@ -5357,7 +5460,7 @@
     inner(elements9.btnText, "instalowanie");
     waitFor(isAppInstalled, hideInstallerModal);
   };
-  var init14 = () => {
+  var init15 = () => {
     elements9.modal = byId("modal-installer");
     elements9.installBtn = byId("modal-installer-btn");
     elements9.noInstallBtn = byId("modal-installer-btn-no");
@@ -5388,7 +5491,7 @@
     await getSecure();
     setTimeout(() => check(), 100);
   };
-  var init16 = async () => {
+  var init17 = async () => {
     waitFor(() => data.sume !== 0, async () => {
       const started = await core.store.get(storageNames.sessionStarted);
       if (started === checked.yes) {
@@ -5399,7 +5502,7 @@
         resize2(vv.width, vv.height);
       }
     })();
-    await init15();
+    await init16();
   };
 
   // src/init/user.ts
@@ -5407,7 +5510,7 @@
     core.store.set(storageNames.userId, userId);
     setUserId(userId);
   };
-  var init15 = async () => {
+  var init16 = async () => {
     const secure = await getSecure();
     const startApp = () => {
       if (secure.command === responseCommand.secure.generateUserId) {
@@ -5470,7 +5573,7 @@
 
   // src/modal/user/user.ts
   var elements10 = {};
-  var init17 = () => {
+  var init18 = () => {
     elements10.btnNewUser = byId("modal-user-btn-new-user");
     elements10.modal = byId("modal-user");
     elements10.idInfo = byId("modal-user-id-info");
@@ -5539,14 +5642,14 @@
 
   // src/modal/modal.ts
   var elements11 = {};
-  var init19 = () => {
+  var init20 = () => {
     elements11.modal = byId("modal");
     elements11.back = byId("modal-back");
     areNotNull(elements11, ["modal"]);
     error.init();
-    init17();
-    init14();
     init18();
+    init15();
+    init19();
   };
   var resize5 = (w, h) => {
     setStyle(elements11.back, "width", getPx(w));
@@ -5575,7 +5678,7 @@
 
   // src/modal/info/info.ts
   var elements12 = {};
-  var init18 = () => {
+  var init19 = () => {
     elements12.modal = byId("modal-info");
     elements12.title = byId("modal-info-title");
     elements12.text = byId("modal-info-section");
@@ -5664,7 +5767,7 @@
     const versionRes = response.version;
     const infoVersion = core.store.get(storageNames.infoVersion);
     if (versionRes !== infoVersion) {
-      showInfoModal("Aktualizacja", "dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.", true, false);
+      showInfoModal("Aktualizacja", "dodano podsumowanie sesji po jej zako\u0144czeniu.", true, false);
       core.store.set(storageNames.infoVersion, versionRes);
     }
     if (versionRes !== versionDb) {
@@ -5730,7 +5833,7 @@
 
   // src/screens/settings/options/options.ts
   var elements13 = {};
-  var init20 = () => {
+  var init21 = () => {
     elements13.btnChangeUser = byId("settings-option-change-user-btn");
     elements13.btnReset = byId("settings-option-reset-btn");
     areNotNull(elements13, ["modal", "user"]);
@@ -5766,7 +5869,7 @@
     clickList: []
   };
   var menuRatio;
-  var init21 = () => {
+  var init22 = () => {
     controlMenuData.clickList = [
       () => menuSide(checked.no),
       () => menuSide(checked.yes)
@@ -5780,14 +5883,14 @@
   var resize6 = (w, h) => {
     setStyle(elements14.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
   };
-  var init22 = () => {
+  var init23 = () => {
     elements14.scrollBox = byQuery("#settings-tab-box .scroll-box");
     areNotNull(elements14, ["settings"]);
-    init12();
-    init5();
     init13();
+    init5();
+    init14();
+    init22();
     init21();
-    init20();
   };
   var active10 = () => {
     active7();
@@ -5863,7 +5966,7 @@
   var unBlur = () => {
     setStyle(elements15.allTabs, "filter", "blur(0px)");
   };
-  var init23 = () => {
+  var init24 = () => {
     elements15.carousel = byId("carousel");
     elements15.carouselBox = byId("carousel-box");
     elements15.allTabs = byId("tabs");
@@ -5904,13 +6007,12 @@
 
   // src/inputs/keys.ts
   var keysListener = async (event) => {
+    console.log("%c event.code:", "background:rgb(234, 0, 255); color: #003300", event.code);
     switch (event.code) {
+      // case 'Tab': {
+      //     event.preventDefault()      // blokuje defaultowe przenoszenie fokusu
+      // } break
       case "Tab":
-        {
-          event.preventDefault();
-        }
-        break;
-      case "Space":
         {
           changeVisibility();
         }
@@ -5927,31 +6029,59 @@
           goLeft();
         }
         break;
-      case "KeyQ":
-        {
-          if (false) {
-            const sessionStarted = await core2.store.get(storageNames2.sessionStarted);
-            if (sessionStarted) {
-              const timestamp = Date.now();
-              data6.answers.origin?.answer.history.push({
-                timestamp,
-                result: true
-              });
-              const rate = getRateHistory2(data6.answers.origin?.answer.history);
-              data6.answers.origin.answer.rating = rate;
-              const { drawn, index, ...answerDb } = data6.answers.origin.answer;
-              core2.idb.answers.update(index, (old) => old = answerDb);
-              const log = {
-                action: data6.answers.origin.answer.id,
-                result: true
-              };
-              core2.idb.logs.set(timestamp, log);
-              clearResults2();
-              setQuestion2();
+    }
+    if (false) {
+      switch (event.code) {
+        case "Digit1":
+          {
+            mark2(0)();
+          }
+          break;
+        case "Digit2":
+          {
+            mark2(1)();
+          }
+          break;
+        case "Digit3":
+          {
+            mark2(2)();
+          }
+          break;
+        case "Digit4":
+          {
+            mark2(3)();
+          }
+          break;
+        case "Space":
+          {
+            if (data6.mark > -1) {
+              confirmClick2();
             }
           }
+          break;
+        case "KeyQ": {
+          const sessionStarted = await core2.store.get(storageNames2.sessionStarted);
+          if (sessionStarted) {
+            const timestamp = Date.now();
+            data6.answers.origin?.answer.history.push({
+              timestamp,
+              result: true
+            });
+            const rate = getRateHistory2(data6.answers.origin?.answer.history);
+            data6.answers.origin.answer.rating = rate;
+            const { drawn, index, ...answerDb } = data6.answers.origin.answer;
+            core2.idb.answers.update(index, (old) => old = answerDb);
+            const log = {
+              action: data6.answers.origin.answer.id,
+              result: true
+            };
+            core2.idb.logs.set(timestamp, log);
+            clearResults2();
+            setQuestion2();
+          }
+          break;
         }
-        break;
+      }
     }
   };
   var controllers = {
@@ -6246,7 +6376,7 @@
           }
         });
         resize9.run();
-        await init16();
+        await init17();
         setTimeout(async () => {
           getGoTo(0)();
           await init();
