@@ -374,8 +374,8 @@
     return postMessageSupported ? ((token, callbacks) => {
       _global.addEventListener(
         "message",
-        ({ source, data: data5 }) => {
-          if (source === _global && data5 === token) {
+        ({ source, data: data7 }) => {
+          if (source === _global && data7 === token) {
             callbacks.length && callbacks.shift()();
           }
         },
@@ -1216,8 +1216,8 @@
   };
 
   // node_modules/axios/lib/helpers/toURLEncodedForm.js
-  function toURLEncodedForm(data5, options) {
-    return toFormData_default(data5, new platform_default.classes.URLSearchParams(), {
+  function toURLEncodedForm(data7, options) {
+    return toFormData_default(data7, new platform_default.classes.URLSearchParams(), {
       visitor: function(value, key, path, helpers) {
         if (platform_default.isNode && utils_default.isBuffer(value)) {
           this.append(key, value.toString("base64"));
@@ -1301,38 +1301,38 @@
     transitional: transitional_default,
     adapter: ["xhr", "http", "fetch"],
     transformRequest: [
-      function transformRequest(data5, headers) {
+      function transformRequest(data7, headers) {
         const contentType = headers.getContentType() || "";
         const hasJSONContentType = contentType.indexOf("application/json") > -1;
-        const isObjectPayload = utils_default.isObject(data5);
-        if (isObjectPayload && utils_default.isHTMLForm(data5)) {
-          data5 = new FormData(data5);
+        const isObjectPayload = utils_default.isObject(data7);
+        if (isObjectPayload && utils_default.isHTMLForm(data7)) {
+          data7 = new FormData(data7);
         }
-        const isFormData2 = utils_default.isFormData(data5);
+        const isFormData2 = utils_default.isFormData(data7);
         if (isFormData2) {
-          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data5)) : data5;
+          return hasJSONContentType ? JSON.stringify(formDataToJSON_default(data7)) : data7;
         }
-        if (utils_default.isArrayBuffer(data5) || utils_default.isBuffer(data5) || utils_default.isStream(data5) || utils_default.isFile(data5) || utils_default.isBlob(data5) || utils_default.isReadableStream(data5)) {
-          return data5;
+        if (utils_default.isArrayBuffer(data7) || utils_default.isBuffer(data7) || utils_default.isStream(data7) || utils_default.isFile(data7) || utils_default.isBlob(data7) || utils_default.isReadableStream(data7)) {
+          return data7;
         }
-        if (utils_default.isArrayBufferView(data5)) {
-          return data5.buffer;
+        if (utils_default.isArrayBufferView(data7)) {
+          return data7.buffer;
         }
-        if (utils_default.isURLSearchParams(data5)) {
+        if (utils_default.isURLSearchParams(data7)) {
           headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
-          return data5.toString();
+          return data7.toString();
         }
         let isFileList2;
         if (isObjectPayload) {
           const formSerializer = own(this, "formSerializer");
           if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
-            return toURLEncodedForm(data5, formSerializer).toString();
+            return toURLEncodedForm(data7, formSerializer).toString();
           }
-          if ((isFileList2 = utils_default.isFileList(data5)) || contentType.indexOf("multipart/form-data") > -1) {
+          if ((isFileList2 = utils_default.isFileList(data7)) || contentType.indexOf("multipart/form-data") > -1) {
             const env = own(this, "env");
             const _FormData = env && env.FormData;
             return toFormData_default(
-              isFileList2 ? { "files[]": data5 } : data5,
+              isFileList2 ? { "files[]": data7 } : data7,
               _FormData && new _FormData(),
               formSerializer
             );
@@ -1340,25 +1340,25 @@
         }
         if (isObjectPayload || hasJSONContentType) {
           headers.setContentType("application/json", false);
-          return stringifySafely(data5);
+          return stringifySafely(data7);
         }
-        return data5;
+        return data7;
       }
     ],
     transformResponse: [
-      function transformResponse(data5) {
+      function transformResponse(data7) {
         const transitional2 = own(this, "transitional") || defaults.transitional;
         const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
         const responseType = own(this, "responseType");
         const JSONRequested = responseType === "json";
-        if (utils_default.isResponse(data5) || utils_default.isReadableStream(data5)) {
-          return data5;
+        if (utils_default.isResponse(data7) || utils_default.isReadableStream(data7)) {
+          return data7;
         }
-        if (data5 && utils_default.isString(data5) && (forcedJSONParsing && !responseType || JSONRequested)) {
+        if (data7 && utils_default.isString(data7) && (forcedJSONParsing && !responseType || JSONRequested)) {
           const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
           const strictJSONParsing = !silentJSONParsing && JSONRequested;
           try {
-            return JSON.parse(data5, own(this, "parseReviver"));
+            return JSON.parse(data7, own(this, "parseReviver"));
           } catch (e) {
             if (strictJSONParsing) {
               if (e.name === "SyntaxError") {
@@ -1368,7 +1368,7 @@
             }
           }
         }
-        return data5;
+        return data7;
       }
     ],
     /**
@@ -1404,12 +1404,12 @@
     const config = this || defaults_default;
     const context = response || config;
     const headers = AxiosHeaders_default.from(context.headers);
-    let data5 = context.data;
+    let data7 = context.data;
     utils_default.forEach(fns2, function transform(fn) {
-      data5 = fn.call(config, data5, headers.normalize(), response ? response.status : void 0);
+      data7 = fn.call(config, data7, headers.normalize(), response ? response.status : void 0);
     });
     headers.normalize();
-    return data5;
+    return data7;
   }
 
   // node_modules/axios/lib/cancel/isCancel.js
@@ -1543,7 +1543,7 @@
       const progressBytes = Math.max(0, loaded - bytesNotified);
       const rate = _speedometer(progressBytes);
       bytesNotified = Math.max(bytesNotified, loaded);
-      const data5 = {
+      const data7 = {
         loaded,
         total,
         progress: total ? loaded / total : void 0,
@@ -1554,7 +1554,7 @@
         lengthComputable: total != null,
         [isDownloadStream ? "download" : "upload"]: true
       };
-      listener(data5);
+      listener(data7);
     }, freq);
   };
   var progressEventDecorator = (total, throttled) => {
@@ -1767,7 +1767,7 @@
   var resolveConfig_default = (config) => {
     const newConfig = mergeConfig({}, config);
     const own2 = (key) => utils_default.hasOwnProp(newConfig, key) ? newConfig[key] : void 0;
-    const data5 = own2("data");
+    const data7 = own2("data");
     let withXSRFToken = own2("withXSRFToken");
     const xsrfHeaderName = own2("xsrfHeaderName");
     const xsrfCookieName = own2("xsrfCookieName");
@@ -1788,11 +1788,11 @@
         "Basic " + btoa((auth.username || "") + ":" + (auth.password ? encodeUTF8(auth.password) : ""))
       );
     }
-    if (utils_default.isFormData(data5)) {
+    if (utils_default.isFormData(data7)) {
       if (platform_default.hasStandardBrowserEnv || platform_default.hasStandardBrowserWebWorkerEnv) {
         headers.setContentType(void 0);
-      } else if (utils_default.isFunction(data5.getHeaders)) {
-        setFormDataHeaders(headers, data5.getHeaders(), own2("formDataHeaderPolicy"));
+      } else if (utils_default.isFunction(data7.getHeaders)) {
+        setFormDataHeaders(headers, data7.getHeaders(), own2("formDataHeaderPolicy"));
       }
     }
     if (platform_default.hasStandardBrowserEnv) {
@@ -2251,7 +2251,7 @@
       let {
         url: url2,
         method,
-        data: data5,
+        data: data7,
         signal,
         cancelToken,
         timeout,
@@ -2290,7 +2290,7 @@
           }
         }
         if (hasMaxBodyLength && method !== "get" && method !== "head") {
-          const outboundLength = await resolveBodyLength(headers, data5);
+          const outboundLength = await resolveBodyLength(headers, data7);
           if (typeof outboundLength === "number" && isFinite(outboundLength) && outboundLength > maxBodyLength) {
             throw new AxiosError_default(
               "Request body larger than maxBodyLength limit",
@@ -2300,14 +2300,14 @@
             );
           }
         }
-        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data5)) !== 0) {
+        if (onUploadProgress && supportsRequestStream && method !== "get" && method !== "head" && (requestContentLength = await resolveBodyLength(headers, data7)) !== 0) {
           let _request = new Request(url2, {
             method: "POST",
-            body: data5,
+            body: data7,
             duplex: "half"
           });
           let contentTypeHeader;
-          if (utils_default.isFormData(data5) && (contentTypeHeader = _request.headers.get("content-type"))) {
+          if (utils_default.isFormData(data7) && (contentTypeHeader = _request.headers.get("content-type"))) {
             headers.setContentType(contentTypeHeader);
           }
           if (_request.body) {
@@ -2315,14 +2315,14 @@
               requestContentLength,
               progressEventReducer(asyncDecorator(onUploadProgress))
             );
-            data5 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
+            data7 = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
           }
         }
         if (!utils_default.isString(withCredentials)) {
           withCredentials = withCredentials ? "include" : "omit";
         }
         const isCredentialsSupported = isRequestSupported && "credentials" in Request.prototype;
-        if (utils_default.isFormData(data5)) {
+        if (utils_default.isFormData(data7)) {
           const contentType = headers.getContentType();
           if (contentType && /^multipart\/form-data/i.test(contentType) && !/boundary=/i.test(contentType)) {
             headers.delete("content-type");
@@ -2334,7 +2334,7 @@
           signal: composedSignal,
           method: method.toUpperCase(),
           headers: toByteStringHeaderObject(headers.normalize()),
-          body: data5,
+          body: data7,
           duplex: "half",
           credentials: isCredentialsSupported ? withCredentials : void 0
         };
@@ -2829,7 +2829,7 @@
   });
   utils_default.forEach(["post", "put", "patch", "query"], function forEachMethodWithData(method) {
     function generateHTTPMethod(isForm) {
-      return function httpMethod(url2, data5, config) {
+      return function httpMethod(url2, data7, config) {
         return this.request(
           mergeConfig(config || {}, {
             method,
@@ -2837,7 +2837,7 @@
               "Content-Type": "multipart/form-data"
             } : {},
             url: url2,
-            data: data5
+            data: data7
           })
         );
       };
@@ -3383,8 +3383,8 @@
       const keys = Object.keys(storageNames);
       keys.forEach((key) => {
         const keyName = storageNames[key];
-        const data5 = get3(keyName);
-        if (data5 === null) {
+        const data7 = get3(keyName);
+        if (data7 === null) {
           set3(keyName, defaultData[key]);
         }
       });
@@ -3880,14 +3880,14 @@
       });
     });
     const getSaved = () => core.store.get(radioData.storeName);
-    const mark2 = (name2) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name2);
+    const mark3 = (name2) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name2);
     const active11 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
     const deactivate11 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
     const init25 = () => {
       active11();
       const saved = getSaved();
       if (radioData.init) radioData.init(saved);
-      mark2(saved);
+      mark3(saved);
       return saved;
     };
     return {
@@ -4012,7 +4012,7 @@
         newer: answer.stamp
       };
     });
-    const data5 = preData.map((p) => {
+    const data7 = preData.map((p) => {
       let lastUsed = p.lastUsed === 0 ? 1 : p.lastUsed / maxLastUse;
       if (reverseLastUse) lastUsed = 1 - lastUsed;
       const used = maxUsed === 0 ? 1 : 1 - p.used / maxUsed;
@@ -4031,18 +4031,18 @@
         newer: p.newer
       };
     });
-    return data5;
+    return data7;
   };
-  var scoringData = (data5, weights) => {
-    const scoredData = data5.map((d) => {
+  var scoringData = (data7, weights) => {
+    const scoredData = data7.map((d) => {
       const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used + weights.newer * d.newer;
       return { ...d, score };
     });
     return scoredData.sort((a, b) => b.score - a.score);
   };
   var getTensors = async (normalizedWeights, answers) => {
-    const data5 = prepareData(false, answers);
-    const result = scoringData(data5, normalizedWeights);
+    const data7 = prepareData(false, answers);
+    const result = scoringData(data7, normalizedWeights);
     return result;
   };
 
@@ -4255,7 +4255,7 @@
   var api = axios_default.create(
     // @ts-ignore
     {
-      baseURL: "https://192.168.1.109:3331/",
+      baseURL: "https://frog02-32047.wykr.es/",
       validateStatus: function(status) {
         return status >= 200 && status < 300 || okCodes.some((c) => c === status);
       }
@@ -4355,12 +4355,12 @@
     sessionData.bad++;
   };
   var getSessionDataFromMemo = () => {
-    const data5 = core.store.get(storageNames.lastSession);
-    sessionData.time = data5.time;
-    sessionData.mediocre = data5.mediocre;
-    sessionData.all = data5.all;
-    sessionData.good = data5.good;
-    sessionData.bad = data5.bad;
+    const data7 = core.store.get(storageNames.lastSession);
+    sessionData.time = data7.time;
+    sessionData.mediocre = data7.mediocre;
+    sessionData.all = data7.all;
+    sessionData.good = data7.good;
+    sessionData.bad = data7.bad;
   };
   var setSessionDataToMemo = () => {
     if (sessionData.all > 0) {
@@ -4452,7 +4452,7 @@
     } else {
       enable(elements4.confirm);
     }
-    if (true) {
+    if (false) {
       elements4.confirm.focus();
     }
     data4.mark = num;
@@ -4559,7 +4559,7 @@
 
   // src/utils/drawImage.ts
   var drawImage = () => /* @__PURE__ */ (() => {
-    const data5 = {
+    const data7 = {
       canvas: null,
       ctx: null,
       fitCanvas: null,
@@ -4567,30 +4567,30 @@
       fitWidth: 0
     };
     const init25 = (canvas, fitCanvas) => {
-      data5.canvas = canvas;
-      data5.ctx = canvas.getContext("2d");
-      data5.fitCanvas = fitCanvas;
-      data5.fitCtx = fitCanvas.getContext("2d");
+      data7.canvas = canvas;
+      data7.ctx = canvas.getContext("2d");
+      data7.fitCanvas = fitCanvas;
+      data7.fitCtx = fitCanvas.getContext("2d");
     };
-    const setWidth = (width) => data5.fitWidth = width;
+    const setWidth = (width) => data7.fitWidth = width;
     const fitToWidth = (img) => {
-      if (!data5.fitCanvas || !data5.fitCtx) return;
-      const scale = data5.fitWidth / img.width;
+      if (!data7.fitCanvas || !data7.fitCtx) return;
+      const scale = data7.fitWidth / img.width;
       const displayWidth = img.width * scale;
       const displayHeight = img.height * scale;
       const dpr = window.devicePixelRatio || 1;
-      data5.fitCanvas.style.width = displayWidth + "px";
-      data5.fitCanvas.style.height = displayHeight + "px";
-      data5.fitCanvas.width = displayWidth * dpr;
-      data5.fitCanvas.height = displayHeight * dpr;
-      data5.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      data5.fitCtx.clearRect(
+      data7.fitCanvas.style.width = displayWidth + "px";
+      data7.fitCanvas.style.height = displayHeight + "px";
+      data7.fitCanvas.width = displayWidth * dpr;
+      data7.fitCanvas.height = displayHeight * dpr;
+      data7.fitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      data7.fitCtx.clearRect(
         0,
         0,
         displayWidth,
         displayHeight
       );
-      data5.fitCtx.drawImage(
+      data7.fitCtx.drawImage(
         img,
         0,
         0,
@@ -4601,7 +4601,7 @@
     const draw = /* @__PURE__ */ (() => {
       let currentUrl = null;
       return async (source) => {
-        if (!data5.ctx || !data5.canvas) return;
+        if (!data7.ctx || !data7.canvas) return;
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
           currentUrl = null;
@@ -4617,10 +4617,10 @@
             img.src = currentUrl;
           }
         });
-        data5.canvas.width = img.width;
-        data5.canvas.height = img.height;
-        data5.ctx.clearRect(0, 0, img.width, img.height);
-        data5.ctx.drawImage(img, 0, 0);
+        data7.canvas.width = img.width;
+        data7.canvas.height = img.height;
+        data7.ctx.clearRect(0, 0, img.width, img.height);
+        data7.ctx.drawImage(img, 0, 0);
         fitToWidth(img);
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
@@ -4917,7 +4917,7 @@
         }
       }
       {
-        if (true) {
+        if (false) {
           if (answer.history.length > 0) {
             elements3.ctx.fillStyle = data2.background;
             elements3.ctx.lineWidth = data2.cell.space;
@@ -4956,15 +4956,15 @@
   var colNames = ["good", "bad", "unused"];
   var rowNames = ["all", "allPercent", "moreOne", "moreOnePercent", "one", "onePercent"];
   var createTableData = () => {
-    const data5 = {};
+    const data7 = {};
     for (const row of rowNames) {
       const rowObj = {};
       for (const col of colNames) {
         rowObj[col] = 0;
       }
-      data5[row] = rowObj;
+      data7[row] = rowObj;
     }
-    return data5;
+    return data7;
   };
   var setValues = (row, answer) => {
     if (answer.rating?.type === rating.bad) {
@@ -4982,11 +4982,11 @@
     });
   };
   var getElement = (row, col) => byQ(elements3.table, `tr[data-row="${row}"] td[data-col="${col}"]`);
-  var showTableData = (data5) => {
+  var showTableData = (data7) => {
     const percentNames = ["allPercent", "moreOnePercent", "onePercent"];
     for (const row of rowNames) {
       for (const col of colNames) {
-        const value = data5[row][col];
+        const value = data7[row][col];
         const suffix = percentNames.some((pn) => pn === row) ? "%" : "";
         const elem = getElement(row, col);
         inner(elem, value.toFixed(1) + suffix);
@@ -5520,11 +5520,29 @@
   // src/modal/installer/installer.ts
   var elements9 = {};
   var deferredPrompt = null;
+  var isAppInstalled = () => {
+    const isInstalled = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    return isInstalled;
+  };
   var beforeInstallPrompt = (e) => {
     e.preventDefault();
     deferredPrompt = e;
   };
   add(window, "beforeinstallprompt", beforeInstallPrompt);
+  var instalClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+    if (choiceResult.outcome === "accepted") {
+      console.log("U\u017Cytkownik zainstalowa\u0142 aplikacj\u0119");
+    } else {
+      console.log("U\u017Cytkownik odrzuci\u0142 instalacj\u0119");
+    }
+    deferredPrompt = null;
+    setStyle(elements9.btnSvg, "display", "block");
+    inner(elements9.btnText, "instalowanie");
+    waitFor(isAppInstalled, hideInstallerModal);
+  };
   var init15 = () => {
     elements9.modal = byId("modal-installer");
     elements9.installBtn = byId("modal-installer-btn");
@@ -5534,6 +5552,21 @@
     areNotNull(elements9, ["modal", "user"]);
     setStyle(elements9.modal, "display", "none");
     setStyle(elements9.btnSvg, "display", "none");
+  };
+  var data5 = {};
+  var showInstallerModal = (hideFn) => {
+    show2();
+    setStyle(elements9.modal, "display", "flex");
+    add(elements9.installBtn, "click", instalClick);
+    add(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn = hideFn;
+  };
+  var hideInstallerModal = () => {
+    hide2();
+    setStyle(elements9.modal, "display", "none");
+    remove(elements9.installBtn, "click", instalClick);
+    remove(elements9.noInstallBtn, "click", hideInstallerModal);
+    data5.hideFn();
   };
 
   // src/init/init.ts
@@ -5570,7 +5603,7 @@
         getSecureAndCheckData();
       }
     };
-    if (false) {
+    if (true) {
       if (!isAppInstalled()) {
         showInstallerModal(startApp);
       } else {
@@ -6123,54 +6156,54 @@
         }
         break;
     }
-    if (true) {
+    if (false) {
       switch (event.code) {
         case "Digit1":
           {
-            mark(0)();
+            mark2(0)();
           }
           break;
         case "Digit2":
           {
-            mark(1)();
+            mark2(1)();
           }
           break;
         case "Digit3":
           {
-            mark(2)();
+            mark2(2)();
           }
           break;
         case "Digit4":
           {
-            mark(3)();
+            mark2(3)();
           }
           break;
         case "Space":
           {
-            if (data4.mark > -1) {
-              confirmClick();
+            if (data6.mark > -1) {
+              confirmClick2();
             }
           }
           break;
         case "KeyQ": {
-          const sessionStarted = await core.store.get(storageNames.sessionStarted);
+          const sessionStarted = await core2.store.get(storageNames2.sessionStarted);
           if (sessionStarted) {
             const timestamp = Date.now();
-            data4.answers.origin?.answer.history.push({
+            data6.answers.origin?.answer.history.push({
               timestamp,
               result: true
             });
-            const rate = getRateHistory(data4.answers.origin?.answer.history);
-            data4.answers.origin.answer.rating = rate;
-            const { drawn, index, ...answerDb } = data4.answers.origin.answer;
-            core.idb.answers.update(index, (old) => old = answerDb);
+            const rate = getRateHistory2(data6.answers.origin?.answer.history);
+            data6.answers.origin.answer.rating = rate;
+            const { drawn, index, ...answerDb } = data6.answers.origin.answer;
+            core2.idb.answers.update(index, (old) => old = answerDb);
             const log = {
-              action: data4.answers.origin.answer.id,
+              action: data6.answers.origin.answer.id,
               result: true
             };
-            core.idb.logs.set(timestamp, log);
-            clearResults();
-            setQuestion();
+            core2.idb.logs.set(timestamp, log);
+            clearResults2();
+            setQuestion2();
           }
           break;
         }
@@ -6477,10 +6510,8 @@
       core.idb.answers = idb("answers");
       core.idb.logs = idb("logs");
       core.info = [
-        "1. dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.",
-        "2. dodano podsumowanie sesji po jej zako\u0144czeniu.",
-        "3. przy losowaniu uwzgl\u0119dniono dat\u0119 ostatniego uzycia pytania - nowsze cz\u0119\u015Bciej wyst\u0119puj\u0105 w nowych testach.",
-        "4. dodano wizualizacj\u0119 histori\u0119 odpowiedzi"
+        "1. dodano wizualizacj\u0119 histori\u0119 odpowiedzi",
+        "2. podzielono informacje o Aplikacji na poszczeg\xF3lne zak\u0142adki"
       ];
       const domContentLoaded = async () => {
         controllers.initKeys();
@@ -6506,4 +6537,3 @@
     });
   })();
 })();
-//# sourceMappingURL=index.js.map
