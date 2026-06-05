@@ -91,6 +91,13 @@ export const setQuestion = async () => {
         }, 100)
 
         console.log('%c data.answers.origin?.answer.history:', 'background: #ffcc00; color: #003300', data.answers.origin?.answer.history)
+        // data.dots = Array(88).fill(true).map((h, i) => {
+        //     const classes = [`learning-question-history-${i % 2 === 0 ? 'good' : 'bad'}`]
+
+        //     return prepare('div', {
+        //         classes,
+        //     }) as HTMLElement
+        // }) || []
         data.dots = data.answers.origin?.answer.history.map(h => {
             const classes = [`learning-question-history-${h.result ? 'good' : 'bad'}`]
 

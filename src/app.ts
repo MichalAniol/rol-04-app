@@ -35,10 +35,8 @@ import { setConsole } from './console'
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
         core.info = [
-            '1. dodano w ustawieniach przyciski wczytania użytkownika i restart pytań.',
-            '2. dodano podsumowanie sesji po jej zakończeniu.',
-            '3. przy losowaniu uwzględniono datę ostatniego uzycia pytania - nowsze częściej występują w nowych testach.',
-            '4. dodano wizualizację historię odpowiedzi',
+            '1. dodano wizualizację historię odpowiedzi',
+            '2. podzielono informacje o Aplikacji na poszczególne zakładki'
         ]
 
         const domContentLoaded = async () => {

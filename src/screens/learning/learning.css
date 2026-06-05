@@ -110,7 +110,7 @@
 
 .learning-question-history-box {
     color: var(--third_color);
-    margin-bottom: 70px;
+    margin-bottom: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -124,11 +124,14 @@
 .learning-question-history {
     display: flex;
     flex-direction: row;
-    position: absolute;
+    position: relative;
     left: 50%;
-    top: 24px;
+    top: 6px;
     margin-right: -50%;
     transform: translate(-50%, 0%);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
 }
 
 .learning-question-history-good,
@@ -136,8 +139,7 @@
     width: 20px;
     height: 20px;
     border-radius: 10px;
-    margin-right: 6px;
-
+    margin: 3px;
 }
 
 .learning-question-history-good {
