@@ -34,6 +34,11 @@ import { setConsole } from './console'
         core.idb.answers = idb<AnswersDbSchemaT>('answers')
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
+        core.info = `
+            <br><br>
+            2. dodano podsumowanie sesji po jej zakończeniu.
+        `
+
         const domContentLoaded = async () => {
             controllers.initKeys()
 

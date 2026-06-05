@@ -45,7 +45,6 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             if (maxNextUse < nextUse) maxNextUse = nextUse
 
             let lastAnswers = countLastFewFalse(answer)
-            let rating = 0
             if (lastAnswers.trues >= determinants.numLastRequiredQuestions) {
                 rating = -10
             } else {
@@ -68,6 +67,7 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             nextUse,
             appearance,
             rating,
+            newer: answer.stamp,
         }
     })
 
@@ -85,6 +85,7 @@ const prepareData = (reverseLastUse: boolean, answers: AnswersT[]) => {
             nextUse: (p.nextUse as number) / maxNextUse, // 1 czym bliżej w czasie
             appearance: (p.appearance as number) / maxImportance, // 1 czym więcej użyte
             rating: p.rating, // 1 czym więcej pomyłek
+            newer: p.newer,
         } as TensorDataT
     })
 
@@ -98,7 +99,8 @@ const scoringData = (data: TensorDataT[], weights: WeightsT) => {
             (weights.nextUse * (d.nextUse as number)) +
             (weights.appearance * (d.appearance as number)) +
             (weights.rating * (d.rating as number)) +
-            (weights.littleUsed * (d.used as number))
+            (weights.littleUsed * (d.used as number)) +
+            (weights.newer * (d.newer as number))
 
         return { ...d, score } as TensorDataT
     })

@@ -18,6 +18,7 @@ export const repeatable: WeightsT = {
     appearance: 0.1, // w ilu testach pojawiło się pytanie
     rating: 1.2, // poziom nauki pytań
     littleUsed: 0, // najmniej powtarzalne pytania
+    newer: 0.1, // kiedy ostatni raz uzyto pytanie w testach
     temperature: 0.1, // wielkość zbioru do losowania
 } as const
 export const repeatableGood: WeightsT = {
@@ -26,6 +27,7 @@ export const repeatableGood: WeightsT = {
     appearance: 0.1, // w ilu testach pojawiło się pytanie
     rating: 0.2, // poziom nauki pytań
     littleUsed: 0, // najmniej powtarzalne pytania
+    newer: 0.3,
     temperature: 1, // wielkość zbioru do losowania
 } as const
 
@@ -35,7 +37,8 @@ export const single: WeightsT = {
     appearance: 0.1, // w ilu testach pojawiło się pytanie
     rating: 5, // poziom nauki pytań
     littleUsed: 0, // najmniej powtarzalne pytania
-    temperature: 0.05,
+    newer: 1,
+    temperature: 0.15,
 } as const
 export const singleGood: WeightsT = {
     lastUsed: 0.1, // ostatnie użycie pytania
@@ -43,6 +46,7 @@ export const singleGood: WeightsT = {
     appearance: 0.1, // w ilu testach pojawiło się pytanie
     rating: .3, // poziom nauki pytań
     littleUsed: 0, // najmniej powtarzalne pytania
+    newer: .3,
     temperature: 1,
 } as const
 
@@ -136,6 +140,7 @@ export const updateAnswers = async () => {
     })
     // sortowanie
     const answers = newAnswers
+        .sort((a, b) => b.stamp - a.stamp)
         .sort((a, b) => b.used - a.used)
 
     // zapis do danych silnika
