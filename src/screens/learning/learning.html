@@ -1,7 +1,37 @@
 <link rel='stylesheet' type='text/css' href='./learning.css'>
+<link rel='stylesheet' type='text/css' href='./session.css'>
 
 <div class="tab-box">
     <!-- <div class="title">Nauka</div> -->
+    <div id="learning-session-results" class="learning-session-results">
+        <div class="title">Ostatnia sesja</div>
+
+        <table id="learning-session-table" class="learning-session-table">
+            <tbody>
+                <tr>
+                    <td>trwała:</td>
+                    <td id="learning-session-table-time">-</td>
+                </tr>
+                <tr>
+                    <td>średni czas<br>odpowiedzi:</td>
+                    <td id="learning-session-table-mediocre-time">-</td>
+                </tr>
+                <tr>
+                    <td>wszystkie:</td>
+                    <td id="learning-session-table-all">0</td>
+                </tr>
+                <tr>
+                    <td>dobrze:</td>
+                    <td id="learning-session-table-good">0</td>
+                </tr>
+                <tr>
+                    <td>żle:</td>
+                    <td id="learning-session-table-bad">0</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
 
     <div id="learning-start-end" class="learning-start-end">
         <button class="btn" id="learning-start-end-btn">Rozpocznij</button>
@@ -69,6 +99,8 @@
             </div>
         </div>
     </div>
+
+
 
     <div id="learning-img-big" class="learning-img-big">
         <canvas id="learning-img-big-canvas"></canvas>

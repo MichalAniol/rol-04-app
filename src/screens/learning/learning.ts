@@ -1,6 +1,7 @@
-import { byId, byQueryAll, setStyle, add, remove, display, getPx } from '../../dom'
+import { byId, byQueryAll, setStyle, add, remove, display, getPx, boundRect } from '../../dom'
 import { data, setSheetHight } from './preparation'
 import { mark, confirmClick } from './evaluation'
+import * as startEnd from './startEnd'
 import { start, end } from './startEnd'
 import { core } from '../../core'
 import { areNotNull } from '../../utils/isNotNull'
@@ -8,8 +9,16 @@ import { drawImage } from '../../utils/drawImage'
 import { checked, storageNames } from '@/storage'
 
 type ElementsT = {
+    results: HTMLElement
+    time: HTMLElement
+    mediocreTime: HTMLElement
+    all: HTMLElement
+    good: HTMLElement
+    bad: HTMLElement
+
     startEnd: HTMLElement
     startEndBtn: HTMLButtonElement
+
     sheet: HTMLElement
     measure: HTMLElement
     imgBig: HTMLElement
@@ -29,11 +38,19 @@ type ElementsT = {
     }
 }
 
-export const elements = {}as ElementsT
+export const elements = {} as ElementsT
 
 export const init = () => {
+    elements.results = byId('learning-session-results') as HTMLElement
+    elements.time = byId('learning-session-table-time') as HTMLElement
+    elements.mediocreTime = byId('learning-session-table-mediocre-time') as HTMLElement
+    elements.all = byId('learning-session-table-all') as HTMLElement
+    elements.good = byId('learning-session-table-good') as HTMLElement
+    elements.bad = byId('learning-session-table-bad') as HTMLElement
+
     elements.startEnd = byId('learning-start-end') as HTMLElement
     elements.startEndBtn = byId('learning-start-end-btn') as HTMLButtonElement
+
     elements.sheet = byId('learning-sheet') as HTMLElement
     elements.measure = byId('learning-measure') as HTMLElement
     elements.imgBig = byId('learning-img-big') as HTMLElement
@@ -57,6 +74,7 @@ export const init = () => {
     areNotNull(elements, ['screens', 'learning'])
 
     display(elements.sheet, 'none')
+    startEnd.init()
 }
 
 const LOW_START_END_BTN = 12 + 28 + 12
@@ -79,8 +97,12 @@ export const resize = (w: number, h: number) => {
         setStyle(elements.startEndBtn, 'padding', '12px 0')
         setSheetHight()
     } else {
+        setTimeout(() => {
+            const resultHeight = boundRect(elements.results).height
+            setStyle(elements.startEnd, 'height', getPx(h - 30 - menuH - 20 - resultHeight))
+        }, 200)
+
         setStyle(elements.sheet, 'height', `calc(${getPx(h - LOW_START_END_BTN - menuH)})`)
-        setStyle(elements.startEnd, 'height', getPx(h - 30 - menuH - 20))
         setStyle(elements.startEndBtn, 'padding', '24px 0')
     }
 }
