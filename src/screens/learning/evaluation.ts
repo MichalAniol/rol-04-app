@@ -138,8 +138,6 @@ export const clearResults = () => {
 
     inner(elements.confirm, 'Zatwierdź')
 
-    setQuestion()
-
     elements.answersFields.forEach((field, index) => {
         if (index % 2 === 0) {
             setStyle(field, 'backgroundColor', 'var(--penultimate_color)')
@@ -152,6 +150,7 @@ export const clearResults = () => {
 export const confirmClick = async () => {
     if (data.confirm) {
         clearResults()
+        setQuestion()
     } else {
         await showResult()
     }

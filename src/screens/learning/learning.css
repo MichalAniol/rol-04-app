@@ -107,3 +107,43 @@
     font-size: var(--font_big_size);
     /* margin-bottom: 30px; */
 }
+
+.learning-question-history-box {
+    color: var(--third_color);
+    margin-bottom: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.learning-question-history-name {
+    text-align: center;
+}
+
+.learning-question-history {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    left: 50%;
+    top: 24px;
+    margin-right: -50%;
+    transform: translate(-50%, 0%);
+}
+
+.learning-question-history-good,
+.learning-question-history-bad {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    margin-right: 6px;
+
+}
+
+.learning-question-history-good {
+    background-color: var(--on_prime_color);
+}
+
+.learning-question-history-bad {
+    background-color: var(--off_prime_color);
+}
