@@ -6,6 +6,7 @@ import { checked, SessionDataT, storageNames } from '@/storage'
 import { endSession, init as engineInit } from '../../engine/run'
 import { memoAnswers } from '@/queries/statistics/memoAnswers'
 import { memoLogs } from '@/queries/statistics/memoLogs'
+import { clearResults, mark } from './evaluation'
 
 export const sessionData = {
     timeStart: 0,
@@ -99,6 +100,8 @@ export const start = async () => {
     add(elements.startEndBtn, 'click', end)
 
     cleanSessionData()
+    mark(-1)()
+    clearResults()
 
     await engineInit()
     setTimeout(() => {

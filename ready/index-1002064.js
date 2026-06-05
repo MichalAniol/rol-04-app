@@ -3195,6 +3195,8 @@
     // poziom nauki pytań
     littleUsed: 0,
     // najmniej powtarzalne pytania
+    newer: 0.1,
+    // kiedy ostatni raz uzyto pytanie w testach
     temperature: 0.1
     // wielkość zbioru do losowania
   };
@@ -3209,6 +3211,7 @@
     // poziom nauki pytań
     littleUsed: 0,
     // najmniej powtarzalne pytania
+    newer: 0.3,
     temperature: 1
     // wielkość zbioru do losowania
   };
@@ -3223,7 +3226,8 @@
     // poziom nauki pytań
     littleUsed: 0,
     // najmniej powtarzalne pytania
-    temperature: 0.05
+    newer: 1,
+    temperature: 0.15
   };
   var singleGood = {
     lastUsed: 0.1,
@@ -3236,6 +3240,7 @@
     // poziom nauki pytań
     littleUsed: 0,
     // najmniej powtarzalne pytania
+    newer: 0.3,
     temperature: 1
   };
   var data = {
@@ -3281,7 +3286,7 @@
       item.index = index;
       return item;
     });
-    const answers = newAnswers.sort((a, b) => b.used - a.used);
+    const answers = newAnswers.sort((a, b) => b.stamp - a.stamp).sort((a, b) => b.used - a.used);
     data.answers = [];
     data.repeatableAnswers = [];
     data.singleAnswers = [];
@@ -3985,11 +3990,10 @@
         nextUse = nextUse - now;
         if (maxNextUse < nextUse) maxNextUse = nextUse;
         let lastAnswers = countLastFewFalse(answer);
-        let rating3 = 0;
         if (lastAnswers.trues >= determinants.numLastRequiredQuestions) {
-          rating3 = -10;
+          rating2 = -10;
         } else {
-          rating3 = lastAnswers.falsies / determinants.numLastRequiredQuestions;
+          rating2 = lastAnswers.falsies / determinants.numLastRequiredQuestions;
         }
       }
       if (lastUsed < maxLastUse) maxLastUse = lastUsed;
@@ -4004,7 +4008,8 @@
         lastUsed,
         nextUse,
         appearance,
-        rating: rating2
+        rating: rating2,
+        newer: answer.stamp
       };
     });
     const data7 = preData.map((p) => {
@@ -4021,15 +4026,16 @@
         // 1 czym bliżej w czasie
         appearance: p.appearance / maxImportance,
         // 1 czym więcej użyte
-        rating: p.rating
+        rating: p.rating,
         // 1 czym więcej pomyłek
+        newer: p.newer
       };
     });
     return data7;
   };
   var scoringData = (data7, weights) => {
     const scoredData = data7.map((d) => {
-      const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used;
+      const score = weights.lastUsed * d.lastUsed + weights.nextUse * d.nextUse + weights.appearance * d.appearance + weights.rating * d.rating + weights.littleUsed * d.used + weights.newer * d.newer;
       return { ...d, score };
     });
     return scoredData.sort((a, b) => b.score - a.score);
@@ -4400,6 +4406,8 @@
     remove(elements4.startEndBtn, "click", start);
     add(elements4.startEndBtn, "click", end);
     cleanSessionData();
+    mark(-1)();
+    clearResults();
     await init6();
     setTimeout(() => {
       display(elements4.sheet, "block");
@@ -4713,6 +4721,16 @@
     };
     return idToMonth[key];
   };
+  var getMonthAsNumber = (key) => {
+    const idToMonthNumber = {
+      paz: "10",
+      cze: "06",
+      sty: "01",
+      lut: "01",
+      wrz: "09"
+    };
+    return idToMonthNumber[key];
+  };
   var idToDate = (id) => {
     const splittedId = id.split("-");
     const year = splittedId[0];
@@ -4722,6 +4740,21 @@
   var get2 = (ids2) => {
     let result = "";
     ids2.forEach((id, i, arr) => result += idToDate(id) + (i === arr.length - 1 ? "" : ", "));
+    return result;
+  };
+  var idToTimestamp = (id) => {
+    const splittedId = id.split("-");
+    const year = splittedId[0];
+    const month = getMonthAsNumber(splittedId[1]);
+    const date = `${year}-${month}-01`;
+    return new Date(date).getTime();
+  };
+  var getLatestTimestamp = (arr) => {
+    let result = -Infinity;
+    arr.forEach((elem) => {
+      const stamp = idToTimestamp(elem);
+      if (stamp > result) result = stamp;
+    });
     return result;
   };
 
@@ -5715,40 +5748,76 @@
   var clearAnswers = async (all3 = false) => {
     const questions = await core.idb.questions.getAllData();
     let maxUsed = 0;
-    await questions.forEach(async (question, index) => {
+    let answersDateMin = Infinity;
+    let answersDateMax = -Infinity;
+    const answersDb = [];
+    for (const [index, question] of questions.entries()) {
       const key = question[0];
       const q = question[1];
-      if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1;
-      const answer = await core.idb.answers.get(key);
-      if (!answer || all3) {
-        await core.idb.answers.set(index, {
-          id: q.id,
-          history: [],
-          // expectedUse: 0,
-          used: q.used.length + 1
-        });
+      if (maxUsed < q.used.length + 1) {
+        maxUsed = q.used.length + 1;
       }
-    });
+      const answer = await core.idb.answers.get(key);
+      const timestamp = getLatestTimestamp([q.id, ...q.used]);
+      if (!answer || all3) {
+        answersDb.push([
+          index,
+          {
+            id: q.id,
+            history: [],
+            used: q.used.length + 1,
+            stamp: timestamp
+          }
+        ]);
+      } else {
+        answer.stamp = timestamp;
+        answersDb.push([index, answer]);
+      }
+      if (timestamp < answersDateMin) answersDateMin = timestamp;
+      if (timestamp > answersDateMax) answersDateMax = timestamp;
+    }
+    const timeRange = answersDateMax - answersDateMin;
+    for (const answer of answersDb) {
+      const originalStamp = answer[1].stamp;
+      const newStamp = (originalStamp - answersDateMin) / timeRange;
+      answer[1].stamp = newStamp;
+    }
+    await core.idb.answers.updateMany(answersDb);
     return maxUsed;
   };
   var getAnswersFromServer = async () => {
     const answers = await getAnswers();
+    let answersDateMin = Infinity;
+    let answersDateMax = -Infinity;
+    const answersDb = [];
+    const questions = await core.idb.questions.getAllData();
     if (answers !== null) {
       await clearAnswers(true);
       const answersOld = await core.idb.answers.getAllData();
-      answers.forEach(async (answer) => {
+      for (const [, answer] of answers.entries()) {
         const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
         const index = oldAnswer[0];
         const rating2 = getRateHistory(answer.history);
-        console.log("%c rating:", "background: #ffcc00; color: #003300", index, rating2);
-        core.idb.answers.update(index, (old) => old = {
+        const question = questions.find((q) => q[1].id === answer.id);
+        const timestamp = getLatestTimestamp([question[1].id, ...question[1].used]);
+        answersDb.push([index, {
           id: answer.id,
           history: answer.history,
           used: oldAnswer[1].used,
-          rating: rating2
-        });
-      });
+          rating: rating2,
+          stamp: timestamp
+        }]);
+        if (timestamp < answersDateMin) answersDateMin = timestamp;
+        if (timestamp > answersDateMax) answersDateMax = timestamp;
+      }
     }
+    const timeRange = answersDateMax - answersDateMin;
+    for (const answer of answersDb) {
+      const originalStamp = answer[1].stamp;
+      const newStamp = (originalStamp - answersDateMin) / timeRange;
+      answer[1].stamp = newStamp;
+    }
+    await core.idb.answers.updateMany(answersDb);
   };
   var check = async () => {
     const waitForIntervalClear = (intervalFn, time) => {
@@ -5766,8 +5835,8 @@
     const response = await getVersion(versionDb);
     const versionRes = response.version;
     const infoVersion = core.store.get(storageNames.infoVersion);
-    if (versionRes !== infoVersion) {
-      showInfoModal("Aktualizacja", "dodano podsumowanie sesji po jej zako\u0144czeniu.", true, false);
+    if (versionRes !== infoVersion && core.info) {
+      showInfoModal("Aktualizacja", core.info, true, false);
       core.store.set(storageNames.infoVersion, versionRes);
     }
     if (versionRes !== versionDb) {
@@ -6097,18 +6166,33 @@
   var DB_VERSION = STORES.length;
   var dbPromise = null;
   var promisifyRequest = (request) => new Promise((resolve, reject) => {
-    const tx = request;
-    const req = request;
     const isTx = typeof request.objectStoreNames !== "undefined";
     if (isTx) {
-      const done = () => resolve(void 0);
-      tx.addEventListener("complete", done, { once: true });
-      tx.addEventListener("error", () => reject(tx.error), { once: true });
-      tx.addEventListener("abort", () => reject(tx.error), { once: true });
+      const tx = request;
+      tx.addEventListener(
+        "complete",
+        () => resolve(void 0),
+        { once: true }
+      );
+      tx.addEventListener("error", () => reject(tx.error), {
+        once: true
+      });
+      tx.addEventListener("abort", () => reject(tx.error), {
+        once: true
+      });
       return;
     }
-    req.addEventListener("success", () => resolve(req.result), { once: true });
-    req.addEventListener("error", () => reject(req.error), { once: true });
+    const req = request;
+    req.addEventListener(
+      "success",
+      () => resolve(req.result),
+      { once: true }
+    );
+    req.addEventListener(
+      "error",
+      () => reject(req.error),
+      { once: true }
+    );
   });
   var openDb = async () => {
     if (dbPromise) return dbPromise;
@@ -6150,90 +6234,93 @@
       if (!cachedStore) cachedStore = createStore(storeName);
       return cachedStore;
     };
-    const get3 = (key, store = getStore()) => {
-      if (key == null) return Promise.resolve(null);
-      return store("readonly", async (store2) => {
-        const req = store2.get(key);
-        const res = await promisifyRequest(req);
-        return res ?? null;
-      });
-    };
-    const set3 = (key, value, store = getStore()) => store("readwrite", (store2) => {
-      store2.put(value, key);
+    const get3 = (key) => getStore()("readonly", async (store) => {
+      const req = store.get(key);
+      return promisifyRequest(req);
+    });
+    const set3 = (key, value) => getStore()("readwrite", (store) => {
+      store.put(value, key);
       return void 0;
     });
-    const setMany = (entries, store = getStore()) => store("readwrite", (store2) => {
+    const setMany = (entries) => getStore()("readwrite", (store) => {
       for (const [key, value] of entries) {
-        store2.put(value, key);
+        store.put(value, key);
       }
       return void 0;
     });
-    const getMany = (keys2, store = getStore()) => store(
+    const getMany = (keys2) => getStore()(
       "readonly",
-      (store2) => Promise.all(keys2.map((k) => promisifyRequest(store2.get(k)))).then((res) => res.map((v) => v ?? void 0))
+      (store) => Promise.all(
+        keys2.map(
+          (k) => promisifyRequest(
+            store.get(k)
+          )
+        )
+      )
     );
-    const update = (key, updater, store = getStore()) => store("readwrite", (store2) => {
-      return new Promise((resolve, reject) => {
-        const req = store2.get(key);
+    const update = (key, updater) => getStore()(
+      "readwrite",
+      (store) => new Promise((resolve, reject) => {
+        const req = store.get(key);
         req.onsuccess = () => {
           try {
             const next = updater(req.result);
-            store2.put(next, key);
+            store.put(next, key);
             resolve();
           } catch (e) {
             reject(e);
           }
         };
         req.onerror = () => reject(req.error);
-      });
-    });
-    const del = (key, store = getStore()) => store("readwrite", (store2) => {
-      store2.delete(key);
+      })
+    );
+    const updateMany = (entries) => getStore()(
+      "readwrite",
+      (store) => new Promise((resolve, reject) => {
+        let pending = entries.length;
+        if (pending === 0) return resolve();
+        const fail = (err) => reject(err);
+        for (const [key, value] of entries) {
+          const req = store.get(key);
+          req.onsuccess = () => {
+            try {
+              const oldValue = req.result;
+              store.put(value, key);
+              pending--;
+              if (pending === 0) resolve();
+            } catch (e) {
+              fail(e);
+            }
+          };
+          req.onerror = () => fail(req.error);
+        }
+      })
+    );
+    const del = (key) => getStore()("readwrite", (store) => {
+      store.delete(key);
       return void 0;
     });
-    const delMany = (keys2, store = getStore()) => store("readwrite", (store2) => {
-      for (const key of keys2) store2.delete(key);
+    const delMany = (keys2) => getStore()("readwrite", (store) => {
+      for (const key of keys2) {
+        store.delete(key);
+      }
       return void 0;
     });
-    const eachCursor = (store, cb) => new Promise((resolve, reject) => {
-      const req = store.openCursor();
-      req.onerror = () => reject(req.error);
-      req.onsuccess = () => {
-        const cursor = req.result;
-        if (!cursor) return resolve();
-        cb(cursor);
-        cursor.continue();
-      };
+    const keys = () => getStore()(
+      "readonly",
+      (store) => promisifyRequest(store.getAllKeys())
+    );
+    const values = () => getStore()(
+      "readonly",
+      (store) => promisifyRequest(store.getAll())
+    );
+    const getAllData = () => getStore()("readonly", async (store) => {
+      const keys2 = await promisifyRequest(store.getAllKeys());
+      const values2 = await promisifyRequest(store.getAll());
+      return keys2.map((k, i) => [k, values2[i]]);
     });
-    const keys = (store = getStore()) => store("readonly", (store2) => {
-      if (store2.getAllKeys) {
-        return promisifyRequest(store2.getAllKeys());
-      }
-      const out = [];
-      return eachCursor(store2, (c) => out.push(c.key)).then(() => out);
-    });
-    const values = (store = getStore()) => store("readonly", (store2) => {
-      if (store2.getAll) {
-        return promisifyRequest(store2.getAll());
-      }
-      const out = [];
-      return eachCursor(store2, (c) => out.push(c.value)).then(() => out);
-    });
-    const getAllData = (store = getStore()) => store("readonly", async (store2) => {
-      if (store2.getAll && store2.getAllKeys) {
-        const [keys2, values2] = await Promise.all([
-          promisifyRequest(store2.getAllKeys()),
-          promisifyRequest(store2.getAll())
-        ]);
-        return keys2.map((k, i) => [k, values2[i]]);
-      }
-      const out = [];
-      return eachCursor(store2, (c) => {
-        out.push([c.key, c.value]);
-      }).then(() => out);
-    });
-    const clear = (store = getStore()) => store("readwrite", (store2) => {
-      store2.clear();
+    const clear = () => getStore()("readwrite", (store) => {
+      store.clear();
       return void 0;
     });
     return {
@@ -6242,6 +6329,7 @@
       setMany,
       getMany,
       update,
+      updateMany,
       del,
       delMany,
       keys,
@@ -6364,6 +6452,13 @@
       core.idb.images = idb("images");
       core.idb.answers = idb("answers");
       core.idb.logs = idb("logs");
+      core.info = `
+            1. dodano w ustawieniach przyciski wczytania u\u017Cytkownika i restart pyta\u0144.
+            <br><br>
+            2. dodano podsumowanie sesji po jej zako\u0144czeniu.
+            <br><br>
+            3. przy losowaniu uwzgl\u0119dniono dat\u0119 ostatniego uzycia pytania - nowsze cz\u0119\u015Bciej wyst\u0119puj\u0105 w nowych testach.
+        `;
       const domContentLoaded = async () => {
         controllers.initKeys();
         modules.forEach((m) => {

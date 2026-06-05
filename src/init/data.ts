@@ -1,4 +1,4 @@
-import { hideStatus, imgStatus, setStartImgStatus, setVersionPos, initStatus, showStatus, questionsStatus } from '../screens/starter/starter'
+import { hideStatus, imgStatus, setStartImgStatus, setVersionPos, initStatus, showStatus } from '../screens/starter/starter'
 import { core } from '../core'
 import { getVersion } from '../queries/data/version'
 import { ConfigResponseImgT, getConfig } from '../queries/data/config'
@@ -14,51 +14,105 @@ import { checked, storageNames } from '@/storage'
 import { AnswersDbT, QuestionDbT } from '@/types'
 import { toString as blobToString } from '../utils/blob'
 import { showInfoModal } from '@/modal/info/info'
+import { getLatestTimestamp } from '@/utils/idToDate'
 
 export const clearAnswers = async (all: boolean = false) => {
     const questions = await core.idb.questions.getAllData()
+
     let maxUsed = 0
-    await questions.forEach(async (question, index) => {
-        const key = question[0]
-        const q = question[1]
-        if (maxUsed < q.used.length + 1) maxUsed = q.used.length + 1
+    let answersDateMin = Infinity
+    let answersDateMax = -Infinity
+
+    const answersDb: [number, AnswersDbT][] = []
+
+    for (const [index, question] of questions.entries()) {
+        const key = question[0] as number
+        const q = question[1] as QuestionDbT
+
+        if (maxUsed < q.used.length + 1) {
+            maxUsed = q.used.length + 1
+        }
 
         const answer = await core.idb.answers.get(key)
+        const timestamp = getLatestTimestamp([q.id, ...q.used])
+
         if (!answer || all) {
-            await core.idb.answers.set(index, {
-                id: q.id,
-                history: [],
-                // expectedUse: 0,
-                used: q.used.length + 1
-            })
+            answersDb.push([
+                index,
+                {
+                    id: q.id,
+                    history: [],
+                    used: q.used.length + 1,
+                    stamp: timestamp
+                }
+            ])
+        } else {
+            answer.stamp = timestamp
+            answersDb.push([index, answer])
         }
-    })
+
+        if (timestamp < answersDateMin) answersDateMin = timestamp
+        if (timestamp > answersDateMax) answersDateMax = timestamp
+    }
+
+    const timeRange = answersDateMax - answersDateMin
+
+    for (const answer of answersDb) {
+        const originalStamp = answer[1].stamp
+
+        const newStamp = (originalStamp - answersDateMin) / timeRange
+        answer[1].stamp = newStamp
+    }
+
+    await core.idb.answers.updateMany(answersDb)
 
     return maxUsed
 }
 
 export const getAnswersFromServer = async () => {
     const answers = await getAnswers()
+    let answersDateMin = Infinity
+    let answersDateMax = -Infinity
+    const answersDb: [number, AnswersDbT][] = []
+    const questions = await core.idb.questions.getAllData() as [number, QuestionDbT][]
 
     if (answers !== null) {
         await clearAnswers(true)
-        const answersOld = await core.idb.answers.getAllData()
+        const answersOld = await core.idb.answers.getAllData() as [number, AnswersDbT][]
 
-        answers.forEach(async answer => {
+
+        for (const [, answer] of answers.entries()) {
             const oldAnswer = await answersOld.find(a => a[1].id === answer.id) as [number, AnswersDbT]
 
             const index = oldAnswer[0]
             const rating = getRateHistory(answer.history)
-            console.log('%c rating:', 'background: #ffcc00; color: #003300', index, rating)
+            const question = questions.find(q => q[1].id === answer.id) as [number, QuestionDbT]
 
-            core.idb.answers.update(index, (old) => old = {
+            const timestamp = getLatestTimestamp([question[1].id, ...question[1].used])
+
+            answersDb.push([index, {
                 id: answer.id,
                 history: answer.history,
                 used: oldAnswer[1].used,
                 rating,
-            })
-        })
+                stamp: timestamp
+            }])
+
+            if (timestamp < answersDateMin) answersDateMin = timestamp
+            if (timestamp > answersDateMax) answersDateMax = timestamp
+        }
     }
+
+    const timeRange = answersDateMax - answersDateMin
+
+    for (const answer of answersDb) {
+        const originalStamp = answer[1].stamp
+
+        const newStamp = (originalStamp - answersDateMin) / timeRange
+        answer[1].stamp = newStamp
+    }
+
+    await core.idb.answers.updateMany(answersDb)
 }
 
 export const check = async () => {
@@ -82,8 +136,8 @@ export const check = async () => {
     const versionRes = response.version
 
     const infoVersion = core.store.get(storageNames.infoVersion)
-    if (versionRes !== infoVersion) {
-        showInfoModal('Aktualizacja', 'dodano podsumowanie sesji po jej zakończeniu.', true, false)
+    if (versionRes !== infoVersion && core.info) {
+        showInfoModal('Aktualizacja', core.info, true, false)
         core.store.set(storageNames.infoVersion, versionRes)
     }
 
@@ -158,7 +212,7 @@ export const check = async () => {
     engineData.quantities = Array(maxUsed).fill(0)
     engineData.sume = 0
 
-    const questions = await core.idb.questions.getAllData()
+    const questions = await core.idb.questions.getAllData() as [number, QuestionDbT][]
 
     // sumy rodzajów pytań
     questions.forEach(q => {

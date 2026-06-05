@@ -4,6 +4,7 @@ export type WeightsT = {
     appearance: number,
     rating: number,
     littleUsed: number,
+    newer: number,
     temperature: number,
 }
 
@@ -18,6 +19,7 @@ export type TensorDataT = {
     appearance?: number // 0–1
     rating?: number;    // 0–1
     score?: number
+    newer?: number
 }
 
 export type QuestionDbT = {
@@ -31,18 +33,14 @@ export type QuestionDbT = {
     img?: string
 }
 
-export type QuestionDbSchemaT = {
-    [key: number]: QuestionDbT
-}
+export type QuestionDbSchemaT = Record<number, QuestionDbT>
 
 export type ImageDbT = {
     version: string
     data: string
 }
 
-export type ImageDbSchemaT = {
-    [key: string]: ImageDbT
-}
+export type ImageDbSchemaT = Record<string, ImageDbT>
 
 export const rating = {
     bad: 'bad',
@@ -68,7 +66,8 @@ export type AnswersMemoT = {
 
 export type AnswersDbT = AnswersMemoT & {
     // expectedUse: number
-    used: number
+    used: number // ile razy było użyte w różnych testach
+    stamp: number // data ostatniego testu w którym zostało pytanie uzyte
     rating?: RatingT | null // ocena do wyświetlania koloru na statystykach
 }
 
@@ -77,9 +76,7 @@ export type AnswersT = AnswersDbT & {
     index: number  // zgodny z pytaniem
 }
 
-export type AnswersDbSchemaT = {
-    [key: number]: AnswersDbT
-}
+export type AnswersDbSchemaT = Record<number, AnswersDbT>
 
 export type LearningT = {
     question: QuestionDbT
@@ -92,9 +89,7 @@ export type LogT = {
     result: boolean
 }
 
-export type LogDbSchemaT = {
-    [key: number]: LogT
-}
+export type LogDbSchemaT = Record<number, LogT>
 
 export type LogMemoT = LogT & {
     timestamp: number
