@@ -1,7 +1,7 @@
 import { RgbT, data } from './data'
 import { RgbColorT, HexColorT } from '../../dom'
 import { data as paramsData } from '../../engine/params'
-import { AnswersT, rating } from '@/types'
+import { AnswersT, HistoryT, rating } from '@/types'
 
 const hexToRgb = (hex: HexColorT): RgbT => {
     const newHex = hex.trim().replace(/^#/, '') // usuwa # i białe znaki
@@ -42,6 +42,21 @@ export const getColor = (answer: AnswersT) => {
         }
         if (answer.rating.type === rating.good) {
             return data.steps.good[answer.rating.scale] as RgbColorT
+        }
+    }
+
+    return data.steps.used[answer.used - 1] as RgbColorT
+}
+
+
+export const getColorFroOne = (answer: AnswersT) => {
+    if (answer.history.length > 0) {
+        const last = answer.history[answer.history.length - 1] as HistoryT
+
+        if (last.result) {
+            return data.steps.good[data.steps.good.length - 1] as RgbColorT
+        } else {
+            return data.steps.bad[data.steps.bad.length - 1] as RgbColorT
         }
     }
 

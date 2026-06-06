@@ -1,5 +1,7 @@
 node_modules
 prod/*
+dist/*
+ready/*
 !prod/favicon.ico
 .env
 .env.dev

@@ -13,6 +13,13 @@ export type SessionDataT = {
     bad: number
 }
 
+export const learningType = {
+    upToOne: 'up-to-one',
+    upToThree: 'up-to-three',
+} as const
+type LearningTypeKeysT = keyof typeof learningType
+type LearningTypeValuesT = typeof learningType[LearningTypeKeysT]
+
 export type CheckedValuesT = typeof checked[keyof typeof checked]
 
 type NamesValueTypeT = {
@@ -28,6 +35,8 @@ type NamesValueTypeT = {
     questionsRatio: number
     sessionStarted: CheckedValuesT
     lastSession: SessionDataT
+    learningType: LearningTypeValuesT,
+    learningVisualizationType: LearningTypeValuesT
 }
 
 export const storageNames = {
@@ -43,6 +52,8 @@ export const storageNames = {
     questionsRatio: 'questions-ratio',
     sessionStarted: 'session-started',
     lastSession: 'last-session',
+    learningType: 'learning-type',
+    learningVisualizationType: 'learning-visualization-type',
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -70,6 +81,8 @@ const defaultData: NamesValueTypeT = {
         good: 0,
         bad: 0,
     } as SessionDataT,
+    learningType: learningType.upToThree,
+    learningVisualizationType: learningType.upToThree,
 }
 
 export const getStorage = async () => {
