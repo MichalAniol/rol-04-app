@@ -11,6 +11,7 @@ const getGoodBadSplit = (answers: AnswersT[], numOfQuestions: number) => {
     const badAnswers: AnswersT[] = []
     const manyToAnswer = Math.round((determinants.whenManyToAnswerPercent / 100) * numOfQuestions)
 
+
     answers.forEach(a => {
         const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions
         if (isGood) {
@@ -19,6 +20,15 @@ const getGoodBadSplit = (answers: AnswersT[], numOfQuestions: number) => {
             badAnswers.push(a)
         }
     })
+
+    // answers.forEach(a => {
+    //     const lastAnswer = a.history.length > 0 ? a.history[a.history.length - 1]?.result : false
+    //     if (lastAnswer) {
+    //         goodAnswers.push(a)
+    //     } else {
+    //         badAnswers.push(a)
+    //     }
+    // })
 
     const result = {
         numGood: 0,

@@ -1,4 +1,4 @@
-import { add, byId, getPx, remove, setStyle } from '../../dom'
+import { add, byId, getPx, inner, remove, setStyle } from '../../dom'
 import { data } from './data'
 import { resize as drawResize, init as drawInit, cells } from './draw'
 import { setData } from './table'
@@ -11,8 +11,7 @@ import { core } from '../../core'
 import { learningType, storageNames } from '@/storage'
 
 type ElementsT = {
-    btnOne: HTMLButtonElement
-    btnThree: HTMLButtonElement
+    type: HTMLElement
     sheet: HTMLElement
     monitor: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
@@ -25,8 +24,7 @@ type ElementsT = {
 export const elements = {} as ElementsT
 
 export const init = async () => {
-    elements.btnOne = byId('statistics-visualization-type-one') as HTMLButtonElement
-    elements.btnThree = byId('statistics-visualization-type-three') as HTMLButtonElement
+    elements.type = byId('statistics-learning-type') as HTMLElement
     elements.sheet = byId('statistics-sheet') as HTMLElement
     elements.monitor = byId('statistics-monitor') as HTMLCanvasElement
     elements.ctx = elements.monitor.getContext('2d') as CanvasRenderingContext2D
@@ -53,13 +51,12 @@ export const resize = (w: number, h: number) => {
     drawResize(w, h)
 }
 
-const activeBtn = (upToThree: boolean) => {
-    if (upToThree) {
-        setStyle(elements.btnThree, 'backgroundColor', 'var(--mine_color)')
-        setStyle(elements.btnOne, 'backgroundColor', 'var(--mine_5_color)')
+const setTestTypeName = () => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    if (learningTypeMemo === learningType.upToThree) {
+        inner(elements.type, 'do trzech dobrych odpowiedzi')
     } else {
-        setStyle(elements.btnThree, 'backgroundColor', 'var(--mine_5_color)')
-        setStyle(elements.btnOne, 'backgroundColor', 'var(--mine_color)')
+        inner(elements.type, 'do jednej dobrej odpowiedzi')
     }
 }
 
@@ -68,33 +65,13 @@ const showResults = () => {
     waitFor(() => data.monitor.size !== 0, setData)()
 }
 
-const btnOneClick = () => {
-    core.store.set(storageNames.learningVisualizationType, learningType.upToOne)
-    activeBtn(false)
-    showResults()
-}
-
-const btnThreeClick = () => {
-    core.store.set(storageNames.learningVisualizationType, learningType.upToThree)
-    activeBtn(true)
-    showResults()
-}
-
 export const active = () => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
-    activeBtn(learningVisualizationType === learningType.upToThree)
-
-    add(elements.btnOne, 'click', btnOneClick)
-    add(elements.btnThree, 'click', btnThreeClick)
-
+    setTestTypeName()
     showResults()
     mouseActive()
 }
 
 export const deactivate = () => {
-    remove(elements.btnOne, 'click', btnOneClick)
-    remove(elements.btnThree, 'click', btnThreeClick)
-
     mouseDeactivate()
 }
 

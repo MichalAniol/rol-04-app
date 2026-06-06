@@ -3322,8 +3322,7 @@
     questionsRatio: "questions-ratio",
     sessionStarted: "session-started",
     lastSession: "last-session",
-    learningType: "learning-type",
-    learningVisualizationType: "learning-visualization-type"
+    learningType: "learning-type"
   };
   var START_QUESTIONS_RATIO = 0.85;
   var getQuestionsRatio = () => Math.floor(determinants.questionInSession * START_QUESTIONS_RATIO).toString();
@@ -3346,8 +3345,7 @@
       good: 0,
       bad: 0
     },
-    learningType: learningType.upToThree,
-    learningVisualizationType: learningType.upToThree
+    learningType: learningType.upToThree
   };
   var getStorage = async () => {
     const isValidJSONStringify = (value) => {
@@ -3380,7 +3378,7 @@
       }
       return JSON.parse(value);
     };
-    const remove2 = (key) => {
+    const remove3 = (key) => {
       localStorage.removeItem(key);
     };
     const clear = () => {
@@ -3404,7 +3402,7 @@
     return {
       set: set3,
       get: get3,
-      remove: remove2,
+      remove: remove3,
       clear,
       isValidJSONStringify,
       isValidJSONParse
@@ -4909,12 +4907,11 @@
     const { twoPi, offset, smallRect, center, quarter } = getMetrics();
     const answers = data.answers;
     if (answers === null) return;
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
-    console.log("%c learningVisualizationType:", "background: #ffcc00; color: #003300", learningVisualizationType);
+    const learningTypeMemo = core.store.get(storageNames.learningType);
     answers.forEach((answer, index) => {
       const pozX = index % data2.monitor.size * (data2.cell.size + data2.cell.space);
       const pozY = Math.floor(index / data2.monitor.size) * (data2.cell.size + data2.cell.space);
-      if (learningVisualizationType === learningType.upToThree) {
+      if (learningTypeMemo === learningType.upToThree) {
         elements3.ctx.fillStyle = getColorForThree(answer);
       } else {
         elements3.ctx.fillStyle = getColorFroOne(answer);
@@ -5087,8 +5084,7 @@
   // src/screens/statistics/statistics.ts
   var elements3 = {};
   var init10 = async () => {
-    elements3.btnOne = byId("statistics-visualization-type-one");
-    elements3.btnThree = byId("statistics-visualization-type-three");
+    elements3.type = byId("statistics-learning-type");
     elements3.sheet = byId("statistics-sheet");
     elements3.monitor = byId("statistics-monitor");
     elements3.ctx = elements3.monitor.getContext("2d");
@@ -5108,40 +5104,24 @@
     setStyle(elements3.bottom, "height", getPx(menuH));
     resize3(w, h);
   };
-  var activeBtn = (upToThree) => {
-    if (upToThree) {
-      setStyle(elements3.btnThree, "backgroundColor", "var(--mine_color)");
-      setStyle(elements3.btnOne, "backgroundColor", "var(--mine_5_color)");
+  var setTestTypeName = () => {
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    if (learningTypeMemo === learningType.upToThree) {
+      inner(elements3.type, "do trzech dobrych odpowiedzi");
     } else {
-      setStyle(elements3.btnThree, "backgroundColor", "var(--mine_5_color)");
-      setStyle(elements3.btnOne, "backgroundColor", "var(--mine_color)");
+      inner(elements3.type, "do jednej dobrej odpowiedzi");
     }
   };
   var showResults = () => {
     waitFor(() => data2.monitor.size !== 0, cells)();
     waitFor(() => data2.monitor.size !== 0, setData)();
   };
-  var btnOneClick = () => {
-    core.store.set(storageNames.learningVisualizationType, learningType.upToOne);
-    activeBtn(false);
-    showResults();
-  };
-  var btnThreeClick = () => {
-    core.store.set(storageNames.learningVisualizationType, learningType.upToThree);
-    activeBtn(true);
-    showResults();
-  };
   var active4 = () => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
-    activeBtn(learningVisualizationType === learningType.upToThree);
-    add(elements3.btnOne, "click", btnOneClick);
-    add(elements3.btnThree, "click", btnThreeClick);
+    setTestTypeName();
     showResults();
     active3();
   };
   var deactivate4 = () => {
-    remove(elements3.btnOne, "click", btnOneClick);
-    remove(elements3.btnThree, "click", btnThreeClick);
     deactivate3();
   };
   var firstUse = () => {
@@ -6033,9 +6013,9 @@
     elements14.btnThree = byId("settings-test-type-three");
     areNotNull(elements14, ["screens", "drawing"]);
     const learningTypeMemo = core.store.get(storageNames.learningType);
-    activeBtn2(learningTypeMemo === learningType.upToThree);
+    activeBtn(learningTypeMemo === learningType.upToThree);
   };
-  var activeBtn2 = (upToThree) => {
+  var activeBtn = (upToThree) => {
     if (upToThree) {
       setStyle(elements14.btnThree, "backgroundColor", "var(--mine_color)");
       setStyle(elements14.btnOne, "backgroundColor", "var(--mine_5_color)");
@@ -6044,23 +6024,21 @@
       setStyle(elements14.btnOne, "backgroundColor", "var(--mine_color)");
     }
   };
-  var btnOneClick2 = () => {
+  var btnOneClick = () => {
     core.store.set(storageNames.learningType, learningType.upToOne);
-    core.store.set(storageNames.learningVisualizationType, learningType.upToOne);
-    activeBtn2(false);
+    activeBtn(false);
   };
-  var btnThreeClick2 = () => {
+  var btnThreeClick = () => {
     core.store.set(storageNames.learningType, learningType.upToThree);
-    core.store.set(storageNames.learningVisualizationType, learningType.upToThree);
-    activeBtn2(true);
+    activeBtn(true);
   };
   var active10 = () => {
-    add(elements14.btnOne, "click", btnOneClick2);
-    add(elements14.btnThree, "click", btnThreeClick2);
+    add(elements14.btnOne, "click", btnOneClick);
+    add(elements14.btnThree, "click", btnThreeClick);
   };
   var deactivate10 = () => {
-    remove(elements14.btnOne, "click", btnOneClick2);
-    remove(elements14.btnThree, "click", btnThreeClick2);
+    remove(elements14.btnOne, "click", btnOneClick);
+    remove(elements14.btnThree, "click", btnThreeClick);
   };
 
   // src/screens/settings/settings.ts
@@ -6461,7 +6439,7 @@
   // src/utils/resize.ts
   var resize8 = () => {
     const functionList = [];
-    const add2 = (fn) => functionList.push(fn);
+    const add3 = (fn) => functionList.push(fn);
     const run = () => {
       const vv = window.visualViewport;
       const w = vv.width;
@@ -6470,7 +6448,7 @@
     };
     window.onresize = run;
     return {
-      add: add2,
+      add: add3,
       run
     };
   };

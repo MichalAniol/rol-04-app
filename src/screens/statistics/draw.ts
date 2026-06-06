@@ -63,15 +63,14 @@ export const cells = async () => {
     const answers = paramsData.answers
     if (answers === null) return
 
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
-    console.log('%c learningVisualizationType:', 'background: #ffcc00; color: #003300', learningVisualizationType)
+    const learningTypeMemo = core.store.get(storageNames.learningType)
 
     answers.forEach((answer, index) => {
         const pozX = (index % data.monitor.size) * (data.cell.size + data.cell.space)
         const pozY = Math.floor(index / data.monitor.size) * (data.cell.size + data.cell.space)
 
         // TODO - rating
-        if (learningVisualizationType === learningType.upToThree) {
+        if (learningTypeMemo === learningType.upToThree) {
             elements.ctx.fillStyle = getColorForThree(answer)
         } else {
             elements.ctx.fillStyle = getColorFroOne(answer)

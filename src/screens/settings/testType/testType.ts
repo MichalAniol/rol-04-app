@@ -32,13 +32,11 @@ const activeBtn = (upToThree: boolean) => {
 
 const btnOneClick = () => {
     core.store.set(storageNames.learningType, learningType.upToOne)
-    core.store.set(storageNames.learningVisualizationType, learningType.upToOne)
     activeBtn(false)
 }
 
 const btnThreeClick = () => {
     core.store.set(storageNames.learningType, learningType.upToThree)
-    core.store.set(storageNames.learningVisualizationType, learningType.upToThree)
     activeBtn(true)
 }
 
