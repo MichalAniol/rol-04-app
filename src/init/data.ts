@@ -8,7 +8,7 @@ import { showMenu } from '../tab/simpleMenu/simpleMenu'
 import { data as engineData, updateAnswers } from '../engine/params'
 import { data as statisticsData } from '../screens/statistics/data'
 import { getAnswers } from '../queries/statistics/getAnswers'
-import { getRateHistory } from '../screens/learning/evaluation'
+import { getRateHistoryForThree } from '../screens/learning/evaluation'
 import { firstUse } from '../screens/statistics/statistics'
 import { checked, storageNames } from '@/storage'
 import { AnswersDbT, QuestionDbT } from '@/types'
@@ -85,7 +85,7 @@ export const getAnswersFromServer = async () => {
             const oldAnswer = await answersOld.find(a => a[1].id === answer.id) as [number, AnswersDbT]
 
             const index = oldAnswer[0]
-            const rating = getRateHistory(answer.history)
+            const rating = getRateHistoryForThree(answer.history)
             const question = questions.find(q => q[1].id === answer.id) as [number, QuestionDbT]
 
             const timestamp = getLatestTimestamp([question[1].id, ...question[1].used])

@@ -27,17 +27,53 @@ const createTableData = () => {
     return data
 }
 
-const setValues = (row: RowT, answer: AnswersT) => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
-    const isThree = learningVisualizationType === learningType.upToThree
-    const divider = isThree ? determinants.numLastRequiredQuestions : 1
+const setValuesForOne = (row: RowT, answer: AnswersT) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
 
-    if (answer.rating?.type === rating.bad) {
-        row.bad++
-    } else if (answer.rating?.type === rating.good) {
-        row.good += (answer.rating.scale + 1) / divider
+    if (isThree) {
+        if (answer.rating?.type === rating.bad) {
+            row.bad++
+        } else if (answer.rating?.type === rating.good) {
+            row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+        } else {
+            row.unused++
+        }
     } else {
-        row.unused++
+        if (answer.history.length > 0) {
+            if (answer.history[answer.history.length - 1]?.result) {
+                row.bad++
+            } else if (answer.rating?.type === rating.good) {
+                row.good++
+            }
+        } else {
+            row.unused++
+        }
+    }
+}
+
+const setValuesForThree = (row: RowT, answer: AnswersT) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
+
+    if (isThree) {
+        if (answer.rating?.type === rating.bad) {
+            row.bad++
+        } else if (answer.rating?.type === rating.good) {
+            row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+        } else {
+            row.unused++
+        }
+    } else {
+        if (answer.history.length > 0) {
+            if (answer.history[answer.history.length - 1]?.result) {
+                row.bad++
+            } else if (answer.rating?.type === rating.good) {
+                row.good++
+            }
+        } else {
+            row.unused++
+        }
     }
 }
 
@@ -71,6 +107,10 @@ export const setData = () => {
     const tableData = createTableData()
     const sumeMoreOne = engineData.sume - (engineData.quantities[0] as number)
 
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
+
+    const setValues = isThree ? setValuesForThree : setValuesForOne
     engineData.answers.forEach(answer => {
         if (answer.used > 1) {
             setValues(tableData.moreOne, answer)

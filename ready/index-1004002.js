@@ -4115,14 +4115,26 @@
     const goodAnswers = [];
     const badAnswers = [];
     const manyToAnswer = Math.round(determinants.whenManyToAnswerPercent / 100 * numOfQuestions);
-    answers.forEach((a) => {
-      const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions;
-      if (isGood) {
-        goodAnswers.push(a);
-      } else {
-        badAnswers.push(a);
-      }
-    });
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    if (learningTypeMemo === learningType.upToThree) {
+      answers.forEach((a) => {
+        const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions;
+        if (isGood) {
+          goodAnswers.push(a);
+        } else {
+          badAnswers.push(a);
+        }
+      });
+    } else {
+      answers.forEach((a) => {
+        const lastAnswer = a.history.length > 0 ? a.history[a.history.length - 1]?.result : false;
+        if (lastAnswer) {
+          goodAnswers.push(a);
+        } else {
+          badAnswers.push(a);
+        }
+      });
+    }
     const result = {
       numGood: 0,
       numBad: 0,
@@ -4485,7 +4497,7 @@
     });
     return result;
   };
-  var getRateHistory = (history) => {
+  var getRateHistoryForThree = (history) => {
     const getResult = () => ({ good: 0, bad: 0 });
     const sortedHistory = history.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
     const lastThree = sortedHistory.slice(-determinants.numLastRequiredQuestions);
@@ -4511,7 +4523,7 @@
       timestamp,
       result: answer.correct
     });
-    const rate = getRateHistory(data4.answers.origin?.answer.history);
+    const rate = getRateHistoryForThree(data4.answers.origin?.answer.history);
     data4.answers.origin.answer.rating = rate;
     const { drawn, index, ...answerDb } = data4.answers.origin.answer;
     core.idb.answers.update(index, (old) => old = answerDb);
@@ -4985,16 +4997,50 @@
     }
     return data5;
   };
-  var setValues = (row, answer) => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
-    const isThree = learningVisualizationType === learningType.upToThree;
-    const divider = isThree ? determinants.numLastRequiredQuestions : 1;
-    if (answer.rating?.type === rating.bad) {
-      row.bad++;
-    } else if (answer.rating?.type === rating.good) {
-      row.good += (answer.rating.scale + 1) / divider;
+  var setValuesForOne = (row, answer) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    const isThree = learningTypeMemo === learningType.upToThree;
+    if (isThree) {
+      if (answer.rating?.type === rating.bad) {
+        row.bad++;
+      } else if (answer.rating?.type === rating.good) {
+        row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions;
+      } else {
+        row.unused++;
+      }
     } else {
-      row.unused++;
+      if (answer.history.length > 0) {
+        if (answer.history[answer.history.length - 1]?.result) {
+          row.bad++;
+        } else if (answer.rating?.type === rating.good) {
+          row.good++;
+        }
+      } else {
+        row.unused++;
+      }
+    }
+  };
+  var setValuesForThree = (row, answer) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    const isThree = learningTypeMemo === learningType.upToThree;
+    if (isThree) {
+      if (answer.rating?.type === rating.bad) {
+        row.bad++;
+      } else if (answer.rating?.type === rating.good) {
+        row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions;
+      } else {
+        row.unused++;
+      }
+    } else {
+      if (answer.history.length > 0) {
+        if (answer.history[answer.history.length - 1]?.result) {
+          row.bad++;
+        } else if (answer.rating?.type === rating.good) {
+          row.good++;
+        }
+      } else {
+        row.unused++;
+      }
     }
   };
   var countPercent = (numRow, percRow, sum) => {
@@ -5019,6 +5065,9 @@
     if (data.answers === null) return;
     const tableData = createTableData();
     const sumeMoreOne = data.sume - data.quantities[0];
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    const isThree = learningTypeMemo === learningType.upToThree;
+    const setValues = isThree ? setValuesForThree : setValuesForOne;
     data.answers.forEach((answer) => {
       if (answer.used > 1) {
         setValues(tableData.moreOne, answer);
@@ -5856,7 +5905,7 @@
       for (const [, answer] of answers.entries()) {
         const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
         const index = oldAnswer[0];
-        const rating2 = getRateHistory(answer.history);
+        const rating2 = getRateHistoryForThree(answer.history);
         const question = questions.find((q) => q[1].id === answer.id);
         const timestamp = getLatestTimestamp([question[1].id, ...question[1].used]);
         answersDb.push([index, {
@@ -6233,7 +6282,7 @@
               timestamp,
               result: true
             });
-            const rate = getRateHistory(data4.answers.origin?.answer.history);
+            const rate = getRateHistoryForThree(data4.answers.origin?.answer.history);
             data4.answers.origin.answer.rating = rate;
             const { drawn, index, ...answerDb } = data4.answers.origin.answer;
             core.idb.answers.update(index, (old) => old = answerDb);

@@ -5,7 +5,7 @@ import { core } from '@/core'
 import { storageNames } from '@/storage'
 import { data, setQuestion } from '@/screens/learning/preparation'
 import { HistoryT, LearningT } from '@/types'
-import { clearResults, confirmClick, getRateHistory, mark } from '@/screens/learning/evaluation'
+import { clearResults, confirmClick, getRateHistoryForThree, mark } from '@/screens/learning/evaluation'
 
 const keysListener = async (event: any) => {
     console.log('%c event.code:', 'background:rgb(234, 0, 255); color: #003300', event.code)
@@ -59,7 +59,7 @@ const keysListener = async (event: any) => {
                         result: true,
                     })
 
-                    const rate = getRateHistory(data.answers.origin?.answer.history as HistoryT[]);
+                    const rate = getRateHistoryForThree(data.answers.origin?.answer.history as HistoryT[]);
                     (data.answers.origin as LearningT).answer.rating = rate
 
                     // zapis w pytaniach
