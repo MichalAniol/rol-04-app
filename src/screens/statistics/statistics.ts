@@ -81,6 +81,9 @@ const btnThreeClick = () => {
 }
 
 export const active = () => {
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
+    activeBtn(learningVisualizationType === learningType.upToThree)
+
     add(elements.btnOne, 'click', btnOneClick)
     add(elements.btnThree, 'click', btnThreeClick)
 
@@ -96,9 +99,6 @@ export const deactivate = () => {
 }
 
 export const firstUse = () => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
-    activeBtn(learningVisualizationType === learningType.upToThree)
-
     init()
     const vv = visualViewport as VisualViewport
     resize(vv.width, vv.height)

@@ -3582,7 +3582,7 @@
     getGoTo: () => getGoTo,
     goLeft: () => goLeft,
     goRight: () => goRight,
-    init: () => init24,
+    init: () => init25,
     resize: () => resize7,
     screens: () => screens,
     setTab: () => setTab,
@@ -3899,19 +3899,19 @@
     });
     const getSaved = () => core.store.get(radioData.storeName);
     const mark2 = (name2) => newRadioData.forEach((rd) => rd.checkbox.checked = rd.name === name2);
-    const active11 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
-    const deactivate11 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
-    const init25 = () => {
-      active11();
+    const active12 = () => newRadioData.forEach((rd) => add(rd.item, "click", rd.click));
+    const deactivate12 = () => newRadioData.forEach((rd) => remove(rd.item, "click", rd.click));
+    const init26 = () => {
+      active12();
       const saved = getSaved();
       if (radioData.init) radioData.init(saved);
       mark2(saved);
       return saved;
     };
     return {
-      init: init25,
-      active: active11,
-      deactivate: deactivate11
+      init: init26,
+      active: active12,
+      deactivate: deactivate12
     };
   };
 
@@ -4584,7 +4584,7 @@
       fitCtx: null,
       fitWidth: 0
     };
-    const init25 = (canvas, fitCanvas) => {
+    const init26 = (canvas, fitCanvas) => {
       data5.canvas = canvas;
       data5.ctx = canvas.getContext("2d");
       data5.fitCanvas = fitCanvas;
@@ -4647,7 +4647,7 @@
       };
     })();
     return {
-      init: init25,
+      init: init26,
       setWidth,
       draw
     };
@@ -5132,6 +5132,8 @@
     showResults();
   };
   var active4 = () => {
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
+    activeBtn(learningVisualizationType === learningType.upToThree);
     add(elements3.btnOne, "click", btnOneClick);
     add(elements3.btnThree, "click", btnThreeClick);
     showResults();
@@ -5143,8 +5145,6 @@
     deactivate3();
   };
   var firstUse = () => {
-    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
-    activeBtn(learningVisualizationType === learningType.upToThree);
     init10();
     const vv = visualViewport;
     resize4(vv.width, vv.height);
@@ -5211,9 +5211,9 @@
   // src/screens/settings/settings.ts
   var settings_exports = {};
   __export(settings_exports, {
-    active: () => active10,
-    deactivate: () => deactivate10,
-    init: () => init23,
+    active: () => active11,
+    deactivate: () => deactivate11,
+    init: () => init24,
     resize: () => resize6
   });
 
@@ -6026,36 +6026,76 @@
     menuRatio.init();
   };
 
-  // src/screens/settings/settings.ts
+  // src/screens/settings/testType/testType.ts
   var elements14 = {};
-  var resize6 = (w, h) => {
-    setStyle(elements14.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
+  var init23 = async () => {
+    elements14.btnOne = byId("settings-test-type-one");
+    elements14.btnThree = byId("settings-test-type-three");
+    areNotNull(elements14, ["screens", "drawing"]);
+    const learningTypeMemo = core.store.get(storageNames.learningType);
+    activeBtn2(learningTypeMemo === learningType.upToThree);
   };
-  var init23 = () => {
-    elements14.scrollBox = byQuery("#settings-tab-box .scroll-box");
-    areNotNull(elements14, ["settings"]);
+  var activeBtn2 = (upToThree) => {
+    if (upToThree) {
+      setStyle(elements14.btnThree, "backgroundColor", "var(--mine_color)");
+      setStyle(elements14.btnOne, "backgroundColor", "var(--mine_5_color)");
+    } else {
+      setStyle(elements14.btnThree, "backgroundColor", "var(--mine_5_color)");
+      setStyle(elements14.btnOne, "backgroundColor", "var(--mine_color)");
+    }
+  };
+  var btnOneClick2 = () => {
+    core.store.set(storageNames.learningType, learningType.upToOne);
+    core.store.set(storageNames.learningVisualizationType, learningType.upToOne);
+    activeBtn2(false);
+  };
+  var btnThreeClick2 = () => {
+    core.store.set(storageNames.learningType, learningType.upToThree);
+    core.store.set(storageNames.learningVisualizationType, learningType.upToThree);
+    activeBtn2(true);
+  };
+  var active10 = () => {
+    add(elements14.btnOne, "click", btnOneClick2);
+    add(elements14.btnThree, "click", btnThreeClick2);
+  };
+  var deactivate10 = () => {
+    remove(elements14.btnOne, "click", btnOneClick2);
+    remove(elements14.btnThree, "click", btnThreeClick2);
+  };
+
+  // src/screens/settings/settings.ts
+  var elements15 = {};
+  var resize6 = (w, h) => {
+    setStyle(elements15.scrollBox, "height", `calc(${getPx(h)} - 32px - var(--font_title_size))`);
+  };
+  var init24 = () => {
+    elements15.scrollBox = byQuery("#settings-tab-box .scroll-box");
+    areNotNull(elements15, ["settings"]);
     init13();
     init5();
     init14();
     init22();
     init21();
+    init23();
   };
-  var active10 = () => {
+  var active11 = () => {
     active7();
     ratio.active();
     active8();
     active9();
+    active10();
   };
-  var deactivate10 = () => {
+  var deactivate11 = () => {
     deactivate7();
     ratio.deactivate();
     deactivate8();
     deactivate9();
+    deactivate10();
   };
 
   // src/tab/tab.ts
   var WEB_MENU_WIDTH = 200;
-  var elements15 = {};
+  var elements16 = {};
   var state4 = {
     screen: 0,
     max: 0,
@@ -6071,7 +6111,7 @@
   ];
   var getTabLeftPos = () => state4.tabWidth * state4.screen;
   var setTab = () => {
-    elements15.carousel.style.left = getPx(-getTabLeftPos());
+    elements16.carousel.style.left = getPx(-getTabLeftPos());
     screens.forEach((s, i) => {
       i === state4.screen ? s.active() : s.deactivate();
     });
@@ -6089,7 +6129,7 @@
     }
   };
   var setWebBtnsColor = (index) => {
-    elements15.menu.items.forEach((item, i) => {
+    elements16.menu.items.forEach((item, i) => {
       if (index === i) {
         setStyle(item, "backgroundColor", "var(--mine_color)");
         setStyle(item, "color", "var(--last_color)");
@@ -6109,47 +6149,47 @@
     }
   };
   var blur = () => {
-    setStyle(elements15.allTabs, "filter", "blur(5px)");
+    setStyle(elements16.allTabs, "filter", "blur(5px)");
   };
   var unBlur = () => {
-    setStyle(elements15.allTabs, "filter", "blur(0px)");
+    setStyle(elements16.allTabs, "filter", "blur(0px)");
   };
-  var init24 = () => {
-    elements15.carousel = byId("carousel");
-    elements15.carouselBox = byId("carousel-box");
-    elements15.allTabs = byId("tabs");
-    elements15.tabs = byQueryAll(".tab");
-    state4.max = elements15.tabs.length;
-    elements15.menu = {};
-    elements15.menu.mobile = byId("menu-mobile");
-    elements15.menu.web = byId("menu-web");
+  var init25 = () => {
+    elements16.carousel = byId("carousel");
+    elements16.carouselBox = byId("carousel-box");
+    elements16.allTabs = byId("tabs");
+    elements16.tabs = byQueryAll(".tab");
+    state4.max = elements16.tabs.length;
+    elements16.menu = {};
+    elements16.menu.mobile = byId("menu-mobile");
+    elements16.menu.web = byId("menu-web");
     if (core.isMobile) {
-      display(elements15.menu.web, "none");
-      elements15.menu.items = [];
-      init3(getGoTo, elements15.menu.items);
+      display(elements16.menu.web, "none");
+      elements16.menu.items = [];
+      init3(getGoTo, elements16.menu.items);
     } else {
-      display(elements15.menu.mobile, "none");
+      display(elements16.menu.mobile, "none");
       state4.carouselLeftPos = WEB_MENU_WIDTH;
-      elements15.menu.items = byQueryAll(".menu-web-item");
-      for (let i = 0; i < elements15.menu.items.length; ++i) {
-        const item = elements15.menu.items[i];
+      elements16.menu.items = byQueryAll(".menu-web-item");
+      for (let i = 0; i < elements16.menu.items.length; ++i) {
+        const item = elements16.menu.items[i];
         add(item, "click", getGoTo(i));
       }
     }
-    areNotNull(elements15, ["tab"]);
+    areNotNull(elements16, ["tab"]);
   };
   var resize7 = (w, h) => {
     state4.tabWidth = w - state4.carouselLeftPos;
-    for (let i = 0; i < elements15.tabs.length; ++i) {
-      const tab = elements15.tabs[i];
+    for (let i = 0; i < elements16.tabs.length; ++i) {
+      const tab = elements16.tabs[i];
       setStyle(tab, "width", getPx(state4.tabWidth));
       setStyle(tab, "height", getPx(h));
     }
-    setStyle(elements15.allTabs, "width", getPx(w));
-    setStyle(elements15.allTabs, "height", getPx(h));
-    setStyle(elements15.carouselBox, "width", getPx(state4.tabWidth));
-    setStyle(elements15.carouselBox, "left", getPx(state4.carouselLeftPos));
-    setStyle(elements15.carousel, "width", getPx(state4.max * state4.tabWidth));
+    setStyle(elements16.allTabs, "width", getPx(w));
+    setStyle(elements16.allTabs, "height", getPx(h));
+    setStyle(elements16.carouselBox, "width", getPx(state4.tabWidth));
+    setStyle(elements16.carouselBox, "left", getPx(state4.carouselLeftPos));
+    setStyle(elements16.carousel, "width", getPx(state4.max * state4.tabWidth));
     setTab();
   };
 

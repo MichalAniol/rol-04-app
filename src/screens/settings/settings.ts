@@ -5,6 +5,7 @@ import { init as ratioInit, active as ratioActive, deactivate as ratioDeactivate
 import { init as optionsInit, active as optionsActive, deactivate as optionsDeactivate } from './options/options'
 import { init as menuInit } from './menu/menu'
 import { areNotNull } from '../../utils/isNotNull'
+import * as testType from './testType/testType'
 
 type ElementsT = {
     scrollBox: HTMLElement
@@ -26,6 +27,7 @@ export const init = () => {
     ratioInit()
     menuInit()
     optionsInit()
+    testType.init()
 }
 
 export const active = () => {
@@ -33,6 +35,7 @@ export const active = () => {
     themeRatio.active()
     ratioActive()
     optionsActive()
+    testType.active()
 }
 
 export const deactivate = () => {
@@ -40,4 +43,5 @@ export const deactivate = () => {
     themeRatio.deactivate()
     ratioDeactivate()
     optionsDeactivate()
+    testType.deactivate()
 }
