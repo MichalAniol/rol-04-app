@@ -13,6 +13,13 @@ export type SessionDataT = {
     bad: number
 }
 
+export const learningType = {
+    upToOne: 'up-to-one',
+    upToThree: 'up-to-three',
+} as const
+type LearningTypeKeysT = keyof typeof learningType
+type LearningTypeValuesT = typeof learningType[LearningTypeKeysT]
+
 export type CheckedValuesT = typeof checked[keyof typeof checked]
 
 type NamesValueTypeT = {
@@ -28,13 +35,14 @@ type NamesValueTypeT = {
     questionsRatio: number
     sessionStarted: CheckedValuesT
     lastSession: SessionDataT
+    learningType: LearningTypeValuesT
 }
 
 export const storageNames = {
     theme: 'theme',
     questionsData: 'questions-data',
     imgData: 'img-data',
-    imgAvailable: 'img-available',  //
+    imgAvailable: 'img-available',
     userId: 'user-id',
     version: 'version',
     infoVersion: 'info-version',
@@ -43,6 +51,7 @@ export const storageNames = {
     questionsRatio: 'questions-ratio',
     sessionStarted: 'session-started',
     lastSession: 'last-session',
+    learningType: 'learning-type',
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -70,6 +79,7 @@ const defaultData: NamesValueTypeT = {
         good: 0,
         bad: 0,
     } as SessionDataT,
+    learningType: learningType.upToThree,
 }
 
 export const getStorage = async () => {

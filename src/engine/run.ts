@@ -5,20 +5,33 @@ import { data as engineData } from './params'
 import { shuffle } from '../utils/shuffle'
 import { AnswersT, LearningT, QuestionDbT, rating, TensorDataT, WeightsT } from '@/types'
 import { core } from '@/core'
+import { learningType, storageNames } from '@/storage'
 
 const getGoodBadSplit = (answers: AnswersT[], numOfQuestions: number) => {
     const goodAnswers: AnswersT[] = []
     const badAnswers: AnswersT[] = []
     const manyToAnswer = Math.round((determinants.whenManyToAnswerPercent / 100) * numOfQuestions)
 
-    answers.forEach(a => {
-        const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions
-        if (isGood) {
-            goodAnswers.push(a)
-        } else {
-            badAnswers.push(a)
-        }
-    })
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    if (learningTypeMemo === learningType.upToThree) {
+        answers.forEach(a => {
+            const isGood = a.rating?.type === rating.good && a.rating?.scale + 1 >= determinants.numLastRequiredQuestions
+            if (isGood) {
+                goodAnswers.push(a)
+            } else {
+                badAnswers.push(a)
+            }
+        })
+    } else {
+        answers.forEach(a => {
+            const lastAnswer = a.history.length > 0 ? a.history[a.history.length - 1]?.result : false
+            if (lastAnswer) {
+                goodAnswers.push(a)
+            } else {
+                badAnswers.push(a)
+            }
+        })
+    }
 
     const result = {
         numGood: 0,

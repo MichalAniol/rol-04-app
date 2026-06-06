@@ -1,4 +1,4 @@
-import { byId, getPx, setStyle } from '../../dom'
+import { add, byId, getPx, inner, remove, setStyle } from '../../dom'
 import { data } from './data'
 import { resize as drawResize, init as drawInit, cells } from './draw'
 import { setData } from './table'
@@ -8,8 +8,10 @@ import { waitFor } from '../../utils/waitFor'
 import { data as engineData, updateAnswers } from '../../engine/params'
 import { setMonitorLegend } from './legend'
 import { core } from '../../core'
+import { learningType, storageNames } from '@/storage'
 
 type ElementsT = {
+    type: HTMLElement
     sheet: HTMLElement
     monitor: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
@@ -22,6 +24,7 @@ type ElementsT = {
 export const elements = {} as ElementsT
 
 export const init = async () => {
+    elements.type = byId('statistics-learning-type') as HTMLElement
     elements.sheet = byId('statistics-sheet') as HTMLElement
     elements.monitor = byId('statistics-monitor') as HTMLCanvasElement
     elements.ctx = elements.monitor.getContext('2d') as CanvasRenderingContext2D
@@ -48,10 +51,23 @@ export const resize = (w: number, h: number) => {
     drawResize(w, h)
 }
 
-export const active = () => {
+const setTestTypeName = () => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    if (learningTypeMemo === learningType.upToThree) {
+        inner(elements.type, 'do trzech dobrych odpowiedzi')
+    } else {
+        inner(elements.type, 'do jednej dobrej odpowiedzi')
+    }
+}
+
+const showResults = () => {
     waitFor(() => data.monitor.size !== 0, cells)()
     waitFor(() => data.monitor.size !== 0, setData)()
+}
 
+export const active = () => {
+    setTestTypeName()
+    showResults()
     mouseActive()
 }
 

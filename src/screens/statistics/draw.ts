@@ -2,10 +2,12 @@
 import { getColorFromStyle, boundRect } from '../../dom'
 import { data, determinants } from './data'
 import { elements } from './statistics'
-import { getColorSteps, getColor, getOnThisSession } from './helpers'
+import { getColorSteps, getColorForThree, getOnThisSession, getColorFroOne } from './helpers'
 import { data as paramsData, determinants as engineDeterminants } from '../../engine/params'
 import { data as learningData } from '../learning/preparation'
 import { waitFor } from '@/utils/waitFor'
+import { core } from '@/core'
+import { learningType, storageNames } from '@/storage'
 
 const getMetrics = () => {
     const halfSpace = data.cell.space / 2
@@ -61,19 +63,26 @@ export const cells = async () => {
     const answers = paramsData.answers
     if (answers === null) return
 
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+
     answers.forEach((answer, index) => {
         const pozX = (index % data.monitor.size) * (data.cell.size + data.cell.space)
         const pozY = Math.floor(index / data.monitor.size) * (data.cell.size + data.cell.space)
 
-        elements.ctx.fillStyle = getColor(answer)
+        // TODO - rating
+        if (learningTypeMemo === learningType.upToThree) {
+            elements.ctx.fillStyle = getColorForThree(answer)
+        } else {
+            elements.ctx.fillStyle = getColorFroOne(answer)
+        }
+
         elements.ctx.fillRect(pozX, pozY, data.cell.size, data.cell.size)
 
         // zaznacza obecną sesję
         const onThisSession = getOnThisSession(answer)
         if (onThisSession) {
-            elements.ctx.strokeStyle = data.background // REVIEW - 
-            elements.ctx.lineWidth = data.cell.space // REVIEW - 
-
+            elements.ctx.strokeStyle = data.background
+            elements.ctx.lineWidth = data.cell.space
             const sesX = pozX + offset
             const sesY = pozY + offset
             const sesSize = smallRect
@@ -85,8 +94,7 @@ export const cells = async () => {
         if (learningData.answers.origin?.answer) {
             const condition = learningData.answers.origin.answer.id === answer.id
             if (condition) {
-                elements.ctx.fillStyle = data.background // REVIEW - 
-
+                elements.ctx.fillStyle = data.background
                 const nowX = pozX + center
                 const nowY = pozY + center
 
@@ -95,20 +103,20 @@ export const cells = async () => {
                 elements.ctx.fill()
             }
         }
-        {
-            if (process.env.DEBUG === "true") {
-                if (answer.history.length > 0) {
-                    elements.ctx.fillStyle = data.background
-                    elements.ctx.lineWidth = data.cell.space
 
-                    const endX = pozX + data.cell.size - (data.cell.space * 3)
-                    const endY = pozY + data.cell.size - (data.cell.space * 3)
+        // oznaczenie "dotkniętych" pytań
+        if (process.env.DEBUG === "true") {
+            if (answer.history.length > 0) {
+                elements.ctx.fillStyle = data.background
+                elements.ctx.lineWidth = data.cell.space
 
-                    elements.ctx.beginPath()
-                    elements.ctx.moveTo(pozX + (data.cell.space * 3), pozY + (data.cell.space * 3))
-                    elements.ctx.lineTo(endX, endY)
-                    elements.ctx.stroke()
-                }
+                const endX = pozX + data.cell.size - (data.cell.space * 3)
+                const endY = pozY + data.cell.size - (data.cell.space * 3)
+
+                elements.ctx.beginPath()
+                elements.ctx.moveTo(pozX + (data.cell.space * 3), pozY + (data.cell.space * 3))
+                elements.ctx.lineTo(endX, endY)
+                elements.ctx.stroke()
             }
         }
     })

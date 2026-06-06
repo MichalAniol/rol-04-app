@@ -34,9 +34,9 @@ import { setConsole } from './console'
         core.idb.answers = idb<AnswersDbSchemaT>('answers')
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
+        core.info = []
         core.info = [
-            '1. dodano wizualizację historię odpowiedzi',
-            '2. podzielono informacje o Aplikacji na poszczególne zakładki'
+            '1. podział rozwiązywania testów na "do 3 razy" i "do 1 razu" aby podzielić naukę od weryfikacji już opanowanych pytań.',
         ]
 
         const domContentLoaded = async () => {

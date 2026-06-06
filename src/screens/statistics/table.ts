@@ -2,6 +2,8 @@ import { elements } from './statistics'
 import { byQ, inner } from '../../dom'
 import { determinants, data as engineData } from '../../engine/params'
 import { AnswersT, rating } from '@/types'
+import { core } from '@/core'
+import { learningType, storageNames } from '@/storage'
 
 const colNames = ['good', 'bad', 'unused'] as const
 const rowNames = ['all', 'allPercent', 'moreOne', 'moreOnePercent', 'one', 'onePercent'] as const
@@ -25,13 +27,53 @@ const createTableData = () => {
     return data
 }
 
-const setValues = (row: RowT, answer: AnswersT) => {
-    if (answer.rating?.type === rating.bad) {
-        row.bad++
-    } else if (answer.rating?.type === rating.good) {
-        row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+const setValuesForOne = (row: RowT, answer: AnswersT) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
+
+    if (isThree) {
+        if (answer.rating?.type === rating.bad) {
+            row.bad++
+        } else if (answer.rating?.type === rating.good) {
+            row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+        } else {
+            row.unused++
+        }
     } else {
-        row.unused++
+        if (answer.history.length > 0) {
+            if (answer.history[answer.history.length - 1]?.result) {
+                row.bad++
+            } else if (answer.rating?.type === rating.good) {
+                row.good++
+            }
+        } else {
+            row.unused++
+        }
+    }
+}
+
+const setValuesForThree = (row: RowT, answer: AnswersT) => {
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
+
+    if (isThree) {
+        if (answer.rating?.type === rating.bad) {
+            row.bad++
+        } else if (answer.rating?.type === rating.good) {
+            row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+        } else {
+            row.unused++
+        }
+    } else {
+        if (answer.history.length > 0) {
+            if (answer.history[answer.history.length - 1]?.result) {
+                row.bad++
+            } else if (answer.rating?.type === rating.good) {
+                row.good++
+            }
+        } else {
+            row.unused++
+        }
     }
 }
 
@@ -65,6 +107,10 @@ export const setData = () => {
     const tableData = createTableData()
     const sumeMoreOne = engineData.sume - (engineData.quantities[0] as number)
 
+    const learningTypeMemo = core.store.get(storageNames.learningType)
+    const isThree = learningTypeMemo === learningType.upToThree
+
+    const setValues = isThree ? setValuesForThree : setValuesForOne
     engineData.answers.forEach(answer => {
         if (answer.used > 1) {
             setValues(tableData.moreOne, answer)

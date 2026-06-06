@@ -44,7 +44,7 @@ const setResult = (result: ResultT, history: HistoryT[]) => {
     return result
 }
 
-export const getRateHistory = (history: HistoryT[]) => {
+export const getRateHistoryForThree = (history: HistoryT[]) => {
     const getResult = () => ({ good: 0, bad: 0, } as ResultT)
 
     const sortedHistory = history
@@ -78,7 +78,7 @@ const sumAndMemo = async () => {
     })
 
     // ocena historii
-    const rate = getRateHistory(data.answers.origin?.answer.history as HistoryT[]);
+    const rate = getRateHistoryForThree(data.answers.origin?.answer.history as HistoryT[]);
     (data.answers.origin as LearningT).answer.rating = rate
 
     // zapis w pytaniach

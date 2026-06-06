@@ -1,3 +1,11 @@
+.statistics-learning-type {
+    width: calc(100% - 40px);
+    text-align: center;
+    font-size: var(--font_big_size);
+    color: var(--mine_color);
+    margin: 12px;
+}
+
 .statistics-tab-box {
     padding: 0 0 0 20px;
 }
@@ -64,7 +72,7 @@
     margin-right: 20px;
 }
 
-.statistics-box-table{
+.statistics-box-table {
     margin: 0 auto 0 auto;
     padding: 12px;
     border: 2px solid var(--fourth_from_end_color);
