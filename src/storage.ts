@@ -36,6 +36,7 @@ type NamesValueTypeT = {
     sessionStarted: CheckedValuesT
     lastSession: SessionDataT
     learningType: LearningTypeValuesT
+    learningVisualizationType: LearningTypeValuesT
 }
 
 export const storageNames = {
@@ -52,6 +53,7 @@ export const storageNames = {
     sessionStarted: 'session-started',
     lastSession: 'last-session',
     learningType: 'learning-type',
+    learningVisualizationType: 'learning-visualization-type',
 } as const
 
 type DataNamesKeysT = keyof typeof storageNames
@@ -79,7 +81,8 @@ const defaultData: NamesValueTypeT = {
         good: 0,
         bad: 0,
     } as SessionDataT,
-    learningType: learningType.upToThree
+    learningType: learningType.upToThree,
+    learningVisualizationType: learningType.upToThree,
 }
 
 export const getStorage = async () => {
