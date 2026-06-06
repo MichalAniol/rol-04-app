@@ -63,36 +63,41 @@ const activeBtn = (upToThree: boolean) => {
     }
 }
 
+const showResults = () => {
+    waitFor(() => data.monitor.size !== 0, cells)()
+    waitFor(() => data.monitor.size !== 0, setData)()
+}
+
 const btnOneClick = () => {
     core.store.set(storageNames.learningVisualizationType, learningType.upToOne)
     activeBtn(false)
+    showResults()
 }
 
 const btnThreeClick = () => {
     core.store.set(storageNames.learningVisualizationType, learningType.upToThree)
     activeBtn(true)
+    showResults()
 }
 
 export const active = () => {
-    waitFor(() => data.monitor.size !== 0, cells)()
-    waitFor(() => data.monitor.size !== 0, setData)()
+    add(elements.btnOne, 'click', btnOneClick)
+    add(elements.btnThree, 'click', btnThreeClick)
 
-    // add(elements.btnOne, 'click', btnOneClick)
-    // add(elements.btnThree, 'click', btnThreeClick)
-
+    showResults()
     mouseActive()
 }
 
 export const deactivate = () => {
-    // remove(elements.btnOne, 'click', btnOneClick)
-    // remove(elements.btnThree, 'click', btnThreeClick)
+    remove(elements.btnOne, 'click', btnOneClick)
+    remove(elements.btnThree, 'click', btnThreeClick)
 
     mouseDeactivate()
 }
 
 export const firstUse = () => {
-    // const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
-    // activeBtn(learningVisualizationType === learningType.upToThree)
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
+    activeBtn(learningVisualizationType === learningType.upToThree)
 
     init()
     const vv = visualViewport as VisualViewport

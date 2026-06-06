@@ -2,6 +2,8 @@ import { elements } from './statistics'
 import { byQ, inner } from '../../dom'
 import { determinants, data as engineData } from '../../engine/params'
 import { AnswersT, rating } from '@/types'
+import { core } from '@/core'
+import { learningType, storageNames } from '@/storage'
 
 const colNames = ['good', 'bad', 'unused'] as const
 const rowNames = ['all', 'allPercent', 'moreOne', 'moreOnePercent', 'one', 'onePercent'] as const
@@ -26,10 +28,14 @@ const createTableData = () => {
 }
 
 const setValues = (row: RowT, answer: AnswersT) => {
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType)
+    const isThree = learningVisualizationType === learningType.upToThree
+    const divider = isThree ? determinants.numLastRequiredQuestions : 1
+
     if (answer.rating?.type === rating.bad) {
         row.bad++
     } else if (answer.rating?.type === rating.good) {
-        row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions
+        row.good += (answer.rating.scale + 1) / divider
     } else {
         row.unused++
     }

@@ -3380,7 +3380,7 @@
       }
       return JSON.parse(value);
     };
-    const remove3 = (key) => {
+    const remove2 = (key) => {
       localStorage.removeItem(key);
     };
     const clear = () => {
@@ -3404,7 +3404,7 @@
     return {
       set: set3,
       get: get3,
-      remove: remove3,
+      remove: remove2,
       clear,
       isValidJSONStringify,
       isValidJSONParse
@@ -4989,10 +4989,13 @@
     return data5;
   };
   var setValues = (row, answer) => {
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
+    const isThree = learningVisualizationType === learningType.upToThree;
+    const divider = isThree ? determinants.numLastRequiredQuestions : 1;
     if (answer.rating?.type === rating.bad) {
       row.bad++;
     } else if (answer.rating?.type === rating.good) {
-      row.good += (answer.rating.scale + 1) / determinants.numLastRequiredQuestions;
+      row.good += (answer.rating.scale + 1) / divider;
     } else {
       row.unused++;
     }
@@ -5105,15 +5108,43 @@
     setStyle(elements3.bottom, "height", getPx(menuH));
     resize3(w, h);
   };
-  var active4 = () => {
+  var activeBtn = (upToThree) => {
+    if (upToThree) {
+      setStyle(elements3.btnThree, "backgroundColor", "var(--mine_color)");
+      setStyle(elements3.btnOne, "backgroundColor", "var(--mine_5_color)");
+    } else {
+      setStyle(elements3.btnThree, "backgroundColor", "var(--mine_5_color)");
+      setStyle(elements3.btnOne, "backgroundColor", "var(--mine_color)");
+    }
+  };
+  var showResults = () => {
     waitFor(() => data2.monitor.size !== 0, cells)();
     waitFor(() => data2.monitor.size !== 0, setData)();
+  };
+  var btnOneClick = () => {
+    core.store.set(storageNames.learningVisualizationType, learningType.upToOne);
+    activeBtn(false);
+    showResults();
+  };
+  var btnThreeClick = () => {
+    core.store.set(storageNames.learningVisualizationType, learningType.upToThree);
+    activeBtn(true);
+    showResults();
+  };
+  var active4 = () => {
+    add(elements3.btnOne, "click", btnOneClick);
+    add(elements3.btnThree, "click", btnThreeClick);
+    showResults();
     active3();
   };
   var deactivate4 = () => {
+    remove(elements3.btnOne, "click", btnOneClick);
+    remove(elements3.btnThree, "click", btnThreeClick);
     deactivate3();
   };
   var firstUse = () => {
+    const learningVisualizationType = core.store.get(storageNames.learningVisualizationType);
+    activeBtn(learningVisualizationType === learningType.upToThree);
     init10();
     const vv = visualViewport;
     resize4(vv.width, vv.height);
@@ -5355,158 +5386,6 @@
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-
-  // src/init/data.ts
-  var clearAnswers = async (all3 = false) => {
-    const questions = await core.idb.questions.getAllData();
-    let maxUsed = 0;
-    let answersDateMin = Infinity;
-    let answersDateMax = -Infinity;
-    const answersDb = [];
-    for (const [index, question] of questions.entries()) {
-      const key = question[0];
-      const q = question[1];
-      if (maxUsed < q.used.length + 1) {
-        maxUsed = q.used.length + 1;
-      }
-      const answer = await core.idb.answers.get(key);
-      const timestamp = getLatestTimestamp([q.id, ...q.used]);
-      if (!answer || all3) {
-        answersDb.push([
-          index,
-          {
-            id: q.id,
-            history: [],
-            used: q.used.length + 1,
-            stamp: timestamp
-          }
-        ]);
-      } else {
-        answer.stamp = timestamp;
-        answersDb.push([index, answer]);
-      }
-      if (timestamp < answersDateMin) answersDateMin = timestamp;
-      if (timestamp > answersDateMax) answersDateMax = timestamp;
-    }
-    const timeRange = answersDateMax - answersDateMin;
-    for (const answer of answersDb) {
-      const originalStamp = answer[1].stamp;
-      const newStamp = (originalStamp - answersDateMin) / timeRange;
-      answer[1].stamp = newStamp;
-    }
-    await core.idb.answers.updateMany(answersDb);
-    return maxUsed;
-  };
-  var getAnswersFromServer = async () => {
-    const answers = await getAnswers();
-    let answersDateMin = Infinity;
-    let answersDateMax = -Infinity;
-    const answersDb = [];
-    const questions = await core.idb.questions.getAllData();
-    if (answers !== null) {
-      await clearAnswers(true);
-      const answersOld = await core.idb.answers.getAllData();
-      for (const [, answer] of answers.entries()) {
-        const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
-        const index = oldAnswer[0];
-        const rating2 = getRateHistory(answer.history);
-        const question = questions.find((q) => q[1].id === answer.id);
-        const timestamp = getLatestTimestamp([question[1].id, ...question[1].used]);
-        answersDb.push([index, {
-          id: answer.id,
-          history: answer.history,
-          used: oldAnswer[1].used,
-          rating: rating2,
-          stamp: timestamp
-        }]);
-        if (timestamp < answersDateMin) answersDateMin = timestamp;
-        if (timestamp > answersDateMax) answersDateMax = timestamp;
-      }
-    }
-    const timeRange = answersDateMax - answersDateMin;
-    for (const answer of answersDb) {
-      const originalStamp = answer[1].stamp;
-      const newStamp = (originalStamp - answersDateMin) / timeRange;
-      answer[1].stamp = newStamp;
-    }
-    await core.idb.answers.updateMany(answersDb);
-  };
-  var check = async () => {
-    const waitForIntervalClear = (intervalFn, time) => {
-      return new Promise((resolve) => {
-        let interval;
-        const clear = () => {
-          clearInterval(interval);
-          resolve();
-        };
-        const fn = intervalFn(clear);
-        interval = setInterval(fn, time);
-      });
-    };
-    const versionDb = await core.store.get(storageNames.version);
-    const response = await getVersion(versionDb);
-    const versionRes = response.version;
-    const infoVersion = core.store.get(storageNames.infoVersion);
-    if (versionRes !== versionDb) {
-      await core.store.set(storageNames.imgAvailable, checked.no);
-      initStatus(versionRes);
-      setTimeout(() => setVersionPos(), 200);
-      const configRes = await getConfig();
-      const configTestsDb = await core.store.get(storageNames.configTests);
-      if (configRes.tests !== configTestsDb) {
-        showStatus();
-        const allQuestionsRes = await getAllQuestions();
-        const allQuestions = allQuestionsRes.map((question) => {
-          if (!question.used) question.used = [];
-          return question;
-        });
-        const newQuestions = allQuestions.map((question, index2) => [index2, question]);
-        await core.idb.questions.setMany(newQuestions);
-        await core.store.set(storageNames.configTests, configRes.tests);
-        if (core.isMobile) showMenu();
-      }
-      setStartImgStatus();
-      const imgSToAdd = [];
-      await configRes.img.forEach(async (img) => {
-        const imgDb = await core.idb.images.get(img.name);
-        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img);
-      });
-      let index = 0;
-      const imageInterval = (clear) => async () => {
-        const imageDataRes = imgSToAdd[index];
-        if (!imageDataRes) {
-          await core.store.set(storageNames.imgAvailable, checked.yes);
-          hideStatus();
-          await core.store.set(storageNames.version, versionRes);
-          clear();
-          return;
-        }
-        imgStatus(index + 1, imgSToAdd.length);
-        index++;
-        const image = await getImage(imageDataRes.name);
-        if (image) {
-          await core.idb.images.set(imageDataRes.name, {
-            version: imageDataRes.version,
-            data: await toString3(image)
-          });
-        }
-      };
-      waitForIntervalClear(imageInterval, 1e3);
-    }
-    const maxUsed = await clearAnswers();
-    data.quantities = Array(maxUsed).fill(0);
-    data.sume = 0;
-    const questions = await core.idb.questions.getAllData();
-    questions.forEach((q) => {
-      const index = q[1].used.length;
-      data.quantities[index]++;
-      data.sume++;
-    });
-    await updateAnswers();
-    data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
-    firstUse();
-    if (core.isMobile) showMenu();
-  };
 
   // src/modal/modal.ts
   var modal_exports = {};
@@ -5942,6 +5821,162 @@
     display(elements12.modal, "none");
     remove(elements12.btnOk, "click", fns.ok);
     remove(elements12.btnCancel, "click", fns.cancel);
+  };
+
+  // src/init/data.ts
+  var clearAnswers = async (all3 = false) => {
+    const questions = await core.idb.questions.getAllData();
+    let maxUsed = 0;
+    let answersDateMin = Infinity;
+    let answersDateMax = -Infinity;
+    const answersDb = [];
+    for (const [index, question] of questions.entries()) {
+      const key = question[0];
+      const q = question[1];
+      if (maxUsed < q.used.length + 1) {
+        maxUsed = q.used.length + 1;
+      }
+      const answer = await core.idb.answers.get(key);
+      const timestamp = getLatestTimestamp([q.id, ...q.used]);
+      if (!answer || all3) {
+        answersDb.push([
+          index,
+          {
+            id: q.id,
+            history: [],
+            used: q.used.length + 1,
+            stamp: timestamp
+          }
+        ]);
+      } else {
+        answer.stamp = timestamp;
+        answersDb.push([index, answer]);
+      }
+      if (timestamp < answersDateMin) answersDateMin = timestamp;
+      if (timestamp > answersDateMax) answersDateMax = timestamp;
+    }
+    const timeRange = answersDateMax - answersDateMin;
+    for (const answer of answersDb) {
+      const originalStamp = answer[1].stamp;
+      const newStamp = (originalStamp - answersDateMin) / timeRange;
+      answer[1].stamp = newStamp;
+    }
+    await core.idb.answers.updateMany(answersDb);
+    return maxUsed;
+  };
+  var getAnswersFromServer = async () => {
+    const answers = await getAnswers();
+    let answersDateMin = Infinity;
+    let answersDateMax = -Infinity;
+    const answersDb = [];
+    const questions = await core.idb.questions.getAllData();
+    if (answers !== null) {
+      await clearAnswers(true);
+      const answersOld = await core.idb.answers.getAllData();
+      for (const [, answer] of answers.entries()) {
+        const oldAnswer = await answersOld.find((a) => a[1].id === answer.id);
+        const index = oldAnswer[0];
+        const rating2 = getRateHistory(answer.history);
+        const question = questions.find((q) => q[1].id === answer.id);
+        const timestamp = getLatestTimestamp([question[1].id, ...question[1].used]);
+        answersDb.push([index, {
+          id: answer.id,
+          history: answer.history,
+          used: oldAnswer[1].used,
+          rating: rating2,
+          stamp: timestamp
+        }]);
+        if (timestamp < answersDateMin) answersDateMin = timestamp;
+        if (timestamp > answersDateMax) answersDateMax = timestamp;
+      }
+    }
+    const timeRange = answersDateMax - answersDateMin;
+    for (const answer of answersDb) {
+      const originalStamp = answer[1].stamp;
+      const newStamp = (originalStamp - answersDateMin) / timeRange;
+      answer[1].stamp = newStamp;
+    }
+    await core.idb.answers.updateMany(answersDb);
+  };
+  var check = async () => {
+    const waitForIntervalClear = (intervalFn, time) => {
+      return new Promise((resolve) => {
+        let interval;
+        const clear = () => {
+          clearInterval(interval);
+          resolve();
+        };
+        const fn = intervalFn(clear);
+        interval = setInterval(fn, time);
+      });
+    };
+    const versionDb = await core.store.get(storageNames.version);
+    const response = await getVersion(versionDb);
+    const versionRes = response.version;
+    const infoVersion = core.store.get(storageNames.infoVersion);
+    if (versionRes !== infoVersion && core.info.length > 0) {
+      showInfoModal("Aktualizacja", core.info, true, false);
+      core.store.set(storageNames.infoVersion, versionRes);
+    }
+    if (versionRes !== versionDb) {
+      await core.store.set(storageNames.imgAvailable, checked.no);
+      initStatus(versionRes);
+      setTimeout(() => setVersionPos(), 200);
+      const configRes = await getConfig();
+      const configTestsDb = await core.store.get(storageNames.configTests);
+      if (configRes.tests !== configTestsDb) {
+        showStatus();
+        const allQuestionsRes = await getAllQuestions();
+        const allQuestions = allQuestionsRes.map((question) => {
+          if (!question.used) question.used = [];
+          return question;
+        });
+        const newQuestions = allQuestions.map((question, index2) => [index2, question]);
+        await core.idb.questions.setMany(newQuestions);
+        await core.store.set(storageNames.configTests, configRes.tests);
+        if (core.isMobile) showMenu();
+      }
+      setStartImgStatus();
+      const imgSToAdd = [];
+      await configRes.img.forEach(async (img) => {
+        const imgDb = await core.idb.images.get(img.name);
+        if (!imgDb || imgDb.version !== img.version) imgSToAdd.push(img);
+      });
+      let index = 0;
+      const imageInterval = (clear) => async () => {
+        const imageDataRes = imgSToAdd[index];
+        if (!imageDataRes) {
+          await core.store.set(storageNames.imgAvailable, checked.yes);
+          hideStatus();
+          await core.store.set(storageNames.version, versionRes);
+          clear();
+          return;
+        }
+        imgStatus(index + 1, imgSToAdd.length);
+        index++;
+        const image = await getImage(imageDataRes.name);
+        if (image) {
+          await core.idb.images.set(imageDataRes.name, {
+            version: imageDataRes.version,
+            data: await toString3(image)
+          });
+        }
+      };
+      waitForIntervalClear(imageInterval, 1e3);
+    }
+    const maxUsed = await clearAnswers();
+    data.quantities = Array(maxUsed).fill(0);
+    data.sume = 0;
+    const questions = await core.idb.questions.getAllData();
+    questions.forEach((q) => {
+      const index = q[1].used.length;
+      data.quantities[index]++;
+      data.sume++;
+    });
+    await updateAnswers();
+    data2.monitor.size = Math.ceil(Math.sqrt(data.sume));
+    firstUse();
+    if (core.isMobile) showMenu();
   };
 
   // src/screens/settings/options/options.ts
@@ -6386,7 +6421,7 @@
   // src/utils/resize.ts
   var resize8 = () => {
     const functionList = [];
-    const add3 = (fn) => functionList.push(fn);
+    const add2 = (fn) => functionList.push(fn);
     const run = () => {
       const vv = window.visualViewport;
       const w = vv.width;
@@ -6395,7 +6430,7 @@
     };
     window.onresize = run;
     return {
-      add: add3,
+      add: add2,
       run
     };
   };
@@ -6497,6 +6532,9 @@
       core.idb.answers = idb("answers");
       core.idb.logs = idb("logs");
       core.info = [];
+      core.info = [
+        '1. podzia\u0142 rozwi\u0105zywania test\xF3w na "do 3 razy" i "do 1 razu" aby podzieli\u0107 nauk\u0119 od weryfikacji ju\u017C opanowanych pyta\u0144.'
+      ];
       const domContentLoaded = async () => {
         controllers.initKeys();
         modules.forEach((m) => {

@@ -10,6 +10,7 @@
     margin: 12px;
     width: calc(50% - 36px);
     white-space: nowrap;
+}
 
 .statistics-tab-box {
     padding: 0 0 0 20px;

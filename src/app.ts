@@ -35,9 +35,9 @@ import { setConsole } from './console'
         core.idb.logs = idb<LogDbSchemaT>('logs')
 
         core.info = []
-        // core.info = [
-        //     '1. podział rozwiązywania testów na "do 3 razy" i "do 1 razu" aby podzielić naukę od weryfikacji już opanowanych pytań.',
-        // ]
+        core.info = [
+            '1. podział rozwiązywania testów na "do 3 razy" i "do 1 razu" aby podzielić naukę od weryfikacji już opanowanych pytań.',
+        ]
 
         const domContentLoaded = async () => {
             controllers.initKeys()

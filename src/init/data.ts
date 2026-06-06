@@ -136,13 +136,12 @@ export const check = async () => {
     const versionRes = response.version
 
     const infoVersion = core.store.get(storageNames.infoVersion)
-    // if (versionRes !== infoVersion && core.info.length > 0) {
-    //     showInfoModal('Aktualizacja', core.info, true, false)
-    //     core.store.set(storageNames.infoVersion, versionRes)
-    // }
+    if (versionRes !== infoVersion && core.info.length > 0) {
+        showInfoModal('Aktualizacja', core.info, true, false)
+        core.store.set(storageNames.infoVersion, versionRes)
+    }
 
     if (versionRes !== versionDb) {
-
         await core.store.set(storageNames.imgAvailable, checked.no)
 
         initStatus(versionRes)
